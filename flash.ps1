@@ -180,18 +180,30 @@ if (-not $SkipInstall) {
 
     $installedCores = & $ArduinoCliPath core list --format json 2>$null | ConvertFrom-Json
     $esp32Installed = $false
+    $esp32InstalledVersion = ""
     if ($installedCores) {
         foreach ($core in $installedCores) {
             if ($core.id -eq "esp32:esp32") {
                 $esp32Installed = $true
-                Write-Success "ESP32 core already installed (v$($core.installed))"
+                $esp32InstalledVersion = $core.installed
                 break
             }
         }
     }
 
-    if (-not $esp32Installed) {
-        Write-SubStep "Installing ESP32 Arduino core v${ESP32_CORE_VERSION} (this may take a few minutes)..."
+    # If wrong version is installed (e.g. old Arduino IDE version with broken toolchain),
+    # uninstall it first so we get a clean install with the correct esp-rv32 toolchain.
+    if ($esp32Installed -and $esp32InstalledVersion -ne $ESP32_CORE_VERSION) {
+        Write-Warn "Wrong ESP32 core version installed (v$esp32InstalledVersion). Reinstalling v${ESP32_CORE_VERSION}..."
+        Write-SubStep "Uninstalling old ESP32 core..."
+        & $ArduinoCliPath core uninstall "esp32:esp32" 2>$null
+        $esp32Installed = $false
+    }
+
+    if ($esp32Installed) {
+        Write-Success "ESP32 core v${ESP32_CORE_VERSION} already installed"
+    } else {
+        Write-SubStep "Installing ESP32 Arduino core v${ESP32_CORE_VERSION} (this may take 5-10 minutes)..."
         $installResult = & $ArduinoCliPath core install "esp32:esp32@${ESP32_CORE_VERSION}" 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Warn "Specific version failed, trying latest..."
