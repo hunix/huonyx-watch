@@ -1,14 +1,17 @@
 /**
  * UI Manager Implementation - LVGL Smartwatch Interface
- * Huonyx AI Smartwatch
+ * Huonyx AI Smartwatch v2.0
  *
  * Screens:
- *   - Watch Face (home) with time, date, battery arc, status indicators
+ *   - Watch Face (home) with time, date, battery arc, status LEDs
  *   - Chat Interface with message bubbles and quick replies
+ *   - Flipper Control with command log and scan/disconnect buttons
  *   - Quick Settings (brightness, WiFi toggle)
- *   - Settings Menu (WiFi, Gateway, About)
+ *   - Settings Menu (WiFi, Gateway, Supabase, Flipper, Sessions, About)
  *   - WiFi Setup
- *   - Gateway Setup (Host + Token input)
+ *   - Gateway Setup
+ *   - Supabase Setup
+ *   - Flipper Setup
  *   - Sessions list
  */
 
@@ -23,12 +26,15 @@
 #define COL_ACCENT      lv_color_hex(0x00FF88)   /* Green accent */
 #define COL_WARNING     lv_color_hex(0xFF6B35)   /* Orange warning */
 #define COL_ERROR       lv_color_hex(0xFF3366)   /* Red error */
+#define COL_FLIPPER     lv_color_hex(0xFF8C00)   /* Flipper orange */
 #define COL_TEXT        lv_color_hex(0xE8E8F0)   /* Light text */
 #define COL_TEXT_DIM    lv_color_hex(0x6B6B8D)   /* Dimmed text */
 #define COL_BUBBLE_USER lv_color_hex(0x0A84FF)   /* User bubble blue */
 #define COL_BUBBLE_AI   lv_color_hex(0x2A2A3E)   /* AI bubble dark */
 #define COL_BTN         lv_color_hex(0x1E1E3A)   /* Button background */
 #define COL_BTN_PRESS   lv_color_hex(0x2E2E5A)   /* Button pressed */
+#define COL_CMD_BG      lv_color_hex(0x1A0A2E)   /* Command log bg */
+#define COL_RESULT_BG   lv_color_hex(0x0A1A1E)   /* Result log bg */
 
 /* Quick reply texts */
 static const char* quickReplies[QUICK_REPLY_COUNT] = {
@@ -45,24 +51,33 @@ static const char* quickReplies[QUICK_REPLY_COUNT] = {
 UIManager::UIManager()
     : _gw(nullptr)
     , _cfg(nullptr)
+    , _flipper(nullptr)
+    , _bridge(nullptr)
     , _currentScreen(SCREEN_WATCHFACE)
     , _chatMsgCount(0)
+    , _flipperLogCount(0)
 {
 }
 
 /* ── Initialization ───────────────────────────────────── */
 
-void UIManager::begin(GatewayClient* gw, ConfigManager* cfg) {
+void UIManager::begin(GatewayClient* gw, ConfigManager* cfg,
+                      FlipperBLE* flipper, SupabaseBridge* bridge) {
     _gw = gw;
     _cfg = cfg;
+    _flipper = flipper;
+    _bridge = bridge;
 
     createStyles();
     buildWatchface();
     buildChatScreen();
+    buildFlipperScreen();
     buildQuickSettings();
     buildSettingsScreen();
     buildWifiSetup();
     buildGatewaySetup();
+    buildSupabaseSetup();
+    buildFlipperSetup();
     buildSessionsScreen();
 
     /* Start with watch face */
@@ -70,7 +85,7 @@ void UIManager::begin(GatewayClient* gw, ConfigManager* cfg) {
 }
 
 void UIManager::update() {
-    /* Called from main loop - nothing special needed, LVGL handles timers */
+    /* Called from main loop - nothing special needed */
 }
 
 /* ── Styles ───────────────────────────────────────────── */
@@ -140,6 +155,24 @@ void UIManager::createStyles() {
     /* Accent style */
     lv_style_init(&_styleAccent);
     lv_style_set_text_color(&_styleAccent, COL_PRIMARY);
+
+    /* Command log entry */
+    lv_style_init(&_styleCmdLog);
+    lv_style_set_bg_color(&_styleCmdLog, COL_CMD_BG);
+    lv_style_set_bg_opa(&_styleCmdLog, LV_OPA_COVER);
+    lv_style_set_radius(&_styleCmdLog, 8);
+    lv_style_set_pad_all(&_styleCmdLog, 6);
+    lv_style_set_text_color(&_styleCmdLog, COL_FLIPPER);
+    lv_style_set_max_width(&_styleCmdLog, 200);
+
+    /* Result log entry */
+    lv_style_init(&_styleResultLog);
+    lv_style_set_bg_color(&_styleResultLog, COL_RESULT_BG);
+    lv_style_set_bg_opa(&_styleResultLog, LV_OPA_COVER);
+    lv_style_set_radius(&_styleResultLog, 8);
+    lv_style_set_pad_all(&_styleResultLog, 6);
+    lv_style_set_text_color(&_styleResultLog, COL_ACCENT);
+    lv_style_set_max_width(&_styleResultLog, 200);
 }
 
 /* ── Helper: Create a round screen ────────────────────── */
@@ -226,12 +259,27 @@ void UIManager::buildWatchface() {
     lv_obj_set_style_text_color(_lblBatteryPct, COL_ACCENT, 0);
     lv_obj_center(_lblBatteryPct);
 
-    /* ── Gateway status LED (top-right area) ────────── */
+    /* ── Status LEDs (top area) ────────────────────── */
+    /* Gateway LED */
     _ledGateway = lv_led_create(_scrWatchface);
     lv_led_set_color(_ledGateway, COL_ERROR);
-    lv_obj_set_size(_ledGateway, 8, 8);
-    lv_obj_align(_ledGateway, LV_ALIGN_TOP_RIGHT, -50, 40);
+    lv_obj_set_size(_ledGateway, 7, 7);
+    lv_obj_align(_ledGateway, LV_ALIGN_TOP_RIGHT, -40, 42);
     lv_led_on(_ledGateway);
+
+    /* Flipper LED */
+    _ledFlipper = lv_led_create(_scrWatchface);
+    lv_led_set_color(_ledFlipper, COL_TEXT_DIM);
+    lv_obj_set_size(_ledFlipper, 7, 7);
+    lv_obj_align(_ledFlipper, LV_ALIGN_TOP_RIGHT, -52, 42);
+    lv_led_off(_ledFlipper);
+
+    /* Bridge LED */
+    _ledBridge = lv_led_create(_scrWatchface);
+    lv_led_set_color(_ledBridge, COL_TEXT_DIM);
+    lv_obj_set_size(_ledBridge, 7, 7);
+    lv_obj_align(_ledBridge, LV_ALIGN_TOP_RIGHT, -64, 42);
+    lv_led_off(_ledBridge);
 
     /* ── WiFi indicator label (top-left area) ───────── */
     _imgWifi = lv_label_create(_scrWatchface);
@@ -249,15 +297,22 @@ void UIManager::buildWatchface() {
     lv_obj_set_style_text_opa(lblBrand, LV_OPA_60, 0);
     lv_obj_align(lblBrand, LV_ALIGN_CENTER, 0, -50);
 
-    /* ── Navigation hint at bottom ──────────────────── */
-    lv_obj_t* lblHint = lv_label_create(_scrWatchface);
-    lv_label_set_text(lblHint, LV_SYMBOL_LEFT " Chat");
-    lv_obj_set_style_text_font(lblHint, &lv_font_montserrat_10, 0);
-    lv_obj_set_style_text_color(lblHint, COL_TEXT_DIM, 0);
-    lv_obj_set_style_text_opa(lblHint, LV_OPA_40, 0);
-    lv_obj_align(lblHint, LV_ALIGN_BOTTOM_MID, 0, -25);
+    /* ── Navigation hints ──────────────────────────── */
+    lv_obj_t* lblHintL = lv_label_create(_scrWatchface);
+    lv_label_set_text(lblHintL, LV_SYMBOL_LEFT " Chat");
+    lv_obj_set_style_text_font(lblHintL, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(lblHintL, COL_TEXT_DIM, 0);
+    lv_obj_set_style_text_opa(lblHintL, LV_OPA_30, 0);
+    lv_obj_align(lblHintL, LV_ALIGN_BOTTOM_MID, -30, -22);
 
-    /* ── Gesture handling ───────────────────────────── */
+    lv_obj_t* lblHintR = lv_label_create(_scrWatchface);
+    lv_label_set_text(lblHintR, "Flip " LV_SYMBOL_RIGHT);
+    lv_obj_set_style_text_font(lblHintR, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(lblHintR, COL_FLIPPER, 0);
+    lv_obj_set_style_text_opa(lblHintR, LV_OPA_30, 0);
+    lv_obj_align(lblHintR, LV_ALIGN_BOTTOM_MID, 30, -22);
+
+    /* ── Gesture handling ──────────────────────────── */
     lv_obj_add_event_cb(_scrWatchface, onGestureEvent, LV_EVENT_GESTURE, this);
 }
 
@@ -331,8 +386,90 @@ void UIManager::buildChatScreen() {
         lv_obj_add_event_cb(_btnQuickReply[i], onQuickReplyClicked, LV_EVENT_CLICKED, this);
     }
 
-    /* ── Gesture handling ───────────────────────────── */
     lv_obj_add_event_cb(_scrChat, onGestureEvent, LV_EVENT_GESTURE, this);
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  FLIPPER CONTROL SCREEN
+ * ══════════════════════════════════════════════════════════ */
+
+void UIManager::buildFlipperScreen() {
+    _scrFlipper = createRoundScreen();
+
+    /* ── Header ─────────────────────────────────────── */
+    lv_obj_t* header = lv_obj_create(_scrFlipper);
+    lv_obj_add_style(header, &_styleHeader, 0);
+    lv_obj_set_size(header, 200, 32);
+    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 15);
+    lv_obj_set_style_radius(header, 16, 0);
+    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t* lblTitle = lv_label_create(header);
+    lv_label_set_text(lblTitle, LV_SYMBOL_LEFT "  Flipper Zero");
+    lv_obj_set_style_text_font(lblTitle, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(lblTitle, COL_FLIPPER, 0);
+    lv_obj_center(lblTitle);
+    lv_obj_add_event_cb(header, onBackButton, LV_EVENT_CLICKED, this);
+
+    /* ── Status bar ─────────────────────────────────── */
+    _lblFlipperState = lv_label_create(_scrFlipper);
+    lv_label_set_text(_lblFlipperState, "Idle");
+    lv_obj_set_style_text_font(_lblFlipperState, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(_lblFlipperState, COL_TEXT_DIM, 0);
+    lv_obj_align(_lblFlipperState, LV_ALIGN_TOP_MID, -30, 50);
+
+    _lblFlipperDevice = lv_label_create(_scrFlipper);
+    lv_label_set_text(_lblFlipperDevice, "---");
+    lv_obj_set_style_text_font(_lblFlipperDevice, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(_lblFlipperDevice, COL_FLIPPER, 0);
+    lv_obj_align(_lblFlipperDevice, LV_ALIGN_TOP_MID, 40, 50);
+
+    _lblFlipperRssi = lv_label_create(_scrFlipper);
+    lv_label_set_text(_lblFlipperRssi, "");
+    lv_obj_set_style_text_font(_lblFlipperRssi, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(_lblFlipperRssi, COL_TEXT_DIM, 0);
+    lv_obj_align(_lblFlipperRssi, LV_ALIGN_TOP_RIGHT, -35, 50);
+
+    /* ── Command log list ───────────────────────────── */
+    _flipperLogList = lv_obj_create(_scrFlipper);
+    lv_obj_set_size(_flipperLogList, 200, 90);
+    lv_obj_align(_flipperLogList, LV_ALIGN_CENTER, 0, 5);
+    lv_obj_set_style_bg_opa(_flipperLogList, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(_flipperLogList, 0, 0);
+    lv_obj_set_style_pad_all(_flipperLogList, 2, 0);
+    lv_obj_set_flex_flow(_flipperLogList, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(_flipperLogList, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_set_scrollbar_mode(_flipperLogList, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_set_scroll_dir(_flipperLogList, LV_DIR_VER);
+
+    /* ── Action buttons ─────────────────────────────── */
+    _btnFlipperScan = lv_btn_create(_scrFlipper);
+    lv_obj_add_style(_btnFlipperScan, &_styleBtn, 0);
+    lv_obj_add_style(_btnFlipperScan, &_styleBtnPressed, LV_STATE_PRESSED);
+    lv_obj_set_size(_btnFlipperScan, 80, 30);
+    lv_obj_align(_btnFlipperScan, LV_ALIGN_BOTTOM_MID, -45, -25);
+    lv_obj_set_style_border_color(_btnFlipperScan, COL_FLIPPER, 0);
+    lv_obj_t* lblScan = lv_label_create(_btnFlipperScan);
+    lv_label_set_text(lblScan, LV_SYMBOL_REFRESH " Scan");
+    lv_obj_set_style_text_font(lblScan, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(lblScan, COL_FLIPPER, 0);
+    lv_obj_center(lblScan);
+    lv_obj_add_event_cb(_btnFlipperScan, onFlipperScan, LV_EVENT_CLICKED, this);
+
+    _btnFlipperDisconnect = lv_btn_create(_scrFlipper);
+    lv_obj_add_style(_btnFlipperDisconnect, &_styleBtn, 0);
+    lv_obj_add_style(_btnFlipperDisconnect, &_styleBtnPressed, LV_STATE_PRESSED);
+    lv_obj_set_size(_btnFlipperDisconnect, 80, 30);
+    lv_obj_align(_btnFlipperDisconnect, LV_ALIGN_BOTTOM_MID, 45, -25);
+    lv_obj_set_style_border_color(_btnFlipperDisconnect, COL_ERROR, 0);
+    lv_obj_t* lblDisc = lv_label_create(_btnFlipperDisconnect);
+    lv_label_set_text(lblDisc, LV_SYMBOL_CLOSE " Disc");
+    lv_obj_set_style_text_font(lblDisc, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(lblDisc, COL_ERROR, 0);
+    lv_obj_center(lblDisc);
+    lv_obj_add_event_cb(_btnFlipperDisconnect, onFlipperDisconnect, LV_EVENT_CLICKED, this);
+
+    lv_obj_add_event_cb(_scrFlipper, onGestureEvent, LV_EVENT_GESTURE, this);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -431,57 +568,39 @@ void UIManager::buildSettingsScreen() {
 
     /* Settings list */
     _settingsList = lv_list_create(_scrSettings);
-    lv_obj_set_size(_settingsList, 190, 140);
+    lv_obj_set_size(_settingsList, 190, 150);
     lv_obj_align(_settingsList, LV_ALIGN_CENTER, 0, 10);
     lv_obj_set_style_bg_opa(_settingsList, LV_OPA_TRANSP, 0);
     lv_obj_set_style_border_width(_settingsList, 0, 0);
-    lv_obj_set_style_pad_row(_settingsList, 4, 0);
+    lv_obj_set_style_pad_row(_settingsList, 3, 0);
     lv_obj_set_scrollbar_mode(_settingsList, LV_SCROLLBAR_MODE_OFF);
 
-    /* WiFi item */
-    lv_obj_t* btnWifi = lv_list_add_btn(_settingsList, LV_SYMBOL_WIFI, "WiFi Setup");
-    lv_obj_set_style_bg_color(btnWifi, COL_CARD, 0);
-    lv_obj_set_style_text_color(btnWifi, COL_TEXT, 0);
-    lv_obj_set_style_text_font(btnWifi, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_radius(btnWifi, 10, 0);
-    lv_obj_set_style_pad_ver(btnWifi, 8, 0);
-    lv_obj_set_user_data(btnWifi, (void*)(intptr_t)SCREEN_WIFI_SETUP);
-    lv_obj_add_event_cb(btnWifi, onSettingsItemClicked, LV_EVENT_CLICKED, this);
+    /* Helper lambda-like macro for list items */
+    #define ADD_SETTINGS_ITEM(icon, label, screen) do { \
+        lv_obj_t* btn = lv_list_add_btn(_settingsList, icon, label); \
+        lv_obj_set_style_bg_color(btn, COL_CARD, 0); \
+        lv_obj_set_style_text_color(btn, COL_TEXT, 0); \
+        lv_obj_set_style_text_font(btn, &lv_font_montserrat_12, 0); \
+        lv_obj_set_style_radius(btn, 10, 0); \
+        lv_obj_set_style_pad_ver(btn, 7, 0); \
+        lv_obj_set_user_data(btn, (void*)(intptr_t)(screen)); \
+        lv_obj_add_event_cb(btn, onSettingsItemClicked, LV_EVENT_CLICKED, this); \
+    } while(0)
 
-    /* Gateway item */
-    lv_obj_t* btnGw = lv_list_add_btn(_settingsList, LV_SYMBOL_UPLOAD, "Gateway");
-    lv_obj_set_style_bg_color(btnGw, COL_CARD, 0);
-    lv_obj_set_style_text_color(btnGw, COL_TEXT, 0);
-    lv_obj_set_style_text_font(btnGw, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_radius(btnGw, 10, 0);
-    lv_obj_set_style_pad_ver(btnGw, 8, 0);
-    lv_obj_set_user_data(btnGw, (void*)(intptr_t)SCREEN_GATEWAY_SETUP);
-    lv_obj_add_event_cb(btnGw, onSettingsItemClicked, LV_EVENT_CLICKED, this);
+    ADD_SETTINGS_ITEM(LV_SYMBOL_WIFI,     "WiFi Setup",    SCREEN_WIFI_SETUP);
+    ADD_SETTINGS_ITEM(LV_SYMBOL_UPLOAD,    "Gateway",       SCREEN_GATEWAY_SETUP);
+    ADD_SETTINGS_ITEM(LV_SYMBOL_LOOP,      "Supabase",      SCREEN_SUPABASE_SETUP);
+    ADD_SETTINGS_ITEM(LV_SYMBOL_BLUETOOTH, "Flipper BLE",   SCREEN_FLIPPER_SETUP);
+    ADD_SETTINGS_ITEM(LV_SYMBOL_LIST,      "Sessions",      SCREEN_SESSIONS);
 
-    /* Sessions item */
-    lv_obj_t* btnSess = lv_list_add_btn(_settingsList, LV_SYMBOL_LIST, "Sessions");
-    lv_obj_set_style_bg_color(btnSess, COL_CARD, 0);
-    lv_obj_set_style_text_color(btnSess, COL_TEXT, 0);
-    lv_obj_set_style_text_font(btnSess, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_radius(btnSess, 10, 0);
-    lv_obj_set_style_pad_ver(btnSess, 8, 0);
-    lv_obj_set_user_data(btnSess, (void*)(intptr_t)SCREEN_SESSIONS);
-    lv_obj_add_event_cb(btnSess, onSettingsItemClicked, LV_EVENT_CLICKED, this);
-
-    /* About item */
-    lv_obj_t* btnAbout = lv_list_add_btn(_settingsList, LV_SYMBOL_CHARGE, "About");
-    lv_obj_set_style_bg_color(btnAbout, COL_CARD, 0);
-    lv_obj_set_style_text_color(btnAbout, COL_TEXT, 0);
-    lv_obj_set_style_text_font(btnAbout, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_radius(btnAbout, 10, 0);
-    lv_obj_set_style_pad_ver(btnAbout, 8, 0);
+    #undef ADD_SETTINGS_ITEM
 
     /* Firmware version at bottom */
     lv_obj_t* lblVer = lv_label_create(_scrSettings);
     lv_label_set_text_fmt(lblVer, "v%s", FIRMWARE_VERSION);
     lv_obj_set_style_text_font(lblVer, &lv_font_montserrat_10, 0);
     lv_obj_set_style_text_color(lblVer, COL_TEXT_DIM, 0);
-    lv_obj_align(lblVer, LV_ALIGN_BOTTOM_MID, 0, -25);
+    lv_obj_align(lblVer, LV_ALIGN_BOTTOM_MID, 0, -22);
 
     lv_obj_add_event_cb(_scrSettings, onGestureEvent, LV_EVENT_GESTURE, this);
 }
@@ -493,7 +612,6 @@ void UIManager::buildSettingsScreen() {
 void UIManager::buildWifiSetup() {
     _scrWifiSetup = createRoundScreen();
 
-    /* Header */
     lv_obj_t* header = lv_obj_create(_scrWifiSetup);
     lv_obj_add_style(header, &_styleHeader, 0);
     lv_obj_set_size(header, 200, 32);
@@ -508,7 +626,6 @@ void UIManager::buildWifiSetup() {
     lv_obj_center(lblTitle);
     lv_obj_add_event_cb(header, onBackButton, LV_EVENT_CLICKED, this);
 
-    /* Info text */
     lv_obj_t* lblInfo = lv_label_create(_scrWifiSetup);
     lv_label_set_text(lblInfo, "Connect to\n192.168.4.1\nfrom your phone\nto configure WiFi");
     lv_obj_set_style_text_font(lblInfo, &lv_font_montserrat_14, 0);
@@ -517,7 +634,6 @@ void UIManager::buildWifiSetup() {
     lv_obj_set_width(lblInfo, 180);
     lv_obj_align(lblInfo, LV_ALIGN_CENTER, 0, -5);
 
-    /* Status */
     lv_obj_t* lblStatus = lv_label_create(_scrWifiSetup);
     lv_label_set_text(lblStatus, "AP: HuonyxWatch");
     lv_obj_set_style_text_font(lblStatus, &lv_font_montserrat_10, 0);
@@ -534,7 +650,6 @@ void UIManager::buildWifiSetup() {
 void UIManager::buildGatewaySetup() {
     _scrGatewaySetup = createRoundScreen();
 
-    /* Header */
     lv_obj_t* header = lv_obj_create(_scrGatewaySetup);
     lv_obj_add_style(header, &_styleHeader, 0);
     lv_obj_set_size(header, 200, 32);
@@ -549,7 +664,6 @@ void UIManager::buildGatewaySetup() {
     lv_obj_center(lblTitle);
     lv_obj_add_event_cb(header, onBackButton, LV_EVENT_CLICKED, this);
 
-    /* Info - direct user to web config */
     lv_obj_t* lblInfo = lv_label_create(_scrGatewaySetup);
     lv_label_set_text(lblInfo, "Configure via\nWeb Portal");
     lv_obj_set_style_text_font(lblInfo, &lv_font_montserrat_14, 0);
@@ -557,7 +671,6 @@ void UIManager::buildGatewaySetup() {
     lv_obj_set_style_text_align(lblInfo, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(lblInfo, LV_ALIGN_CENTER, 0, -25);
 
-    /* Status indicator */
     _lblGwStatus = lv_label_create(_scrGatewaySetup);
     lv_label_set_text(_lblGwStatus, "Not configured");
     lv_obj_set_style_text_font(_lblGwStatus, &lv_font_montserrat_12, 0);
@@ -565,7 +678,6 @@ void UIManager::buildGatewaySetup() {
     lv_obj_set_style_text_align(_lblGwStatus, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(_lblGwStatus, LV_ALIGN_CENTER, 0, 5);
 
-    /* Web portal URL */
     lv_obj_t* lblUrl = lv_label_create(_scrGatewaySetup);
     lv_label_set_text(lblUrl, "Open browser:\nhttp://<watch-ip>/setup");
     lv_obj_set_style_text_font(lblUrl, &lv_font_montserrat_10, 0);
@@ -578,13 +690,106 @@ void UIManager::buildGatewaySetup() {
 }
 
 /* ══════════════════════════════════════════════════════════
+ *  SUPABASE SETUP SCREEN
+ * ══════════════════════════════════════════════════════════ */
+
+void UIManager::buildSupabaseSetup() {
+    _scrSupabaseSetup = createRoundScreen();
+
+    lv_obj_t* header = lv_obj_create(_scrSupabaseSetup);
+    lv_obj_add_style(header, &_styleHeader, 0);
+    lv_obj_set_size(header, 200, 32);
+    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 15);
+    lv_obj_set_style_radius(header, 16, 0);
+    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t* lblTitle = lv_label_create(header);
+    lv_label_set_text(lblTitle, LV_SYMBOL_LEFT "  Supabase");
+    lv_obj_set_style_text_font(lblTitle, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(lblTitle, COL_PRIMARY, 0);
+    lv_obj_center(lblTitle);
+    lv_obj_add_event_cb(header, onBackButton, LV_EVENT_CLICKED, this);
+
+    lv_obj_t* lblInfo = lv_label_create(_scrSupabaseSetup);
+    lv_label_set_text(lblInfo, "Realtime Bridge\nfor Agent " LV_SYMBOL_LOOP " Flipper");
+    lv_obj_set_style_text_font(lblInfo, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(lblInfo, COL_TEXT, 0);
+    lv_obj_set_style_text_align(lblInfo, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_width(lblInfo, 180);
+    lv_obj_align(lblInfo, LV_ALIGN_CENTER, 0, -25);
+
+    _lblSbStatus = lv_label_create(_scrSupabaseSetup);
+    lv_label_set_text(_lblSbStatus, "Not configured");
+    lv_obj_set_style_text_font(_lblSbStatus, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(_lblSbStatus, COL_WARNING, 0);
+    lv_obj_set_style_text_align(_lblSbStatus, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(_lblSbStatus, LV_ALIGN_CENTER, 0, 5);
+
+    lv_obj_t* lblUrl = lv_label_create(_scrSupabaseSetup);
+    lv_label_set_text(lblUrl, "Configure via\nWeb Portal at\nhttp://<watch-ip>/setup");
+    lv_obj_set_style_text_font(lblUrl, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(lblUrl, COL_PRIMARY, 0);
+    lv_obj_set_style_text_align(lblUrl, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_width(lblUrl, 180);
+    lv_obj_align(lblUrl, LV_ALIGN_CENTER, 0, 40);
+
+    lv_obj_add_event_cb(_scrSupabaseSetup, onGestureEvent, LV_EVENT_GESTURE, this);
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  FLIPPER SETUP SCREEN
+ * ══════════════════════════════════════════════════════════ */
+
+void UIManager::buildFlipperSetup() {
+    _scrFlipperSetup = createRoundScreen();
+
+    lv_obj_t* header = lv_obj_create(_scrFlipperSetup);
+    lv_obj_add_style(header, &_styleHeader, 0);
+    lv_obj_set_size(header, 200, 32);
+    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 15);
+    lv_obj_set_style_radius(header, 16, 0);
+    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t* lblTitle = lv_label_create(header);
+    lv_label_set_text(lblTitle, LV_SYMBOL_LEFT "  Flipper BLE");
+    lv_obj_set_style_text_font(lblTitle, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(lblTitle, COL_FLIPPER, 0);
+    lv_obj_center(lblTitle);
+    lv_obj_add_event_cb(header, onBackButton, LV_EVENT_CLICKED, this);
+
+    lv_obj_t* lblInfo = lv_label_create(_scrFlipperSetup);
+    lv_label_set_text(lblInfo, "BLE Serial to\nFlipper Zero CLI");
+    lv_obj_set_style_text_font(lblInfo, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(lblInfo, COL_TEXT, 0);
+    lv_obj_set_style_text_align(lblInfo, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_width(lblInfo, 180);
+    lv_obj_align(lblInfo, LV_ALIGN_CENTER, 0, -25);
+
+    _lblFlipSetupStatus = lv_label_create(_scrFlipperSetup);
+    lv_label_set_text(_lblFlipSetupStatus, "Auto-connect: OFF");
+    lv_obj_set_style_text_font(_lblFlipSetupStatus, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(_lblFlipSetupStatus, COL_TEXT_DIM, 0);
+    lv_obj_set_style_text_align(_lblFlipSetupStatus, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(_lblFlipSetupStatus, LV_ALIGN_CENTER, 0, 5);
+
+    lv_obj_t* lblUrl = lv_label_create(_scrFlipperSetup);
+    lv_label_set_text(lblUrl, "Set device name &\nauto-connect via\nWeb Portal");
+    lv_obj_set_style_text_font(lblUrl, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(lblUrl, COL_PRIMARY, 0);
+    lv_obj_set_style_text_align(lblUrl, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_width(lblUrl, 180);
+    lv_obj_align(lblUrl, LV_ALIGN_CENTER, 0, 40);
+
+    lv_obj_add_event_cb(_scrFlipperSetup, onGestureEvent, LV_EVENT_GESTURE, this);
+}
+
+/* ══════════════════════════════════════════════════════════
  *  SESSIONS SCREEN
  * ══════════════════════════════════════════════════════════ */
 
 void UIManager::buildSessionsScreen() {
     _scrSessions = createRoundScreen();
 
-    /* Header */
     lv_obj_t* header = lv_obj_create(_scrSessions);
     lv_obj_add_style(header, &_styleHeader, 0);
     lv_obj_set_size(header, 200, 32);
@@ -599,7 +804,6 @@ void UIManager::buildSessionsScreen() {
     lv_obj_center(lblTitle);
     lv_obj_add_event_cb(header, onBackButton, LV_EVENT_CLICKED, this);
 
-    /* Sessions list */
     _sessionsList = lv_list_create(_scrSessions);
     lv_obj_set_size(_sessionsList, 190, 140);
     lv_obj_align(_sessionsList, LV_ALIGN_CENTER, 0, 10);
@@ -608,7 +812,6 @@ void UIManager::buildSessionsScreen() {
     lv_obj_set_style_pad_row(_sessionsList, 4, 0);
     lv_obj_set_scrollbar_mode(_sessionsList, LV_SCROLLBAR_MODE_OFF);
 
-    /* Default session */
     lv_obj_t* btnDefault = lv_list_add_btn(_sessionsList, LV_SYMBOL_EDIT, "esp32-watch");
     lv_obj_set_style_bg_color(btnDefault, COL_CARD, 0);
     lv_obj_set_style_text_color(btnDefault, COL_TEXT, 0);
@@ -627,13 +830,16 @@ void UIManager::showScreen(ScreenId id, lv_scr_load_anim_t anim) {
     lv_obj_t* target = nullptr;
 
     switch (id) {
-        case SCREEN_WATCHFACE:      target = _scrWatchface; break;
-        case SCREEN_CHAT:           target = _scrChat; break;
-        case SCREEN_QUICK_SETTINGS: target = _scrQuickSettings; break;
-        case SCREEN_SETTINGS:       target = _scrSettings; break;
-        case SCREEN_WIFI_SETUP:     target = _scrWifiSetup; break;
-        case SCREEN_GATEWAY_SETUP:  target = _scrGatewaySetup; break;
-        case SCREEN_SESSIONS:       target = _scrSessions; break;
+        case SCREEN_WATCHFACE:       target = _scrWatchface; break;
+        case SCREEN_CHAT:            target = _scrChat; break;
+        case SCREEN_FLIPPER:         target = _scrFlipper; break;
+        case SCREEN_QUICK_SETTINGS:  target = _scrQuickSettings; break;
+        case SCREEN_SETTINGS:        target = _scrSettings; break;
+        case SCREEN_WIFI_SETUP:      target = _scrWifiSetup; break;
+        case SCREEN_GATEWAY_SETUP:   target = _scrGatewaySetup; break;
+        case SCREEN_SUPABASE_SETUP:  target = _scrSupabaseSetup; break;
+        case SCREEN_FLIPPER_SETUP:   target = _scrFlipperSetup; break;
+        case SCREEN_SESSIONS:        target = _scrSessions; break;
         default: return;
     }
 
@@ -652,9 +858,6 @@ void UIManager::updateTime(int hour, int min, int sec) {
     char buf[8];
     snprintf(buf, sizeof(buf), "%02d:%02d", hour, min);
     lv_label_set_text(_lblTime, buf);
-
-    /* Blink colon effect - hide colon on odd seconds */
-    /* (visual polish handled via timer in main) */
 }
 
 void UIManager::updateDate(const char* dateStr) {
@@ -671,7 +874,6 @@ void UIManager::updateBattery(int percent, bool charging) {
     snprintf(buf, sizeof(buf), "%d%%", percent);
     lv_label_set_text(_lblBatteryPct, buf);
 
-    /* Color based on level */
     lv_color_t col;
     if (charging) {
         col = COL_PRIMARY;
@@ -700,28 +902,28 @@ void UIManager::updateWiFiStrength(int rssi) {
 }
 
 void UIManager::updateGatewayStatus(GatewayState state) {
-    if (!_ledGateway) return;
-    switch (state) {
-        case GW_AUTHENTICATED:
-            lv_led_set_color(_ledGateway, COL_ACCENT);
-            lv_led_on(_ledGateway);
-            break;
-        case GW_CONNECTING:
-        case GW_CONNECTED:
-            lv_led_set_color(_ledGateway, COL_WARNING);
-            lv_led_on(_ledGateway);
-            break;
-        case GW_ERROR:
-            lv_led_set_color(_ledGateway, COL_ERROR);
-            lv_led_on(_ledGateway);
-            break;
-        default:
-            lv_led_set_color(_ledGateway, COL_ERROR);
-            lv_led_off(_ledGateway);
-            break;
+    if (_ledGateway) {
+        switch (state) {
+            case GW_AUTHENTICATED:
+                lv_led_set_color(_ledGateway, COL_ACCENT);
+                lv_led_on(_ledGateway);
+                break;
+            case GW_CONNECTING:
+            case GW_CONNECTED:
+                lv_led_set_color(_ledGateway, COL_WARNING);
+                lv_led_on(_ledGateway);
+                break;
+            case GW_ERROR:
+                lv_led_set_color(_ledGateway, COL_ERROR);
+                lv_led_on(_ledGateway);
+                break;
+            default:
+                lv_led_set_color(_ledGateway, COL_ERROR);
+                lv_led_off(_ledGateway);
+                break;
+        }
     }
 
-    /* Update gateway setup screen status */
     if (_lblGwStatus) {
         switch (state) {
             case GW_AUTHENTICATED:
@@ -744,6 +946,111 @@ void UIManager::updateGatewayStatus(GatewayState state) {
     }
 }
 
+void UIManager::updateFlipperStatus(FlipperState state) {
+    /* Update watch face LED */
+    if (_ledFlipper) {
+        switch (state) {
+            case FLIP_READY:
+                lv_led_set_color(_ledFlipper, COL_FLIPPER);
+                lv_led_on(_ledFlipper);
+                break;
+            case FLIP_SCANNING:
+            case FLIP_CONNECTING:
+            case FLIP_CONNECTED:
+                lv_led_set_color(_ledFlipper, COL_WARNING);
+                lv_led_on(_ledFlipper);
+                break;
+            case FLIP_BUSY:
+                lv_led_set_color(_ledFlipper, COL_PRIMARY);
+                lv_led_on(_ledFlipper);
+                break;
+            case FLIP_ERROR:
+                lv_led_set_color(_ledFlipper, COL_ERROR);
+                lv_led_on(_ledFlipper);
+                break;
+            default:
+                lv_led_set_color(_ledFlipper, COL_TEXT_DIM);
+                lv_led_off(_ledFlipper);
+                break;
+        }
+    }
+
+    /* Update Flipper screen state label */
+    if (_lblFlipperState) {
+        const char* stateStr = "Idle";
+        lv_color_t col = COL_TEXT_DIM;
+        switch (state) {
+            case FLIP_SCANNING:   stateStr = "Scanning..."; col = COL_WARNING; break;
+            case FLIP_CONNECTING: stateStr = "Connecting"; col = COL_WARNING; break;
+            case FLIP_CONNECTED:  stateStr = "Connected"; col = COL_PRIMARY; break;
+            case FLIP_READY:      stateStr = "Ready"; col = COL_FLIPPER; break;
+            case FLIP_BUSY:       stateStr = "Busy"; col = COL_PRIMARY; break;
+            case FLIP_ERROR:      stateStr = "Error"; col = COL_ERROR; break;
+            default: break;
+        }
+        lv_label_set_text(_lblFlipperState, stateStr);
+        lv_obj_set_style_text_color(_lblFlipperState, col, 0);
+    }
+
+    /* Update setup screen */
+    if (_lblFlipSetupStatus && _cfg) {
+        char buf[48];
+        snprintf(buf, sizeof(buf), "Auto: %s | %s",
+                 _cfg->config().flipperAuto ? "ON" : "OFF",
+                 _cfg->config().flipperName[0] ? _cfg->config().flipperName : "Any");
+        lv_label_set_text(_lblFlipSetupStatus, buf);
+    }
+}
+
+void UIManager::updateBridgeStatus(BridgeState state) {
+    if (_ledBridge) {
+        switch (state) {
+            case BRIDGE_JOINED:
+                lv_led_set_color(_ledBridge, COL_SECONDARY);
+                lv_led_on(_ledBridge);
+                break;
+            case BRIDGE_CONNECTING:
+            case BRIDGE_CONNECTED:
+                lv_led_set_color(_ledBridge, COL_WARNING);
+                lv_led_on(_ledBridge);
+                break;
+            case BRIDGE_ERROR:
+                lv_led_set_color(_ledBridge, COL_ERROR);
+                lv_led_on(_ledBridge);
+                break;
+            default:
+                lv_led_set_color(_ledBridge, COL_TEXT_DIM);
+                lv_led_off(_ledBridge);
+                break;
+        }
+    }
+
+    if (_lblSbStatus) {
+        switch (state) {
+            case BRIDGE_JOINED:
+                lv_label_set_text(_lblSbStatus, "Channel Joined");
+                lv_obj_set_style_text_color(_lblSbStatus, COL_ACCENT, 0);
+                break;
+            case BRIDGE_CONNECTING:
+                lv_label_set_text(_lblSbStatus, "Connecting...");
+                lv_obj_set_style_text_color(_lblSbStatus, COL_WARNING, 0);
+                break;
+            case BRIDGE_CONNECTED:
+                lv_label_set_text(_lblSbStatus, "Joining channel...");
+                lv_obj_set_style_text_color(_lblSbStatus, COL_WARNING, 0);
+                break;
+            case BRIDGE_ERROR:
+                lv_label_set_text(_lblSbStatus, "Error");
+                lv_obj_set_style_text_color(_lblSbStatus, COL_ERROR, 0);
+                break;
+            default:
+                lv_label_set_text(_lblSbStatus, "Not configured");
+                lv_obj_set_style_text_color(_lblSbStatus, COL_TEXT_DIM, 0);
+                break;
+        }
+    }
+}
+
 /* ══════════════════════════════════════════════════════════
  *  CHAT METHODS
  * ══════════════════════════════════════════════════════════ */
@@ -755,9 +1062,7 @@ void UIManager::addChatMessage(const char* text, bool isUser) {
 void UIManager::addChatBubble(const char* text, bool isUser) {
     if (!_chatList) return;
 
-    /* Limit messages to prevent OOM */
     if (_chatMsgCount >= CHAT_MAX_MESSAGES) {
-        /* Remove oldest message */
         lv_obj_t* first = lv_obj_get_child(_chatList, 0);
         if (first) {
             lv_obj_del(first);
@@ -765,7 +1070,6 @@ void UIManager::addChatBubble(const char* text, bool isUser) {
         }
     }
 
-    /* Create bubble container */
     lv_obj_t* row = lv_obj_create(_chatList);
     lv_obj_set_size(row, LV_PCT(100), LV_SIZE_CONTENT);
     lv_obj_set_style_bg_opa(row, LV_OPA_TRANSP, 0);
@@ -773,7 +1077,6 @@ void UIManager::addChatBubble(const char* text, bool isUser) {
     lv_obj_set_style_pad_all(row, 0, 0);
     lv_obj_clear_flag(row, LV_OBJ_FLAG_SCROLLABLE);
 
-    /* Create the bubble */
     lv_obj_t* bubble = lv_obj_create(row);
     lv_obj_set_size(bubble, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_clear_flag(bubble, LV_OBJ_FLAG_SCROLLABLE);
@@ -786,7 +1089,6 @@ void UIManager::addChatBubble(const char* text, bool isUser) {
         lv_obj_align(bubble, LV_ALIGN_LEFT_MID, 0, 0);
     }
 
-    /* Message text */
     lv_obj_t* lbl = lv_label_create(bubble);
     lv_label_set_text(lbl, text);
     lv_obj_set_style_text_font(lbl, &lv_font_montserrat_12, 0);
@@ -794,8 +1096,6 @@ void UIManager::addChatBubble(const char* text, bool isUser) {
     lv_obj_set_width(lbl, 150);
 
     _chatMsgCount++;
-
-    /* Scroll to bottom */
     lv_obj_scroll_to_y(_chatList, LV_COORD_MAX, LV_ANIM_ON);
 }
 
@@ -812,6 +1112,64 @@ void UIManager::clearChat() {
     if (!_chatList) return;
     lv_obj_clean(_chatList);
     _chatMsgCount = 0;
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  FLIPPER LOG METHODS
+ * ══════════════════════════════════════════════════════════ */
+
+void UIManager::addFlipperLog(const char* text, bool isCommand) {
+    addFlipperLogEntry(text, isCommand);
+}
+
+void UIManager::addFlipperLogEntry(const char* text, bool isCommand) {
+    if (!_flipperLogList) return;
+
+    /* Limit entries */
+    if (_flipperLogCount >= 6) {
+        lv_obj_t* first = lv_obj_get_child(_flipperLogList, 0);
+        if (first) {
+            lv_obj_del(first);
+            _flipperLogCount--;
+        }
+    }
+
+    lv_obj_t* entry = lv_obj_create(_flipperLogList);
+    lv_obj_set_size(entry, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_clear_flag(entry, LV_OBJ_FLAG_SCROLLABLE);
+
+    if (isCommand) {
+        lv_obj_add_style(entry, &_styleCmdLog, 0);
+    } else {
+        lv_obj_add_style(entry, &_styleResultLog, 0);
+    }
+
+    lv_obj_t* lbl = lv_label_create(entry);
+    /* Prefix with > for commands, < for results */
+    char buf[200];
+    snprintf(buf, sizeof(buf), "%s %s", isCommand ? ">" : "<", text);
+    lv_label_set_text(lbl, buf);
+    lv_obj_set_style_text_font(lbl, &lv_font_montserrat_10, 0);
+    lv_label_set_long_mode(lbl, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(lbl, 180);
+
+    _flipperLogCount++;
+    lv_obj_scroll_to_y(_flipperLogList, LV_COORD_MAX, LV_ANIM_ON);
+}
+
+void UIManager::updateFlipperInfo(const char* deviceName, int rssi) {
+    if (_lblFlipperDevice && deviceName) {
+        lv_label_set_text(_lblFlipperDevice, deviceName);
+    }
+    if (_lblFlipperRssi) {
+        if (rssi != 0) {
+            char buf[12];
+            snprintf(buf, sizeof(buf), "%ddB", rssi);
+            lv_label_set_text(_lblFlipperRssi, buf);
+        } else {
+            lv_label_set_text(_lblFlipperRssi, "");
+        }
+    }
 }
 
 void UIManager::updateSettingsValues() {
@@ -831,15 +1189,11 @@ void UIManager::onQuickReplyClicked(lv_event_t* e) {
     UIManager* self = (UIManager*)lv_event_get_user_data(e);
     lv_obj_t* btn = lv_event_get_target(e);
 
-    /* Find which button was clicked */
     for (int i = 0; i < QUICK_REPLY_COUNT; i++) {
         if (btn == self->_btnQuickReply[i]) {
             const char* msg = quickReplies[i];
-
-            /* Add to chat as user message */
             self->addChatMessage(msg, true);
 
-            /* Send to gateway */
             if (self->_gw && self->_gw->isConnected()) {
                 self->_gw->sendMessage(self->_gw->getSessionKey(), msg);
                 self->updateAgentTyping(true);
@@ -854,15 +1208,12 @@ void UIManager::onBrightnessChanged(lv_event_t* e) {
     lv_obj_t* slider = lv_event_get_target(e);
     int val = lv_slider_get_value(slider);
 
-    /* Update backlight */
     analogWrite(PIN_TFT_BL, val);
 
-    /* Save config */
     if (self->_cfg) {
         self->_cfg->setBrightness((uint8_t)val);
     }
 
-    /* Update label */
     char buf[8];
     snprintf(buf, sizeof(buf), "%d%%", (val * 100) / 255);
     lv_label_set_text(self->_lblBrightnessVal, buf);
@@ -872,13 +1223,11 @@ void UIManager::onSettingsItemClicked(lv_event_t* e) {
     UIManager* self = (UIManager*)lv_event_get_user_data(e);
     lv_obj_t* btn = lv_event_get_target(e);
 
-    /* Check if it's the settings button from quick settings */
     if (btn == self->_btnSettings) {
         self->showScreen(SCREEN_SETTINGS, LV_SCR_LOAD_ANIM_MOVE_LEFT);
         return;
     }
 
-    /* Otherwise it's a list item with screen ID in user data */
     void* data = lv_obj_get_user_data(btn);
     if (data) {
         ScreenId target = (ScreenId)(intptr_t)data;
@@ -887,7 +1236,7 @@ void UIManager::onSettingsItemClicked(lv_event_t* e) {
 }
 
 void UIManager::onGatewaySave(lv_event_t* e) {
-    /* Handled by web portal instead */
+    /* Handled by web portal */
 }
 
 void UIManager::onBackButton(lv_event_t* e) {
@@ -895,6 +1244,7 @@ void UIManager::onBackButton(lv_event_t* e) {
 
     switch (self->_currentScreen) {
         case SCREEN_CHAT:
+        case SCREEN_FLIPPER:
             self->showScreen(SCREEN_WATCHFACE, LV_SCR_LOAD_ANIM_MOVE_RIGHT);
             break;
         case SCREEN_SETTINGS:
@@ -902,6 +1252,8 @@ void UIManager::onBackButton(lv_event_t* e) {
             break;
         case SCREEN_WIFI_SETUP:
         case SCREEN_GATEWAY_SETUP:
+        case SCREEN_SUPABASE_SETUP:
+        case SCREEN_FLIPPER_SETUP:
         case SCREEN_SESSIONS:
             self->showScreen(SCREEN_SETTINGS, LV_SCR_LOAD_ANIM_MOVE_RIGHT);
             break;
@@ -919,6 +1271,26 @@ void UIManager::onWifiSelected(lv_event_t* e) {
     /* TODO: implement WiFi network selection */
 }
 
+void UIManager::onFlipperScan(lv_event_t* e) {
+    UIManager* self = (UIManager*)lv_event_get_user_data(e);
+    if (self->_flipper) {
+        const char* name = "";
+        if (self->_cfg && self->_cfg->config().flipperName[0]) {
+            name = self->_cfg->config().flipperName;
+        }
+        self->_flipper->startScan(name);
+        self->addFlipperLog("Scanning for Flipper...", true);
+    }
+}
+
+void UIManager::onFlipperDisconnect(lv_event_t* e) {
+    UIManager* self = (UIManager*)lv_event_get_user_data(e);
+    if (self->_flipper) {
+        self->_flipper->disconnect();
+        self->addFlipperLog("Disconnected", false);
+    }
+}
+
 void UIManager::onGestureEvent(lv_event_t* e) {
     UIManager* self = (UIManager*)lv_event_get_user_data(e);
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
@@ -927,6 +1299,8 @@ void UIManager::onGestureEvent(lv_event_t* e) {
         case SCREEN_WATCHFACE:
             if (dir == LV_DIR_LEFT) {
                 self->showScreen(SCREEN_CHAT, LV_SCR_LOAD_ANIM_MOVE_LEFT);
+            } else if (dir == LV_DIR_RIGHT) {
+                self->showScreen(SCREEN_FLIPPER, LV_SCR_LOAD_ANIM_MOVE_RIGHT);
             } else if (dir == LV_DIR_BOTTOM) {
                 self->showScreen(SCREEN_QUICK_SETTINGS, LV_SCR_LOAD_ANIM_MOVE_BOTTOM);
             }
@@ -935,6 +1309,12 @@ void UIManager::onGestureEvent(lv_event_t* e) {
         case SCREEN_CHAT:
             if (dir == LV_DIR_RIGHT) {
                 self->showScreen(SCREEN_WATCHFACE, LV_SCR_LOAD_ANIM_MOVE_RIGHT);
+            }
+            break;
+
+        case SCREEN_FLIPPER:
+            if (dir == LV_DIR_LEFT) {
+                self->showScreen(SCREEN_WATCHFACE, LV_SCR_LOAD_ANIM_MOVE_LEFT);
             }
             break;
 
@@ -947,6 +1327,8 @@ void UIManager::onGestureEvent(lv_event_t* e) {
         case SCREEN_SETTINGS:
         case SCREEN_WIFI_SETUP:
         case SCREEN_GATEWAY_SETUP:
+        case SCREEN_SUPABASE_SETUP:
+        case SCREEN_FLIPPER_SETUP:
         case SCREEN_SESSIONS:
             if (dir == LV_DIR_RIGHT) {
                 onBackButton(e);

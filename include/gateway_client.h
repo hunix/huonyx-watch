@@ -31,6 +31,7 @@ struct ChatMessage {
 typedef void (*OnChatDelta)(const char* runId, const char* text, bool isFinal);
 typedef void (*OnStateChange)(GatewayState newState);
 typedef void (*OnSessionList)(JsonArrayConst sessions);
+typedef void (*OnFlipperCommand)(const char* command, const char* source);
 
 class GatewayClient {
 public:
@@ -56,6 +57,7 @@ public:
     void onChatDelta(OnChatDelta cb) { _onChatDelta = cb; }
     void onStateChange(OnStateChange cb) { _onStateChange = cb; }
     void onSessionList(OnSessionList cb) { _onSessionList = cb; }
+    void onFlipperCommand(OnFlipperCommand cb) { _onFlipperCommand = cb; }
 
     /* Stats */
     unsigned long getLastTickMs() const { return _lastTickMs; }
@@ -73,9 +75,10 @@ private:
     uint32_t         _msgIdCounter;
 
     /* Callbacks */
-    OnChatDelta   _onChatDelta;
-    OnStateChange _onStateChange;
-    OnSessionList _onSessionList;
+    OnChatDelta      _onChatDelta;
+    OnStateChange    _onStateChange;
+    OnSessionList    _onSessionList;
+    OnFlipperCommand _onFlipperCommand;
 
     /* Internal */
     void setState(GatewayState s);

@@ -8,7 +8,7 @@
 
 /* ── Board Identification ─────────────────────────────── */
 #define BOARD_NAME          "ESP32-2424S012"
-#define FIRMWARE_VERSION    "1.0.0"
+#define FIRMWARE_VERSION    "2.0.0"
 #define FIRMWARE_NAME       "Huonyx Watch"
 
 /* ── Display (GC9A01 via SPI) ─────────────────────────── */
@@ -49,6 +49,24 @@
 #define CHAT_MAX_MESSAGES        8
 #define CHAT_MAX_MSG_LEN         256
 
+/* ── Flipper Zero BLE ─────────────────────────────────── */
+#define FLIPPER_BLE_SERVICE_UUID      "8fe5b3d5-2e7f-4a98-2a48-7acc60569438"
+#define FLIPPER_BLE_RX_CHAR_UUID      "19ed82ae-ed21-4c9d-4145-228e62fe0000"
+#define FLIPPER_BLE_TX_CHAR_UUID      "19ed82ae-ed21-4c9d-4145-228e63fe0000"
+#define FLIPPER_SCAN_TIMEOUT_SEC      10
+#define FLIPPER_RECONNECT_MS          5000
+#define FLIPPER_CMD_QUEUE_SIZE        8
+#define FLIPPER_RESPONSE_BUF_SIZE     512
+#define FLIPPER_CMD_TIMEOUT_MS        10000
+
+/* ── Supabase Realtime ────────────────────────────────── */
+#define SUPABASE_WS_PATH             "/realtime/v1/websocket"
+#define SUPABASE_BROADCAST_PATH      "/realtime/v1/api/broadcast"
+#define SUPABASE_CHANNEL_TOPIC       "realtime:flipper-bridge"
+#define SUPABASE_HEARTBEAT_MS        30000
+#define SUPABASE_RECONNECT_MS        5000
+#define SUPABASE_DEFAULT_PORT        443
+
 /* ── NVS Keys ─────────────────────────────────────────── */
 #define NVS_NAMESPACE           "huonyx"
 #define NVS_KEY_WIFI_SSID       "wifi_ssid"
@@ -59,5 +77,9 @@
 #define NVS_KEY_GW_USE_SSL      "gw_ssl"
 #define NVS_KEY_BRIGHTNESS      "brightness"
 #define NVS_KEY_TIMEZONE        "timezone"
+#define NVS_KEY_SB_URL          "sb_url"
+#define NVS_KEY_SB_KEY          "sb_key"
+#define NVS_KEY_FLIP_NAME       "flip_name"
+#define NVS_KEY_FLIP_AUTO       "flip_auto"
 
 #endif /* HW_CONFIG_H */

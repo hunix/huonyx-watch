@@ -11,14 +11,27 @@
 #include "hw_config.h"
 
 struct WatchConfig {
+    /* WiFi */
     char     wifiSSID[33];
     char     wifiPass[65];
+
+    /* HoC Gateway */
     char     gwHost[64];
     uint16_t gwPort;
     char     gwToken[128];
     bool     gwUseSSL;
+
+    /* Display */
     uint8_t  brightness;    /* 0-255 */
     int8_t   timezone;      /* UTC offset in hours */
+
+    /* Supabase Realtime Bridge */
+    char     sbUrl[128];    /* Project URL (e.g., "abcdef.supabase.co") */
+    char     sbKey[128];    /* Anon or service key */
+
+    /* Flipper Zero */
+    char     flipperName[32];  /* Target device name (empty = any Flipper) */
+    bool     flipperAuto;      /* Auto-connect on boot */
 };
 
 class ConfigManager {
@@ -39,10 +52,14 @@ public:
     void setGateway(const char* host, uint16_t port, const char* token, bool ssl);
     void setBrightness(uint8_t val);
     void setTimezone(int8_t tz);
+    void setSupabase(const char* url, const char* key);
+    void setFlipper(const char* name, bool autoConnect);
 
     /* Validation */
     bool hasWiFiConfig() const;
     bool hasGatewayConfig() const;
+    bool hasSupabaseConfig() const;
+    bool hasFlipperConfig() const;
 
 private:
     Preferences _prefs;

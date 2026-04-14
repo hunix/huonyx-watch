@@ -17,6 +17,7 @@ GatewayClient::GatewayClient()
     , _onChatDelta(nullptr)
     , _onStateChange(nullptr)
     , _onSessionList(nullptr)
+    , _onFlipperCommand(nullptr)
 {
     memset(_host, 0, sizeof(_host));
     memset(_token, 0, sizeof(_token));
@@ -253,6 +254,17 @@ void GatewayClient::handleEvent(JsonObjectConst doc) {
             if (_onChatDelta) {
                 _onChatDelta(runId, errMsg, true);
             }
+        }
+        return;
+    }
+
+    /* Flipper command event - agent sends flipper commands via gateway */
+    if (strcmp(event, "flipper") == 0) {
+        JsonObjectConst payload = doc["payload"];
+        const char* command = payload["command"] | "";
+        const char* source = payload["source"] | "gateway";
+        if (_onFlipperCommand && strlen(command) > 0) {
+            _onFlipperCommand(command, source);
         }
         return;
     }
