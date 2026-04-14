@@ -46,7 +46,8 @@ $ErrorActionPreference = "Stop"
 #  CONFIGURATION
 # ===================================================================
 
-$BOARD_FQBN = "esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=custom,UploadSpeed=921600"
+# Use min_spiffs which gives maximum app space (~1.9MB) without needing a custom.csv file
+$BOARD_FQBN = "esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=min_spiffs,UploadSpeed=921600"
 $ESP32_CORE_URL = "https://espressif.github.io/arduino-esp32/package_esp32_index.json"
 $ESP32_CORE_VERSION = "3.0.7"
 
@@ -464,7 +465,8 @@ Write-SubStep "Sketch : $SketchDir"
 Write-SubStep "Build  : $buildDir"
 Write-Host ""
 
-$compileOutput   = & $ArduinoCliPath @compileArgs 2>&1
+# Capture both stdout and stderr properly
+$compileOutput   = & $ArduinoCliPath @compileArgs 2>&1 | ForEach-Object { "$_" }
 $compileExitCode = $LASTEXITCODE
 
 if ($Verbose) {
@@ -527,7 +529,7 @@ if (-not $CompileOnly) {
     if ($Verbose) { $uploadArgs += "--verbose" }
     $uploadArgs += $SketchDir
 
-    $uploadOutput   = & $ArduinoCliPath @uploadArgs 2>&1
+    $uploadOutput   = & $ArduinoCliPath @uploadArgs 2>&1 | ForEach-Object { "$_" }
     $uploadExitCode = $LASTEXITCODE
 
     if ($Verbose) {

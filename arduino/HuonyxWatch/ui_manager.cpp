@@ -1209,7 +1209,7 @@ void UIManager::onBrightnessChanged(lv_event_t* e) {
     lv_obj_t* slider = (lv_obj_t*)lv_event_get_target(e);
     int val = lv_slider_get_value(slider);
 
-    analogWrite(PIN_TFT_BL, val);
+    ledcWrite(PIN_TFT_BL, val);
 
     if (self->_cfg) {
         self->_cfg->setBrightness((uint8_t)val);

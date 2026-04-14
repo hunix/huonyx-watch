@@ -7,6 +7,8 @@
 #define GATEWAY_CLIENT_H
 
 #include <Arduino.h>
+#include <WiFi.h>
+#include <WiFiClient.h>      /* Must precede WebSocketsClient on ESP32 core 3.x */
 #include <WebSocketsClient.h>
 #include <ArduinoJson.h>
 #include "hw_config.h"

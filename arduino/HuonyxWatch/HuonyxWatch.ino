@@ -22,6 +22,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiClient.h>      /* Required before WebSockets on ESP32 core 3.x */
 #include <time.h>
 #include <TFT_eSPI.h>
 #include <lvgl.h>
@@ -440,7 +441,9 @@ void setup() {
     tft.init();
     tft.setRotation(0);
     tft.fillScreen(TFT_BLACK);
-    analogWrite(PIN_TFT_BL, 200);
+    /* Backlight PWM - ESP32 core 3.x uses ledcAttach/ledcWrite */
+    ledcAttach(PIN_TFT_BL, 5000, 8);  /* pin, freq 5kHz, 8-bit resolution */
+    ledcWrite(PIN_TFT_BL, 200);
     Serial.println("[INIT] Display initialized");
 
     /* ── Initialize touch ─────────────────────────── */
@@ -480,7 +483,7 @@ void setup() {
                   configMgr.config().flipperAuto);
 
     /* Apply saved brightness */
-    analogWrite(PIN_TFT_BL, configMgr.config().brightness);
+    ledcWrite(PIN_TFT_BL, configMgr.config().brightness);
 
     /* ── Build UI ─────────────────────────────────── */
     ui.begin(&gateway, &configMgr, &flipper, &bridge);
