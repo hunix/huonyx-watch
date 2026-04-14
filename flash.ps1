@@ -27,10 +27,10 @@
     Show detailed compilation output.
 
 .EXAMPLE
-    .\flash.ps1
-    .\flash.ps1 -ComPort COM5
-    .\flash.ps1 -CompileOnly
-    .\flash.ps1 -SkipInstall -ComPort COM3
+    powershell -ExecutionPolicy Bypass -File .\flash.ps1
+    powershell -ExecutionPolicy Bypass -File .\flash.ps1 -ComPort COM5
+    powershell -ExecutionPolicy Bypass -File .\flash.ps1 -CompileOnly
+    powershell -ExecutionPolicy Bypass -File .\flash.ps1 -SkipInstall -ComPort COM3
 #>
 
 param(
@@ -40,11 +40,11 @@ param(
     [switch]$Verbose
 )
 
-# ═══════════════════════════════════════════════════════════
-#  CONFIGURATION
-# ═══════════════════════════════════════════════════════════
-
 $ErrorActionPreference = "Stop"
+
+# ===================================================================
+#  CONFIGURATION
+# ===================================================================
 
 $BOARD_FQBN = "esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=custom,UploadSpeed=921600"
 $ESP32_CORE_URL = "https://espressif.github.io/arduino-esp32/package_esp32_index.json"
@@ -58,7 +58,6 @@ $LIBRARIES = @(
     "NimBLE-Arduino@2.1.1"
 )
 
-# Build flags for NimBLE memory optimization
 $BUILD_EXTRA_FLAGS = @(
     "-DUSER_SETUP_LOADED=1",
     "-DLV_CONF_INCLUDE_SIMPLE=1",
@@ -73,82 +72,79 @@ $BUILD_EXTRA_FLAGS = @(
     "-Os"
 )
 
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 #  HELPER FUNCTIONS
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 
 function Write-Banner {
     Write-Host ""
-    Write-Host "  ╔══════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "  ║     HUONYX AI SMARTWATCH FLASHER v2.1    ║" -ForegroundColor Cyan
-    Write-Host "  ║     ESP32-2424S012 + Flipper Bridge      ║" -ForegroundColor Cyan
-    Write-Host "  ╚══════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "+------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|   HUONYX AI SMARTWATCH FLASHER v2.1      |" -ForegroundColor Cyan
+    Write-Host "|   ESP32-2424S012 + Flipper Bridge         |" -ForegroundColor Cyan
+    Write-Host "+------------------------------------------+" -ForegroundColor Cyan
     Write-Host ""
 }
 
 function Write-Step {
     param([string]$Message)
-    Write-Host "  ► " -ForegroundColor Green -NoNewline
+    Write-Host "  >> " -ForegroundColor Green -NoNewline
     Write-Host $Message
 }
 
 function Write-SubStep {
     param([string]$Message)
-    Write-Host "    • " -ForegroundColor DarkGray -NoNewline
+    Write-Host "     - " -ForegroundColor DarkGray -NoNewline
     Write-Host $Message -ForegroundColor Gray
 }
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "  ✓ " -ForegroundColor Green -NoNewline
+    Write-Host "  [OK] " -ForegroundColor Green -NoNewline
     Write-Host $Message -ForegroundColor Green
 }
 
 function Write-Warn {
     param([string]$Message)
-    Write-Host "  ⚠ " -ForegroundColor Yellow -NoNewline
+    Write-Host "  [!!] " -ForegroundColor Yellow -NoNewline
     Write-Host $Message -ForegroundColor Yellow
 }
 
 function Write-Fail {
     param([string]$Message)
-    Write-Host "  ✗ " -ForegroundColor Red -NoNewline
+    Write-Host "  [XX] " -ForegroundColor Red -NoNewline
     Write-Host $Message -ForegroundColor Red
 }
 
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 #  LOCATE PATHS
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SketchDir = Join-Path (Join-Path $ScriptDir "arduino") "HuonyxWatch"
-$ToolsDir = Join-Path $ScriptDir ".tools"
+$ToolsDir  = Join-Path $ScriptDir ".tools"
 $ArduinoCliPath = ""
 
-# Check if sketch directory exists
 if (-not (Test-Path $SketchDir)) {
     Write-Fail "Sketch directory not found: $SketchDir"
-    Write-Host "  Make sure you're running this script from the huonyx-watch repository root." -ForegroundColor Gray
+    Write-Host "  Make sure you are running this script from the huonyx-watch repository root." -ForegroundColor Gray
     exit 1
 }
 
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 #  STEP 1: INSTALL / LOCATE ARDUINO-CLI
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 
 Write-Banner
 
 if (-not $SkipInstall) {
     Write-Step "Checking for arduino-cli..."
 
-    # Check if arduino-cli is in PATH
     $existing = Get-Command "arduino-cli" -ErrorAction SilentlyContinue
     if ($existing) {
         $ArduinoCliPath = $existing.Source
         Write-Success "Found arduino-cli at: $ArduinoCliPath"
     }
     else {
-        # Check in local .tools directory
         $localCli = Join-Path $ToolsDir "arduino-cli.exe"
         if (Test-Path $localCli) {
             $ArduinoCliPath = $localCli
@@ -158,7 +154,7 @@ if (-not $SkipInstall) {
             Write-Step "Downloading arduino-cli..."
             New-Item -ItemType Directory -Force -Path $ToolsDir | Out-Null
 
-            $cliUrl = "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip"
+            $cliUrl  = "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip"
             $zipPath = Join-Path $ToolsDir "arduino-cli.zip"
 
             try {
@@ -175,24 +171,22 @@ if (-not $SkipInstall) {
                 Write-Host "  Manual install:" -ForegroundColor Yellow
                 Write-Host "    1. Download from https://arduino.github.io/arduino-cli/installation/" -ForegroundColor Gray
                 Write-Host "    2. Place arduino-cli.exe in: $ToolsDir" -ForegroundColor Gray
-                Write-Host "    3. Or add it to your PATH" -ForegroundColor Gray
+                Write-Host "    3. Or add it to your PATH and re-run" -ForegroundColor Gray
                 exit 1
             }
         }
     }
 
-    # ═══════════════════════════════════════════════════════════
+    # ===================================================================
     #  STEP 2: INSTALL ESP32 BOARD SUPPORT
-    # ═══════════════════════════════════════════════════════════
+    # ===================================================================
 
     Write-Step "Configuring ESP32 board support..."
 
-    # Add ESP32 board URL
     & $ArduinoCliPath config init --overwrite 2>$null
     & $ArduinoCliPath config add board_manager.additional_urls $ESP32_CORE_URL 2>$null
     & $ArduinoCliPath core update-index 2>$null
 
-    # Check if ESP32 core is installed
     $installedCores = & $ArduinoCliPath core list --format json 2>$null | ConvertFrom-Json
     $esp32Installed = $false
     if ($installedCores) {
@@ -215,9 +209,9 @@ if (-not $SkipInstall) {
         Write-Success "ESP32 core installed"
     }
 
-    # ═══════════════════════════════════════════════════════════
+    # ===================================================================
     #  STEP 3: INSTALL LIBRARIES
-    # ═══════════════════════════════════════════════════════════
+    # ===================================================================
 
     Write-Step "Installing Arduino libraries..."
 
@@ -226,20 +220,18 @@ if (-not $SkipInstall) {
         Write-SubStep "Installing $lib..."
         & $ArduinoCliPath lib install $lib 2>$null
         if ($LASTEXITCODE -ne 0) {
-            # Try without version constraint
             Write-Warn "Exact version failed, trying latest $libName..."
             & $ArduinoCliPath lib install $libName 2>$null
         }
     }
     Write-Success "All libraries installed"
 
-    # ═══════════════════════════════════════════════════════════
+    # ===================================================================
     #  STEP 4: PATCH TFT_eSPI User_Setup.h
-    # ═══════════════════════════════════════════════════════════
+    # ===================================================================
 
     Write-Step "Patching TFT_eSPI configuration for ESP32-2424S012..."
 
-    # Find TFT_eSPI library path
     $libListJson = & $ArduinoCliPath lib list --format json 2>$null | ConvertFrom-Json
     $tftEspiPath = ""
 
@@ -252,7 +244,6 @@ if (-not $SkipInstall) {
         }
     }
 
-    # Fallback: search common Arduino library paths
     if (-not $tftEspiPath -or -not (Test-Path $tftEspiPath)) {
         $searchPaths = @(
             "$env:USERPROFILE\Documents\Arduino\libraries\TFT_eSPI",
@@ -260,38 +251,33 @@ if (-not $SkipInstall) {
             "$env:USERPROFILE\Arduino\libraries\TFT_eSPI"
         )
         foreach ($p in $searchPaths) {
-            if (Test-Path $p) {
-                $tftEspiPath = $p
-                break
-            }
+            if (Test-Path $p) { $tftEspiPath = $p; break }
         }
     }
 
     if ($tftEspiPath -and (Test-Path $tftEspiPath)) {
         $userSetupSrc = Join-Path $SketchDir "User_Setup.h"
         $userSetupDst = Join-Path $tftEspiPath "User_Setup.h"
+        $backupPath   = Join-Path $tftEspiPath "User_Setup.h.backup"
 
-        # Backup original
-        $backupPath = Join-Path $tftEspiPath "User_Setup.h.backup"
         if (-not (Test-Path $backupPath)) {
             Copy-Item $userSetupDst $backupPath -Force -ErrorAction SilentlyContinue
             Write-SubStep "Original User_Setup.h backed up"
         }
 
         Copy-Item $userSetupSrc $userSetupDst -Force
-        Write-Success "TFT_eSPI patched with GC9A01 config at: $tftEspiPath"
+        Write-Success "TFT_eSPI patched at: $tftEspiPath"
     }
     else {
-        Write-Warn "Could not find TFT_eSPI library path. You may need to manually copy User_Setup.h"
+        Write-Warn "Could not find TFT_eSPI library path. Copy User_Setup.h manually."
     }
 
-    # ═══════════════════════════════════════════════════════════
+    # ===================================================================
     #  STEP 5: PLACE lv_conf.h FOR LVGL
-    # ═══════════════════════════════════════════════════════════
+    # ===================================================================
 
     Write-Step "Configuring LVGL..."
 
-    # LVGL expects lv_conf.h one level above its library folder
     $lvglPath = ""
     if ($libListJson -and $libListJson.installed_libraries) {
         foreach ($entry in $libListJson.installed_libraries) {
@@ -303,24 +289,22 @@ if (-not $SkipInstall) {
     }
 
     if ($lvglPath -and (Test-Path $lvglPath)) {
-        $lvglParent = Split-Path -Parent $lvglPath
-        $lvConfSrc = Join-Path $SketchDir "lv_conf.h"
-        $lvConfDst = Join-Path $lvglParent "lv_conf.h"
+        $lvglParent  = Split-Path -Parent $lvglPath
+        $lvConfSrc   = Join-Path $SketchDir "lv_conf.h"
+        $lvConfDst   = Join-Path $lvglParent "lv_conf.h"
         Copy-Item $lvConfSrc $lvConfDst -Force
         Write-Success "lv_conf.h placed at: $lvConfDst"
 
-        # Also copy into the lvgl/src directory as a fallback
         $lvConfDst2 = Join-Path (Join-Path $lvglPath "src") "lv_conf.h"
         Copy-Item $lvConfSrc $lvConfDst2 -Force -ErrorAction SilentlyContinue
         Write-SubStep "Also copied to lvgl/src/ as fallback"
     }
     else {
-        Write-Warn "Could not find LVGL library path. lv_conf.h may need manual placement."
+        Write-Warn "Could not find LVGL library path. Place lv_conf.h manually next to the lvgl folder."
     }
 }
 else {
-    Write-Step "Skipping installation (--SkipInstall)"
-    # Find arduino-cli
+    Write-Step "Skipping installation (-SkipInstall)"
     $existing = Get-Command "arduino-cli" -ErrorAction SilentlyContinue
     if ($existing) {
         $ArduinoCliPath = $existing.Source
@@ -337,37 +321,37 @@ else {
     }
 }
 
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 #  STEP 6: COPY CUSTOM PARTITIONS
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 
 Write-Step "Setting up custom partition table..."
 
-# Find the ESP32 core hardware directory to place custom partitions
-$esp32HwPath = ""
 $configDump = & $ArduinoCliPath config dump --format json 2>$null | ConvertFrom-Json
 $dataDir = ""
 if ($configDump -and $configDump.directories -and $configDump.directories.data) {
     $dataDir = $configDump.directories.data
 }
-if (-not $dataDir) {
-    $dataDir = "$env:LOCALAPPDATA\Arduino15"
-}
+if (-not $dataDir) { $dataDir = "$env:LOCALAPPDATA\Arduino15" }
 
-# Search for the ESP32-C3 boards.txt to find the hardware path
 $boardsTxt = Get-ChildItem -Path $dataDir -Recurse -Filter "boards.txt" -ErrorAction SilentlyContinue |
     Where-Object { $_.FullName -match "esp32[/\\]esp32" } |
     Select-Object -First 1
 
 if ($boardsTxt) {
-    $esp32HwPath = Split-Path -Parent $boardsTxt.FullName
+    $esp32HwPath   = Split-Path -Parent $boardsTxt.FullName
     $partitionsDst = Join-Path (Join-Path $esp32HwPath "tools") "partitions"
 
     if (Test-Path $partitionsDst) {
         $customPartFile = Join-Path $partitionsDst "custom.csv"
-        $partitionsSrc = Join-Path $SketchDir "partitions.csv"
-        Copy-Item $partitionsSrc $customPartFile -Force
-        Write-Success "Custom partition table installed"
+        $partitionsSrc  = Join-Path $SketchDir "partitions.csv"
+        if (Test-Path $partitionsSrc) {
+            Copy-Item $partitionsSrc $customPartFile -Force
+            Write-Success "Custom partition table installed"
+        }
+        else {
+            Write-Warn "partitions.csv not found in sketch folder. Using default partitions."
+        }
     }
     else {
         Write-Warn "Partitions directory not found. Using default partitions."
@@ -377,9 +361,9 @@ else {
     Write-Warn "ESP32 hardware path not found. Using default partitions."
 }
 
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 #  STEP 7: DETECT COM PORT
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 
 if (-not $CompileOnly) {
     if (-not $ComPort) {
@@ -390,10 +374,9 @@ if (-not $CompileOnly) {
 
         if ($boards) {
             foreach ($board in $boards) {
-                $portAddr = ""
+                $portAddr  = ""
                 $boardName = ""
 
-                # Handle different JSON structures
                 if ($board.port -and $board.port.address) {
                     $portAddr = $board.port.address
                 }
@@ -410,7 +393,6 @@ if (-not $CompileOnly) {
                     }
                 }
 
-                # Also check by port protocol (serial) and common USB-serial chips
                 if ($portAddr -match "^COM\d+$") {
                     if ($boardName) {
                         $detectedPort = $portAddr
@@ -418,7 +400,6 @@ if (-not $CompileOnly) {
                         break
                     }
                     elseif (-not $detectedPort) {
-                        # Keep first COM port as fallback
                         $detectedPort = $portAddr
                     }
                 }
@@ -426,7 +407,6 @@ if (-not $CompileOnly) {
         }
 
         if (-not $detectedPort) {
-            # Fallback: check Windows serial ports
             $serialPorts = [System.IO.Ports.SerialPort]::GetPortNames()
             if ($serialPorts.Count -gt 0) {
                 $detectedPort = $serialPorts[0]
@@ -444,7 +424,7 @@ if (-not $CompileOnly) {
             Write-Host "    1. Connect the ESP32-2424S012 via USB-C" -ForegroundColor Gray
             Write-Host "    2. Install CH340/CP2102 USB driver if needed" -ForegroundColor Gray
             Write-Host "    3. Check Device Manager for COM port" -ForegroundColor Gray
-            Write-Host "    4. Run with: .\flash.ps1 -ComPort COM5" -ForegroundColor Gray
+            Write-Host "    4. Run with: powershell -ExecutionPolicy Bypass -File .\flash.ps1 -ComPort COM5" -ForegroundColor Gray
             Write-Host ""
             $CompileOnly = $true
             Write-Warn "Switching to compile-only mode"
@@ -455,9 +435,9 @@ if (-not $CompileOnly) {
     }
 }
 
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 #  STEP 8: COMPILE
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 
 Write-Step "Compiling firmware (this may take 2-5 minutes on first build)..."
 Write-Host ""
@@ -465,7 +445,6 @@ Write-Host ""
 $buildDir = Join-Path $ScriptDir ".build"
 New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
 
-# Build the extra flags string
 $extraFlagsStr = $BUILD_EXTRA_FLAGS -join " "
 
 $compileArgs = @(
@@ -477,18 +456,15 @@ $compileArgs = @(
     "--warnings", "none"
 )
 
-if ($Verbose) {
-    $compileArgs += "--verbose"
-}
-
+if ($Verbose) { $compileArgs += "--verbose" }
 $compileArgs += $SketchDir
 
-Write-SubStep "FQBN: $BOARD_FQBN"
-Write-SubStep "Sketch: $SketchDir"
-Write-SubStep "Build dir: $buildDir"
+Write-SubStep "FQBN   : $BOARD_FQBN"
+Write-SubStep "Sketch : $SketchDir"
+Write-SubStep "Build  : $buildDir"
 Write-Host ""
 
-$compileOutput = & $ArduinoCliPath @compileArgs 2>&1
+$compileOutput   = & $ArduinoCliPath @compileArgs 2>&1
 $compileExitCode = $LASTEXITCODE
 
 if ($Verbose) {
@@ -499,7 +475,6 @@ if ($compileExitCode -ne 0) {
     Write-Fail "Compilation failed!"
     Write-Host ""
 
-    # Show last 30 lines of output for error diagnosis
     $errorLines = ($compileOutput | Select-Object -Last 30)
     foreach ($line in $errorLines) {
         $lineStr = "$line"
@@ -516,33 +491,30 @@ if ($compileExitCode -ne 0) {
 
     Write-Host ""
     Write-Host "  Common fixes:" -ForegroundColor Yellow
-    Write-Host "    • Ensure all libraries are installed (run without -SkipInstall)" -ForegroundColor Gray
-    Write-Host "    • Check that User_Setup.h was copied to TFT_eSPI library folder" -ForegroundColor Gray
-    Write-Host "    • Check that lv_conf.h was placed next to the lvgl library folder" -ForegroundColor Gray
-    Write-Host "    • Try: .\flash.ps1 -Verbose for full output" -ForegroundColor Gray
+    Write-Host "    - Run without -SkipInstall to reinstall all libraries" -ForegroundColor Gray
+    Write-Host "    - Check that User_Setup.h was copied to the TFT_eSPI library folder" -ForegroundColor Gray
+    Write-Host "    - Check that lv_conf.h was placed next to the lvgl library folder" -ForegroundColor Gray
+    Write-Host "    - Run with -Verbose for full compiler output" -ForegroundColor Gray
     exit 1
 }
 
-# Parse size info from output
 $sizeLines = $compileOutput | Where-Object { "$_" -match "Sketch uses|Global variables" }
-foreach ($sl in $sizeLines) {
-    Write-SubStep "$sl"
-}
+foreach ($sl in $sizeLines) { Write-SubStep "$sl" }
 
 Write-Success "Compilation successful!"
 Write-Host ""
 
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 #  STEP 9: UPLOAD
-# ═══════════════════════════════════════════════════════════
+# ===================================================================
 
 if (-not $CompileOnly) {
     Write-Step "Uploading firmware to $ComPort..."
     Write-Host ""
-    Write-Host "    ┌──────────────────────────────────────────────────┐" -ForegroundColor DarkYellow
-    Write-Host "    │  If upload fails, hold the BOOT button on the   │" -ForegroundColor DarkYellow
-    Write-Host "    │  board while pressing RST, then try again.      │" -ForegroundColor DarkYellow
-    Write-Host "    └──────────────────────────────────────────────────┘" -ForegroundColor DarkYellow
+    Write-Host "    +--------------------------------------------------+" -ForegroundColor DarkYellow
+    Write-Host "    |  If upload fails, hold BOOT button on the board  |" -ForegroundColor DarkYellow
+    Write-Host "    |  while pressing RST, then release BOOT and retry.|" -ForegroundColor DarkYellow
+    Write-Host "    +--------------------------------------------------+" -ForegroundColor DarkYellow
     Write-Host ""
 
     $uploadArgs = @(
@@ -552,13 +524,10 @@ if (-not $CompileOnly) {
         "--input-dir", $buildDir
     )
 
-    if ($Verbose) {
-        $uploadArgs += "--verbose"
-    }
-
+    if ($Verbose) { $uploadArgs += "--verbose" }
     $uploadArgs += $SketchDir
 
-    $uploadOutput = & $ArduinoCliPath @uploadArgs 2>&1
+    $uploadOutput   = & $ArduinoCliPath @uploadArgs 2>&1
     $uploadExitCode = $LASTEXITCODE
 
     if ($Verbose) {
@@ -570,15 +539,13 @@ if (-not $CompileOnly) {
         Write-Host ""
 
         $errorLines = ($uploadOutput | Select-Object -Last 15)
-        foreach ($line in $errorLines) {
-            Write-Host "    $line" -ForegroundColor DarkGray
-        }
+        foreach ($line in $errorLines) { Write-Host "    $line" -ForegroundColor DarkGray }
 
         Write-Host ""
         Write-Host "  Troubleshooting:" -ForegroundColor Yellow
-        Write-Host "    1. Hold BOOT button, press RST, release BOOT, then retry" -ForegroundColor Gray
+        Write-Host "    1. Hold BOOT, press RST, release BOOT, then retry" -ForegroundColor Gray
         Write-Host "    2. Check that the correct COM port is selected" -ForegroundColor Gray
-        Write-Host "    3. Close any Serial Monitor that might be using the port" -ForegroundColor Gray
+        Write-Host "    3. Close any Serial Monitor that may be using the port" -ForegroundColor Gray
         Write-Host "    4. Try a different USB cable (some are charge-only)" -ForegroundColor Gray
         Write-Host "    5. Install CH340 or CP2102 USB-to-Serial driver" -ForegroundColor Gray
         exit 1
@@ -587,20 +554,16 @@ if (-not $CompileOnly) {
     Write-Success "Firmware uploaded successfully!"
     Write-Host ""
 
-    # ═══════════════════════════════════════════════════════════
-    #  STEP 10: OPEN SERIAL MONITOR
-    # ═══════════════════════════════════════════════════════════
-
-    Write-Host "  ╔══════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "  ║         FLASH COMPLETE!                  ║" -ForegroundColor Green
-    Write-Host "  ╚══════════════════════════════════════════╝" -ForegroundColor Green
+    Write-Host "+------------------------------------------+" -ForegroundColor Green
+    Write-Host "|          FLASH COMPLETE!                  |" -ForegroundColor Green
+    Write-Host "+------------------------------------------+" -ForegroundColor Green
     Write-Host ""
     Write-Host "  Next steps:" -ForegroundColor Cyan
     Write-Host "    1. The watch will boot and show the HUONYX watch face" -ForegroundColor White
-    Write-Host "    2. Connect to WiFi AP: HuonyxWatch (pass: huonyx2024)" -ForegroundColor White
+    Write-Host "    2. Connect to WiFi AP: HuonyxWatch  (pass: huonyx2024)" -ForegroundColor White
     Write-Host "    3. Open http://192.168.4.1/setup in your browser" -ForegroundColor White
     Write-Host "    4. Enter your WiFi, Gateway Host, and Gateway Token" -ForegroundColor White
-    Write-Host "    5. Save & Restart - you're connected!" -ForegroundColor White
+    Write-Host "    5. Save & Restart - you are connected!" -ForegroundColor White
     Write-Host ""
 
     $openMonitor = Read-Host "  Open Serial Monitor? (y/n)"
@@ -613,13 +576,13 @@ if (-not $CompileOnly) {
 }
 else {
     Write-Host ""
-    Write-Host "  ╔══════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "  ║       COMPILATION COMPLETE!              ║" -ForegroundColor Green
-    Write-Host "  ╚══════════════════════════════════════════╝" -ForegroundColor Green
+    Write-Host "+------------------------------------------+" -ForegroundColor Green
+    Write-Host "|       COMPILATION COMPLETE!               |" -ForegroundColor Green
+    Write-Host "+------------------------------------------+" -ForegroundColor Green
     Write-Host ""
     Write-Host "  Binary location: $buildDir\HuonyxWatch.ino.bin" -ForegroundColor Gray
     Write-Host ""
     Write-Host "  To upload later:" -ForegroundColor Cyan
-    Write-Host "    .\flash.ps1 -SkipInstall -ComPort COM5" -ForegroundColor White
+    Write-Host "    powershell -ExecutionPolicy Bypass -File .\flash.ps1 -SkipInstall -ComPort COM5" -ForegroundColor White
     Write-Host ""
 }
