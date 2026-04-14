@@ -125,7 +125,7 @@ void FlipperBLE::begin() {
     NimBLEDevice::init("HuonyxWatch");
 
     /* Set power level for reasonable range */
-    NimBLEDevice::setPower(ESP_PWR_LVL_P6);
+    NimBLEDevice::setPower(6);  /* +6 dBm, NimBLE 2.x uses int dBm */
 
     /* Get the scan object */
     s_pScan = NimBLEDevice::getScan();
@@ -289,7 +289,7 @@ void FlipperBLE::startScan(const char* targetName) {
 
     /* Start async scan */
     s_pScan->clearResults();
-    s_pScan->start(FLIPPER_SCAN_TIMEOUT_SEC, false);
+    s_pScan->start(FLIPPER_SCAN_TIMEOUT_SEC * 1000);  /* NimBLE 2.x: duration in ms */
 }
 
 void FlipperBLE::stopScan() {

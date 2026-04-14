@@ -41,7 +41,7 @@ public:
     void update();
 
     /* Screen navigation */
-    void showScreen(ScreenId id, lv_scr_load_anim_t anim = LV_SCR_LOAD_ANIM_MOVE_LEFT);
+    void showScreen(ScreenId id, lv_screen_load_anim_t anim = LV_SCR_LOAD_ANIM_MOVE_LEFT);
     ScreenId currentScreen() const { return _currentScreen; }
 
     /* Watch face updates */

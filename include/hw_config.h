@@ -8,7 +8,7 @@
 
 /* ── Board Identification ─────────────────────────────── */
 #define BOARD_NAME          "ESP32-2424S012"
-#define FIRMWARE_VERSION    "2.0.0"
+#define FIRMWARE_VERSION    "2.1.0"
 #define FIRMWARE_NAME       "Huonyx Watch"
 
 /* ── Display (GC9A01 via SPI) ─────────────────────────── */

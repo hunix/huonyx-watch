@@ -13,6 +13,9 @@
 #include <Arduino.h>
 #include "hw_config.h"
 
+/* Forward declaration for NimBLE */
+class NimBLERemoteCharacteristic;
+
 /* Flipper connection states */
 enum FlipperState : uint8_t {
     FLIP_IDLE = 0,        /* Not scanning or connecting */
@@ -131,6 +134,7 @@ private:
     /* NimBLE callbacks are handled via static friend functions */
     friend class FlipperBLECallbacks;
     friend class FlipperBLEAdvCallbacks;
+    friend void notifyCallback(NimBLERemoteCharacteristic*, uint8_t*, size_t, bool);
 
     static FlipperBLE* _instance;
 };

@@ -202,7 +202,7 @@ void SupabaseBridge::sendHeartbeat() {
     _ws.sendTXT(output);
 }
 
-void SupabaseBridge::sendBroadcast(const char* event, JsonObject& payload) {
+void SupabaseBridge::sendBroadcast(const char* event, JsonObject payload) {
     if (_state != BRIDGE_JOINED) return;
 
     JsonDocument doc;
@@ -217,7 +217,7 @@ void SupabaseBridge::sendBroadcast(const char* event, JsonObject& payload) {
 
     /* Copy the inner payload */
     JsonObject innerPayload = outerPayload["payload"].to<JsonObject>();
-    for (JsonPairConst kv : payload) {
+    for (JsonPair kv : payload) {
         innerPayload[kv.key()] = kv.value();
     }
 

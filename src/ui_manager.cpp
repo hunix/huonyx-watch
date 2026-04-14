@@ -81,7 +81,7 @@ void UIManager::begin(GatewayClient* gw, ConfigManager* cfg,
     buildSessionsScreen();
 
     /* Start with watch face */
-    lv_scr_load(_scrWatchface);
+    lv_screen_load(_scrWatchface);
 }
 
 void UIManager::update() {
@@ -182,7 +182,7 @@ lv_obj_t* UIManager::createRoundScreen() {
     lv_obj_add_style(scr, &_styleBg, 0);
     lv_obj_set_size(scr, TFT_WIDTH, TFT_HEIGHT);
     lv_obj_set_scrollbar_mode(scr, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
     return scr;
 }
 
@@ -206,7 +206,7 @@ void UIManager::buildWatchface() {
     lv_obj_set_style_arc_color(ringOuter, COL_PRIMARY, LV_PART_INDICATOR);
     lv_obj_set_style_arc_width(ringOuter, 2, LV_PART_INDICATOR);
     lv_obj_set_style_arc_opa(ringOuter, LV_OPA_40, LV_PART_INDICATOR);
-    lv_obj_clear_flag(ringOuter, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_remove_flag(ringOuter, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_bg_opa(ringOuter, LV_OPA_TRANSP, LV_PART_KNOB);
 
     /* ── Time display ───────────────────────────────── */
@@ -250,7 +250,7 @@ void UIManager::buildWatchface() {
     lv_obj_set_style_arc_width(_arcBattery, 4, LV_PART_MAIN);
     lv_obj_set_style_arc_color(_arcBattery, COL_ACCENT, LV_PART_INDICATOR);
     lv_obj_set_style_arc_width(_arcBattery, 4, LV_PART_INDICATOR);
-    lv_obj_clear_flag(_arcBattery, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_remove_flag(_arcBattery, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_bg_opa(_arcBattery, LV_OPA_TRANSP, LV_PART_KNOB);
 
     _lblBatteryPct = lv_label_create(_arcBattery);
@@ -329,7 +329,7 @@ void UIManager::buildChatScreen() {
     lv_obj_set_size(_chatHeader, 200, 32);
     lv_obj_align(_chatHeader, LV_ALIGN_TOP_MID, 0, 15);
     lv_obj_set_style_radius(_chatHeader, 16, 0);
-    lv_obj_clear_flag(_chatHeader, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(_chatHeader, LV_OBJ_FLAG_SCROLLABLE);
 
     _lblChatTitle = lv_label_create(_chatHeader);
     lv_label_set_text(_lblChatTitle, LV_SYMBOL_LEFT "  Huonyx Agent");
@@ -351,7 +351,8 @@ void UIManager::buildChatScreen() {
     lv_obj_set_scroll_dir(_chatList, LV_DIR_VER);
 
     /* ── Typing indicator (spinner) ─────────────────── */
-    _spinnerTyping = lv_spinner_create(_scrChat, 1000, 60);
+    _spinnerTyping = lv_spinner_create(_scrChat);
+    lv_spinner_set_anim_params(_spinnerTyping, 1000, 60);
     lv_obj_set_size(_spinnerTyping, 20, 20);
     lv_obj_align(_spinnerTyping, LV_ALIGN_CENTER, -80, 55);
     lv_obj_set_style_arc_color(_spinnerTyping, COL_PRIMARY, LV_PART_INDICATOR);
@@ -373,7 +374,7 @@ void UIManager::buildChatScreen() {
     lv_obj_set_style_pad_gap(_panelQuickReplies, 4, 0);
 
     for (int i = 0; i < QUICK_REPLY_COUNT; i++) {
-        _btnQuickReply[i] = lv_btn_create(_panelQuickReplies);
+        _btnQuickReply[i] = lv_button_create(_panelQuickReplies);
         lv_obj_add_style(_btnQuickReply[i], &_styleBtn, 0);
         lv_obj_add_style(_btnQuickReply[i], &_styleBtnPressed, LV_STATE_PRESSED);
         lv_obj_set_height(_btnQuickReply[i], 24);
@@ -402,7 +403,7 @@ void UIManager::buildFlipperScreen() {
     lv_obj_set_size(header, 200, 32);
     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 15);
     lv_obj_set_style_radius(header, 16, 0);
-    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(header, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t* lblTitle = lv_label_create(header);
     lv_label_set_text(lblTitle, LV_SYMBOL_LEFT "  Flipper Zero");
@@ -443,7 +444,7 @@ void UIManager::buildFlipperScreen() {
     lv_obj_set_scroll_dir(_flipperLogList, LV_DIR_VER);
 
     /* ── Action buttons ─────────────────────────────── */
-    _btnFlipperScan = lv_btn_create(_scrFlipper);
+    _btnFlipperScan = lv_button_create(_scrFlipper);
     lv_obj_add_style(_btnFlipperScan, &_styleBtn, 0);
     lv_obj_add_style(_btnFlipperScan, &_styleBtnPressed, LV_STATE_PRESSED);
     lv_obj_set_size(_btnFlipperScan, 80, 30);
@@ -456,7 +457,7 @@ void UIManager::buildFlipperScreen() {
     lv_obj_center(lblScan);
     lv_obj_add_event_cb(_btnFlipperScan, onFlipperScan, LV_EVENT_CLICKED, this);
 
-    _btnFlipperDisconnect = lv_btn_create(_scrFlipper);
+    _btnFlipperDisconnect = lv_button_create(_scrFlipper);
     lv_obj_add_style(_btnFlipperDisconnect, &_styleBtn, 0);
     lv_obj_add_style(_btnFlipperDisconnect, &_styleBtnPressed, LV_STATE_PRESSED);
     lv_obj_set_size(_btnFlipperDisconnect, 80, 30);
@@ -511,7 +512,7 @@ void UIManager::buildQuickSettings() {
     lv_obj_align(_lblBrightnessVal, LV_ALIGN_CENTER, 0, 12);
 
     /* WiFi button */
-    _btnWifi = lv_btn_create(_scrQuickSettings);
+    _btnWifi = lv_button_create(_scrQuickSettings);
     lv_obj_add_style(_btnWifi, &_styleBtn, 0);
     lv_obj_add_style(_btnWifi, &_styleBtnPressed, LV_STATE_PRESSED);
     lv_obj_set_size(_btnWifi, 80, 36);
@@ -522,7 +523,7 @@ void UIManager::buildQuickSettings() {
     lv_obj_center(lblW);
 
     /* Settings button */
-    _btnSettings = lv_btn_create(_scrQuickSettings);
+    _btnSettings = lv_button_create(_scrQuickSettings);
     lv_obj_add_style(_btnSettings, &_styleBtn, 0);
     lv_obj_add_style(_btnSettings, &_styleBtnPressed, LV_STATE_PRESSED);
     lv_obj_set_size(_btnSettings, 80, 36);
@@ -557,7 +558,7 @@ void UIManager::buildSettingsScreen() {
     lv_obj_set_size(header, 200, 32);
     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 15);
     lv_obj_set_style_radius(header, 16, 0);
-    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(header, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t* lblTitle = lv_label_create(header);
     lv_label_set_text(lblTitle, LV_SYMBOL_LEFT "  Settings");
@@ -617,7 +618,7 @@ void UIManager::buildWifiSetup() {
     lv_obj_set_size(header, 200, 32);
     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 15);
     lv_obj_set_style_radius(header, 16, 0);
-    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(header, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t* lblTitle = lv_label_create(header);
     lv_label_set_text(lblTitle, LV_SYMBOL_LEFT "  WiFi");
@@ -655,7 +656,7 @@ void UIManager::buildGatewaySetup() {
     lv_obj_set_size(header, 200, 32);
     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 15);
     lv_obj_set_style_radius(header, 16, 0);
-    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(header, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t* lblTitle = lv_label_create(header);
     lv_label_set_text(lblTitle, LV_SYMBOL_LEFT "  Gateway");
@@ -701,7 +702,7 @@ void UIManager::buildSupabaseSetup() {
     lv_obj_set_size(header, 200, 32);
     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 15);
     lv_obj_set_style_radius(header, 16, 0);
-    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(header, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t* lblTitle = lv_label_create(header);
     lv_label_set_text(lblTitle, LV_SYMBOL_LEFT "  Supabase");
@@ -748,7 +749,7 @@ void UIManager::buildFlipperSetup() {
     lv_obj_set_size(header, 200, 32);
     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 15);
     lv_obj_set_style_radius(header, 16, 0);
-    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(header, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t* lblTitle = lv_label_create(header);
     lv_label_set_text(lblTitle, LV_SYMBOL_LEFT "  Flipper BLE");
@@ -795,7 +796,7 @@ void UIManager::buildSessionsScreen() {
     lv_obj_set_size(header, 200, 32);
     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 15);
     lv_obj_set_style_radius(header, 16, 0);
-    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(header, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t* lblTitle = lv_label_create(header);
     lv_label_set_text(lblTitle, LV_SYMBOL_LEFT "  Sessions");
@@ -826,7 +827,7 @@ void UIManager::buildSessionsScreen() {
  *  SCREEN NAVIGATION
  * ══════════════════════════════════════════════════════════ */
 
-void UIManager::showScreen(ScreenId id, lv_scr_load_anim_t anim) {
+void UIManager::showScreen(ScreenId id, lv_screen_load_anim_t anim) {
     lv_obj_t* target = nullptr;
 
     switch (id) {
@@ -845,7 +846,7 @@ void UIManager::showScreen(ScreenId id, lv_scr_load_anim_t anim) {
 
     if (target) {
         _currentScreen = id;
-        lv_scr_load_anim(target, anim, 300, 0, false);
+        lv_screen_load_anim(target, anim, 300, 0, false);
     }
 }
 
@@ -1065,7 +1066,7 @@ void UIManager::addChatBubble(const char* text, bool isUser) {
     if (_chatMsgCount >= CHAT_MAX_MESSAGES) {
         lv_obj_t* first = lv_obj_get_child(_chatList, 0);
         if (first) {
-            lv_obj_del(first);
+            lv_obj_delete(first);
             _chatMsgCount--;
         }
     }
@@ -1075,11 +1076,11 @@ void UIManager::addChatBubble(const char* text, bool isUser) {
     lv_obj_set_style_bg_opa(row, LV_OPA_TRANSP, 0);
     lv_obj_set_style_border_width(row, 0, 0);
     lv_obj_set_style_pad_all(row, 0, 0);
-    lv_obj_clear_flag(row, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(row, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t* bubble = lv_obj_create(row);
     lv_obj_set_size(bubble, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_clear_flag(bubble, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(bubble, LV_OBJ_FLAG_SCROLLABLE);
 
     if (isUser) {
         lv_obj_add_style(bubble, &_styleBubbleUser, 0);
@@ -1096,13 +1097,13 @@ void UIManager::addChatBubble(const char* text, bool isUser) {
     lv_obj_set_width(lbl, 150);
 
     _chatMsgCount++;
-    lv_obj_scroll_to_y(_chatList, LV_COORD_MAX, LV_ANIM_ON);
+    lv_obj_scroll_to_y(_chatList, 32767, LV_ANIM_ON);
 }
 
 void UIManager::updateAgentTyping(bool typing) {
     if (!_spinnerTyping) return;
     if (typing) {
-        lv_obj_clear_flag(_spinnerTyping, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_remove_flag(_spinnerTyping, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(_spinnerTyping, LV_OBJ_FLAG_HIDDEN);
     }
@@ -1110,7 +1111,7 @@ void UIManager::updateAgentTyping(bool typing) {
 
 void UIManager::clearChat() {
     if (!_chatList) return;
-    lv_obj_clean(_chatList);
+    lv_obj_delete_children(_chatList);
     _chatMsgCount = 0;
 }
 
@@ -1129,14 +1130,14 @@ void UIManager::addFlipperLogEntry(const char* text, bool isCommand) {
     if (_flipperLogCount >= 6) {
         lv_obj_t* first = lv_obj_get_child(_flipperLogList, 0);
         if (first) {
-            lv_obj_del(first);
+            lv_obj_delete(first);
             _flipperLogCount--;
         }
     }
 
     lv_obj_t* entry = lv_obj_create(_flipperLogList);
     lv_obj_set_size(entry, LV_PCT(100), LV_SIZE_CONTENT);
-    lv_obj_clear_flag(entry, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(entry, LV_OBJ_FLAG_SCROLLABLE);
 
     if (isCommand) {
         lv_obj_add_style(entry, &_styleCmdLog, 0);
@@ -1154,7 +1155,7 @@ void UIManager::addFlipperLogEntry(const char* text, bool isCommand) {
     lv_obj_set_width(lbl, 180);
 
     _flipperLogCount++;
-    lv_obj_scroll_to_y(_flipperLogList, LV_COORD_MAX, LV_ANIM_ON);
+    lv_obj_scroll_to_y(_flipperLogList, 32767, LV_ANIM_ON);
 }
 
 void UIManager::updateFlipperInfo(const char* deviceName, int rssi) {
@@ -1187,7 +1188,7 @@ void UIManager::updateSettingsValues() {
 
 void UIManager::onQuickReplyClicked(lv_event_t* e) {
     UIManager* self = (UIManager*)lv_event_get_user_data(e);
-    lv_obj_t* btn = lv_event_get_target(e);
+    lv_obj_t* btn = (lv_obj_t*)lv_event_get_target(e);
 
     for (int i = 0; i < QUICK_REPLY_COUNT; i++) {
         if (btn == self->_btnQuickReply[i]) {
@@ -1205,7 +1206,7 @@ void UIManager::onQuickReplyClicked(lv_event_t* e) {
 
 void UIManager::onBrightnessChanged(lv_event_t* e) {
     UIManager* self = (UIManager*)lv_event_get_user_data(e);
-    lv_obj_t* slider = lv_event_get_target(e);
+    lv_obj_t* slider = (lv_obj_t*)lv_event_get_target(e);
     int val = lv_slider_get_value(slider);
 
     analogWrite(PIN_TFT_BL, val);
@@ -1221,7 +1222,7 @@ void UIManager::onBrightnessChanged(lv_event_t* e) {
 
 void UIManager::onSettingsItemClicked(lv_event_t* e) {
     UIManager* self = (UIManager*)lv_event_get_user_data(e);
-    lv_obj_t* btn = lv_event_get_target(e);
+    lv_obj_t* btn = (lv_obj_t*)lv_event_get_target(e);
 
     if (btn == self->_btnSettings) {
         self->showScreen(SCREEN_SETTINGS, LV_SCR_LOAD_ANIM_MOVE_LEFT);
@@ -1293,7 +1294,7 @@ void UIManager::onFlipperDisconnect(lv_event_t* e) {
 
 void UIManager::onGestureEvent(lv_event_t* e) {
     UIManager* self = (UIManager*)lv_event_get_user_data(e);
-    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
 
     switch (self->_currentScreen) {
         case SCREEN_WATCHFACE:

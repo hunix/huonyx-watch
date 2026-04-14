@@ -105,7 +105,7 @@ private:
     void setState(BridgeState s);
     void sendJoin();
     void sendHeartbeat();
-    void sendBroadcast(const char* event, JsonObject& payload);
+    void sendBroadcast(const char* event, JsonObject payload);
     void handleMessage(uint8_t* payload, size_t length);
     void handleBroadcast(JsonObjectConst payload);
     String nextRef();

@@ -46,10 +46,10 @@ Go to **Sketch > Include Library > Manage Libraries...** and install the followi
 | Library Name | Version | Purpose |
 |--------------|---------|---------|
 | **TFT_eSPI** by Bodmer | `2.5.43` | Display driver |
-| **lvgl** by kisvegabor | `8.4.0` | UI framework |
+| **lvgl** by kisvegabor | `9.2.x` | UI framework |
 | **ArduinoJson** by Benoit Blanchon | `7.2.1` | JSON parsing for config |
 | **WebSockets** by Markus Sattler | `2.6.1` | HoC Gateway connection |
-| **NimBLE-Arduino** by h2zero | `1.4.3` | Memory-efficient BLE for Flipper |
+| **NimBLE-Arduino** by h2zero | `2.1.x` | Memory-efficient BLE for Flipper |
 
 ---
 

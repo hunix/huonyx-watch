@@ -52,17 +52,16 @@ $ESP32_CORE_VERSION = "3.0.7"
 
 $LIBRARIES = @(
     "TFT_eSPI@2.5.43",
-    "lvgl@8.4.0",
+    "lvgl@9.2.2",
     "ArduinoJson@7.2.1",
     "WebSockets@2.6.1",
-    "NimBLE-Arduino@1.4.3"
+    "NimBLE-Arduino@2.1.1"
 )
 
 # Build flags for NimBLE memory optimization
 $BUILD_EXTRA_FLAGS = @(
     "-DUSER_SETUP_LOADED=1",
     "-DLV_CONF_INCLUDE_SIMPLE=1",
-    "-DLV_TICK_CUSTOM=1",
     "-DCONFIG_BT_NIMBLE_ROLE_CENTRAL=1",
     "-DCONFIG_BT_NIMBLE_ROLE_PERIPHERAL=0",
     "-DCONFIG_BT_NIMBLE_ROLE_BROADCASTER=0",
@@ -81,7 +80,7 @@ $BUILD_EXTRA_FLAGS = @(
 function Write-Banner {
     Write-Host ""
     Write-Host "  ╔══════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "  ║     HUONYX AI SMARTWATCH FLASHER v2.0    ║" -ForegroundColor Cyan
+    Write-Host "  ║     HUONYX AI SMARTWATCH FLASHER v2.1    ║" -ForegroundColor Cyan
     Write-Host "  ║     ESP32-2424S012 + Flipper Bridge      ║" -ForegroundColor Cyan
     Write-Host "  ╚══════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""

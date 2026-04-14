@@ -1,6 +1,6 @@
 /**
  * ╔══════════════════════════════════════════════════════════╗
- * ║           HUONYX AI SMARTWATCH FIRMWARE v2.0             ║
+ * ║           HUONYX AI SMARTWATCH FIRMWARE v2.1             ║
  * ║     ESP32-2424S012 (ESP32-C3 + GC9A01 + CST816D)       ║
  * ║                                                          ║
  * ║  A beautiful AI-era smartwatch interface for the         ║
@@ -14,6 +14,9 @@
  * ║  - WebSocket gateway client for HoC protocol             ║
  * ║  - Web-based configuration portal                        ║
  * ║  - Gesture navigation (swipe between screens)            ║
+ * ║                                                          ║
+ * ║  Compatible with: LVGL 9.x, ESP32 core 3.x,            ║
+ * ║  ArduinoJson 7.x, NimBLE-Arduino 2.x                   ║
  * ╚══════════════════════════════════════════════════════════╝
  */
 
@@ -42,19 +45,16 @@ static SupabaseBridge   bridge;
 static UIManager        ui;
 static WebPortal        webPortal(&configMgr);
 
-/* ── LVGL Display Buffer ──────────────────────────────── */
-static lv_disp_draw_buf_t drawBuf;
-static lv_color_t         buf1[LVGL_BUF_SIZE];
-
-/* ── LVGL Drivers ─────────────────────────────────────── */
-static lv_disp_drv_t  dispDrv;
-static lv_indev_drv_t indevDrv;
+/* ── LVGL 9 Display Buffer ────────────────────────────── */
+/* In LVGL 9, buffers are raw uint8_t arrays sized in bytes */
+static uint8_t lvgl_buf1[LVGL_BUF_SIZE * 2];  /* RGB565 = 2 bytes per pixel */
 
 /* ── Timing ───────────────────────────────────────────── */
 static unsigned long lastTimeUpdate    = 0;
 static unsigned long lastWiFiCheck     = 0;
 static unsigned long lastBatteryCheck  = 0;
 static unsigned long lastStatusBcast   = 0;
+static unsigned long lastLvglTick      = 0;
 static bool          wifiConnected     = false;
 static bool          gatewayStarted    = false;
 static bool          flipperStarted    = false;
@@ -66,30 +66,46 @@ static String currentRunId    = "";
 static String accumulatedText = "";
 
 /* ══════════════════════════════════════════════════════════
- *  LVGL CALLBACKS
+ *  LVGL 9 CALLBACKS
  * ══════════════════════════════════════════════════════════ */
 
-static void lvglFlushCb(lv_disp_drv_t* drv, const lv_area_t* area, lv_color_t* color_p) {
+/**
+ * LVGL 9 flush callback.
+ * Signature: void flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
+ * In LVGL 9, the pixel map is a raw byte buffer (RGB565 in our case).
+ */
+static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map) {
     uint32_t w = (area->x2 - area->x1 + 1);
     uint32_t h = (area->y2 - area->y1 + 1);
 
     tft.startWrite();
     tft.setAddrWindow(area->x1, area->y1, w, h);
-    tft.pushColors((uint16_t*)&color_p->full, w * h, true);
+    tft.pushColors((uint16_t*)px_map, w * h, true);
     tft.endWrite();
 
-    lv_disp_flush_ready(drv);
+    lv_display_flush_ready(disp);
 }
 
-static void lvglTouchReadCb(lv_indev_drv_t* drv, lv_indev_data_t* data) {
+/**
+ * LVGL 9 touch read callback.
+ * Signature: void read_cb(lv_indev_t *indev, lv_indev_data_t *data)
+ */
+static void lvglTouchReadCb(lv_indev_t* indev, lv_indev_data_t* data) {
     TouchPoint tp;
     if (touch.read(tp) && tp.pressed) {
-        data->state = LV_INDEV_STATE_PR;
+        data->state = LV_INDEV_STATE_PRESSED;
         data->point.x = tp.x;
         data->point.y = tp.y;
     } else {
-        data->state = LV_INDEV_STATE_REL;
+        data->state = LV_INDEV_STATE_RELEASED;
     }
+}
+
+/**
+ * LVGL 9 tick callback - provides millisecond ticks to LVGL.
+ */
+static uint32_t lvglTickCb(void) {
+    return millis();
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -434,24 +450,25 @@ void setup() {
         Serial.println("[INIT] Touch init FAILED");
     }
 
-    /* ── Initialize LVGL ──────────────────────────── */
+    /* ── Initialize LVGL 9 ────────────────────────── */
     lv_init();
 
-    lv_disp_draw_buf_init(&drawBuf, buf1, NULL, LVGL_BUF_SIZE);
+    /* Set tick source for LVGL 9 */
+    lv_tick_set_cb(lvglTickCb);
 
-    lv_disp_drv_init(&dispDrv);
-    dispDrv.hor_res  = TFT_WIDTH;
-    dispDrv.ver_res  = TFT_HEIGHT;
-    dispDrv.flush_cb = lvglFlushCb;
-    dispDrv.draw_buf = &drawBuf;
-    lv_disp_drv_register(&dispDrv);
+    /* Create display (LVGL 9 API - no more driver structs) */
+    lv_display_t* disp = lv_display_create(TFT_WIDTH, TFT_HEIGHT);
+    lv_display_set_flush_cb(disp, lvglFlushCb);
+    lv_display_set_buffers(disp, lvgl_buf1, NULL,
+                           sizeof(lvgl_buf1),
+                           LV_DISPLAY_RENDER_MODE_PARTIAL);
 
-    lv_indev_drv_init(&indevDrv);
-    indevDrv.type    = LV_INDEV_TYPE_POINTER;
-    indevDrv.read_cb = lvglTouchReadCb;
-    lv_indev_drv_register(&indevDrv);
+    /* Create input device (LVGL 9 API - no more driver structs) */
+    lv_indev_t* indev = lv_indev_create();
+    lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+    lv_indev_set_read_cb(indev, lvglTouchReadCb);
 
-    Serial.println("[INIT] LVGL initialized");
+    Serial.println("[INIT] LVGL 9 initialized");
 
     /* ── Load configuration ───────────────────────── */
     configMgr.begin();
