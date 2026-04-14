@@ -121,7 +121,7 @@ function Write-Fail {
 # ═══════════════════════════════════════════════════════════
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$SketchDir = Join-Path $ScriptDir "arduino" "HuonyxWatch"
+$SketchDir = Join-Path (Join-Path $ScriptDir "arduino") "HuonyxWatch"
 $ToolsDir = Join-Path $ScriptDir ".tools"
 $ArduinoCliPath = ""
 
@@ -310,7 +310,7 @@ if (-not $SkipInstall) {
         Write-Success "lv_conf.h placed at: $lvConfDst"
 
         # Also copy into the lvgl/src directory as a fallback
-        $lvConfDst2 = Join-Path $lvglPath "src" "lv_conf.h"
+        $lvConfDst2 = Join-Path (Join-Path $lvglPath "src") "lv_conf.h"
         Copy-Item $lvConfSrc $lvConfDst2 -Force -ErrorAction SilentlyContinue
         Write-SubStep "Also copied to lvgl/src/ as fallback"
     }
@@ -361,7 +361,7 @@ $boardsTxt = Get-ChildItem -Path $dataDir -Recurse -Filter "boards.txt" -ErrorAc
 
 if ($boardsTxt) {
     $esp32HwPath = Split-Path -Parent $boardsTxt.FullName
-    $partitionsDst = Join-Path $esp32HwPath "tools" "partitions"
+    $partitionsDst = Join-Path (Join-Path $esp32HwPath "tools") "partitions"
 
     if (Test-Path $partitionsDst) {
         $customPartFile = Join-Path $partitionsDst "custom.csv"
