@@ -20,6 +20,9 @@
  * ╚══════════════════════════════════════════════════════════╝
  */
 
+/* build_config.h MUST be first - defines USER_SETUP_LOADED, LV_CONF_INCLUDE_SIMPLE, NimBLE config */
+#include "build_config.h"
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClient.h>      /* Required before WebSockets on ESP32 core 3.x */

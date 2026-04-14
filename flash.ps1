@@ -59,11 +59,9 @@ $LIBRARIES = @(
     "NimBLE-Arduino@2.1.1"
 )
 
-# Build defines - combined into a single compiler.cpp.extra_flags string.
-# IMPORTANT: arduino-cli passes --build-property values as-is to the compiler.
-# All -D defines must be in one string value; do NOT split them into separate
-# --build-property entries as arduino-cli will try to parse -D as its own flag.
-$BUILD_EXTRA_FLAGS = "-DUSER_SETUP_LOADED=1 -DLV_CONF_INCLUDE_SIMPLE=1 -DCONFIG_BT_NIMBLE_ROLE_CENTRAL=1 -DCONFIG_BT_NIMBLE_ROLE_PERIPHERAL=0 -DCONFIG_BT_NIMBLE_ROLE_BROADCASTER=0 -DCONFIG_BT_NIMBLE_ROLE_OBSERVER=1 -DCONFIG_BT_NIMBLE_MAX_CONNECTIONS=1 -DCONFIG_BT_NIMBLE_MAX_BONDS=1 -DCONFIG_BT_NIMBLE_ATT_PREFERRED_MTU=128 -DCORE_DEBUG_LEVEL=0"
+# NOTE: All -D defines have been moved into arduino/HuonyxWatch/build_config.h
+# This avoids the arduino-cli bug where -D values in --build-property are
+# incorrectly parsed as CLI flags. No --build-property flags are needed.
 
 # ===================================================================
 #  HELPER FUNCTIONS
@@ -446,10 +444,7 @@ $compileArgs = @(
     "--warnings", "none"
 )
 
-# Pass all defines as a single compiler.cpp.extra_flags property value
-$compileArgs += "--build-property"
-$compileArgs += "compiler.cpp.extra_flags=$BUILD_EXTRA_FLAGS"
-
+# No --build-property needed: all defines are in build_config.h
 if ($Verbose) { $compileArgs += "--verbose" }
 $compileArgs += $SketchDir
 
