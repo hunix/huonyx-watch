@@ -212,6 +212,27 @@ if (-not $SkipInstall) {
         Write-Success "ESP32 core installed"
     }
 
+    # ---------------------------------------------------------------
+    # CRITICAL: Delete the old esp-rv32/2302 toolchain if it exists.
+    # When Arduino IDE has previously installed an older ESP32 core,
+    # the old assembler (esp-rv32/2302) remains on disk even after
+    # reinstalling. arduino-cli then picks it up instead of the new
+    # compiler (esp-rv32/2601), treating C headers as assembly code.
+    # Physically removing the old folder forces use of the new toolchain.
+    # ---------------------------------------------------------------
+    $oldToolchain = "$env:LOCALAPPDATA\Arduino15\packages\esp32\tools\esp-rv32\2302"
+    if (Test-Path $oldToolchain) {
+        Write-Warn "Found old esp-rv32/2302 toolchain - removing it to prevent conflicts..."
+        Remove-Item -Recurse -Force $oldToolchain -ErrorAction SilentlyContinue
+        if (-not (Test-Path $oldToolchain)) {
+            Write-Success "Old toolchain removed. New esp-rv32/2601 will be used."
+        } else {
+            Write-Warn "Could not remove old toolchain. Try running PowerShell as Administrator."
+            Write-Host "  Manual fix: Delete this folder and retry:" -ForegroundColor Yellow
+            Write-Host "  $oldToolchain" -ForegroundColor Gray
+        }
+    }
+
     # ===================================================================
     #  STEP 3: INSTALL LIBRARIES
     # ===================================================================
