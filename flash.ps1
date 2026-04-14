@@ -178,6 +178,39 @@ if (-not $SkipInstall) {
     & $ArduinoCliPath config add board_manager.additional_urls $ESP32_CORE_URL 2>$null
     & $ArduinoCliPath core update-index 2>$null
 
+    # ---------------------------------------------------------------
+    # STEP 2a: Remove old esp-rv32/2302 toolchain BEFORE checking
+    # what is installed. This must happen first because:
+    # 1. The old 2302 assembler treats C headers as assembly (fatal)
+    # 2. The new 2601 compiler may not exist if core was "already
+    #    installed" while 2302 was present
+    # Deleting 2302 first, then uninstalling+reinstalling the core
+    # ensures arduino-cli downloads the correct 2601 toolchain.
+    # ---------------------------------------------------------------
+    $oldToolchain = "$env:LOCALAPPDATA\Arduino15\packages\esp32\tools\esp-rv32\2302"
+    $newToolchain = "$env:LOCALAPPDATA\Arduino15\packages\esp32\tools\esp-rv32\2601"
+
+    if (Test-Path $oldToolchain) {
+        Write-Warn "Found old esp-rv32/2302 toolchain - removing it..."
+        Remove-Item -Recurse -Force $oldToolchain -ErrorAction SilentlyContinue
+        if (-not (Test-Path $oldToolchain)) {
+            Write-Success "Old toolchain removed."
+        } else {
+            Write-Warn "Could not remove old toolchain automatically."
+            Write-Host "  ACTION REQUIRED: Run PowerShell as Administrator and retry." -ForegroundColor Red
+            Write-Host "  Or manually delete: $oldToolchain" -ForegroundColor Gray
+        }
+    }
+
+    # Check if new toolchain exists; if not, force full core reinstall
+    $needsCoreInstall = $false
+    if (-not (Test-Path $newToolchain)) {
+        Write-Warn "New esp-rv32/2601 toolchain not found - will install ESP32 core to download it..."
+        $needsCoreInstall = $true
+        # Uninstall existing core record so arduino-cli re-downloads all tools
+        & $ArduinoCliPath core uninstall "esp32:esp32" 2>$null
+    }
+
     $installedCores = & $ArduinoCliPath core list --format json 2>$null | ConvertFrom-Json
     $esp32Installed = $false
     $esp32InstalledVersion = ""
@@ -191,46 +224,23 @@ if (-not $SkipInstall) {
         }
     }
 
-    # If wrong version is installed (e.g. old Arduino IDE version with broken toolchain),
-    # uninstall it first so we get a clean install with the correct esp-rv32 toolchain.
+    # Reinstall if wrong version or toolchain was missing
     if ($esp32Installed -and $esp32InstalledVersion -ne $ESP32_CORE_VERSION) {
-        Write-Warn "Wrong ESP32 core version installed (v$esp32InstalledVersion). Reinstalling v${ESP32_CORE_VERSION}..."
-        Write-SubStep "Uninstalling old ESP32 core..."
+        Write-Warn "Wrong ESP32 core version (v$esp32InstalledVersion). Reinstalling v${ESP32_CORE_VERSION}..."
         & $ArduinoCliPath core uninstall "esp32:esp32" 2>$null
         $esp32Installed = $false
     }
 
-    if ($esp32Installed) {
-        Write-Success "ESP32 core v${ESP32_CORE_VERSION} already installed"
+    if ($esp32Installed -and -not $needsCoreInstall) {
+        Write-Success "ESP32 core v${ESP32_CORE_VERSION} already installed with correct toolchain"
     } else {
         Write-SubStep "Installing ESP32 Arduino core v${ESP32_CORE_VERSION} (this may take 5-10 minutes)..."
-        $installResult = & $ArduinoCliPath core install "esp32:esp32@${ESP32_CORE_VERSION}" 2>&1
+        & $ArduinoCliPath core install "esp32:esp32@${ESP32_CORE_VERSION}" 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Warn "Specific version failed, trying latest..."
             & $ArduinoCliPath core install "esp32:esp32" 2>&1
         }
         Write-Success "ESP32 core installed"
-    }
-
-    # ---------------------------------------------------------------
-    # CRITICAL: Delete the old esp-rv32/2302 toolchain if it exists.
-    # When Arduino IDE has previously installed an older ESP32 core,
-    # the old assembler (esp-rv32/2302) remains on disk even after
-    # reinstalling. arduino-cli then picks it up instead of the new
-    # compiler (esp-rv32/2601), treating C headers as assembly code.
-    # Physically removing the old folder forces use of the new toolchain.
-    # ---------------------------------------------------------------
-    $oldToolchain = "$env:LOCALAPPDATA\Arduino15\packages\esp32\tools\esp-rv32\2302"
-    if (Test-Path $oldToolchain) {
-        Write-Warn "Found old esp-rv32/2302 toolchain - removing it to prevent conflicts..."
-        Remove-Item -Recurse -Force $oldToolchain -ErrorAction SilentlyContinue
-        if (-not (Test-Path $oldToolchain)) {
-            Write-Success "Old toolchain removed. New esp-rv32/2601 will be used."
-        } else {
-            Write-Warn "Could not remove old toolchain. Try running PowerShell as Administrator."
-            Write-Host "  Manual fix: Delete this folder and retry:" -ForegroundColor Yellow
-            Write-Host "  $oldToolchain" -ForegroundColor Gray
-        }
     }
 
     # ===================================================================
