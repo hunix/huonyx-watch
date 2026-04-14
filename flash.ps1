@@ -40,7 +40,7 @@ param(
     [switch]$Verbose
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"  # Must be Continue so NativeCommandError does not kill output capture
 
 # ===================================================================
 #  CONFIGURATION
@@ -465,9 +465,19 @@ Write-SubStep "Sketch : $SketchDir"
 Write-SubStep "Build  : $buildDir"
 Write-Host ""
 
-# Capture both stdout and stderr properly
-$compileOutput   = & $ArduinoCliPath @compileArgs 2>&1 | ForEach-Object { "$_" }
-$compileExitCode = $LASTEXITCODE
+# Capture all output - use a temp file to bypass PowerShell NativeCommandError
+$compileLogFile = Join-Path $buildDir "compile_output.txt"
+$compileProcess = Start-Process -FilePath $ArduinoCliPath `
+    -ArgumentList $compileArgs `
+    -RedirectStandardOutput $compileLogFile `
+    -RedirectStandardError "$compileLogFile.err" `
+    -Wait -PassThru -NoNewWindow
+$compileExitCode = $compileProcess.ExitCode
+
+# Merge stdout and stderr
+$compileOutput = @()
+if (Test-Path $compileLogFile) { $compileOutput += Get-Content $compileLogFile }
+if (Test-Path "$compileLogFile.err") { $compileOutput += Get-Content "$compileLogFile.err" }
 
 if ($Verbose) {
     $compileOutput | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
@@ -529,8 +539,17 @@ if (-not $CompileOnly) {
     if ($Verbose) { $uploadArgs += "--verbose" }
     $uploadArgs += $SketchDir
 
-    $uploadOutput   = & $ArduinoCliPath @uploadArgs 2>&1 | ForEach-Object { "$_" }
-    $uploadExitCode = $LASTEXITCODE
+    $uploadLogFile = Join-Path $buildDir "upload_output.txt"
+    $uploadProcess = Start-Process -FilePath $ArduinoCliPath `
+        -ArgumentList $uploadArgs `
+        -RedirectStandardOutput $uploadLogFile `
+        -RedirectStandardError "$uploadLogFile.err" `
+        -Wait -PassThru -NoNewWindow
+    $uploadExitCode = $uploadProcess.ExitCode
+
+    $uploadOutput = @()
+    if (Test-Path $uploadLogFile) { $uploadOutput += Get-Content $uploadLogFile }
+    if (Test-Path "$uploadLogFile.err") { $uploadOutput += Get-Content "$uploadLogFile.err" }
 
     if ($Verbose) {
         $uploadOutput | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
