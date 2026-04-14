@@ -59,19 +59,11 @@ $LIBRARIES = @(
     "NimBLE-Arduino@2.1.1"
 )
 
-$BUILD_EXTRA_FLAGS = @(
-    "-DUSER_SETUP_LOADED=1",
-    "-DLV_CONF_INCLUDE_SIMPLE=1",
-    "-DCONFIG_BT_NIMBLE_ROLE_CENTRAL=1",
-    "-DCONFIG_BT_NIMBLE_ROLE_PERIPHERAL=0",
-    "-DCONFIG_BT_NIMBLE_ROLE_BROADCASTER=0",
-    "-DCONFIG_BT_NIMBLE_ROLE_OBSERVER=1",
-    "-DCONFIG_BT_NIMBLE_MAX_CONNECTIONS=1",
-    "-DCONFIG_BT_NIMBLE_MAX_BONDS=1",
-    "-DCONFIG_BT_NIMBLE_ATT_PREFERRED_MTU=128",
-    "-DCORE_DEBUG_LEVEL=0",
-    "-Os"
-)
+# Build defines - combined into a single compiler.cpp.extra_flags string.
+# IMPORTANT: arduino-cli passes --build-property values as-is to the compiler.
+# All -D defines must be in one string value; do NOT split them into separate
+# --build-property entries as arduino-cli will try to parse -D as its own flag.
+$BUILD_EXTRA_FLAGS = "-DUSER_SETUP_LOADED=1 -DLV_CONF_INCLUDE_SIMPLE=1 -DCONFIG_BT_NIMBLE_ROLE_CENTRAL=1 -DCONFIG_BT_NIMBLE_ROLE_PERIPHERAL=0 -DCONFIG_BT_NIMBLE_ROLE_BROADCASTER=0 -DCONFIG_BT_NIMBLE_ROLE_OBSERVER=1 -DCONFIG_BT_NIMBLE_MAX_CONNECTIONS=1 -DCONFIG_BT_NIMBLE_MAX_BONDS=1 -DCONFIG_BT_NIMBLE_ATT_PREFERRED_MTU=128 -DCORE_DEBUG_LEVEL=0"
 
 # ===================================================================
 #  HELPER FUNCTIONS
@@ -446,16 +438,17 @@ Write-Host ""
 $buildDir = Join-Path $ScriptDir ".build"
 New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
 
-$extraFlagsStr = $BUILD_EXTRA_FLAGS -join " "
-
+# Build the compile arguments array
 $compileArgs = @(
     "compile",
     "--fqbn", $BOARD_FQBN,
     "--build-path", $buildDir,
-    "--build-property", "build.extra_flags=$extraFlagsStr",
-    "--build-property", "compiler.cpp.extra_flags=-w",
     "--warnings", "none"
 )
+
+# Pass all defines as a single compiler.cpp.extra_flags property value
+$compileArgs += "--build-property"
+$compileArgs += "compiler.cpp.extra_flags=$BUILD_EXTRA_FLAGS"
 
 if ($Verbose) { $compileArgs += "--verbose" }
 $compileArgs += $SketchDir
