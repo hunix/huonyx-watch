@@ -23,14 +23,15 @@
 /* build_config.h MUST be first - defines USER_SETUP_LOADED, LV_CONF_INCLUDE_SIMPLE, NimBLE config */
 #include "build_config.h"
 
+/* hw_config.h MUST come before TFT_eSPI.h so TFT_WIDTH/TFT_HEIGHT are defined */
+#include "hw_config.h"
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClient.h>      /* Required before WebSockets on ESP32 core 3.x */
 #include <time.h>
 #include <TFT_eSPI.h>
 #include <lvgl.h>
-
-#include "hw_config.h"
 #include "touch_driver.h"
 #include "config_manager.h"
 #include "gateway_client.h"

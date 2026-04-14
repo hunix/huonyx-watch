@@ -1111,7 +1111,7 @@ void UIManager::updateAgentTyping(bool typing) {
 
 void UIManager::clearChat() {
     if (!_chatList) return;
-    lv_obj_delete_children(_chatList);
+    lv_obj_clean(_chatList);  /* lv_obj_clean deletes all children in LVGL 9 */
     _chatMsgCount = 0;
 }
 

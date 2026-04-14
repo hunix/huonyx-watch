@@ -96,6 +96,12 @@ public:
     void onResponse(OnFlipperResponse cb) { _onResponse = cb; }
     void onStateChange(OnFlipperStateChange cb) { _onStateChange = cb; }
 
+    /* These are public so the static file-scope notifyCallback in flipper_ble.cpp
+     * can access them without a friend declaration (which causes extern/static
+     * linkage conflict when the function is declared static in the .cpp file). */
+    void handleResponseData(const uint8_t* data, size_t len);
+    static FlipperBLE* _instance;
+
 private:
     FlipperState _state;
     char         _targetName[32];
@@ -127,16 +133,12 @@ private:
     void setState(FlipperState s);
     void processCommandQueue();
     void sendNextCommand();
-    void handleResponseData(const uint8_t* data, size_t len);
     bool enqueueCommand(const char* cmd, uint32_t id);
     FlipperCommand* dequeueCommand();
 
     /* NimBLE callbacks are handled via static friend functions */
     friend class FlipperBLECallbacks;
     friend class FlipperBLEAdvCallbacks;
-    friend void notifyCallback(NimBLERemoteCharacteristic*, uint8_t*, size_t, bool);
-
-    static FlipperBLE* _instance;
 };
 
 #endif /* FLIPPER_BLE_H */
