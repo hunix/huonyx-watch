@@ -42,7 +42,6 @@ private:
     void handleNotFound();
 
     String generateHTML();
-    String generateSetupHTML();
 };
 
 #endif /* WEB_PORTAL_H */
