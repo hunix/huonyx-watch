@@ -52,25 +52,24 @@ static FlipperBLECallbacks s_clientCallbacks;
 /* ── Scan callbacks ──────────────────────────────────────── */
 class FlipperBLEAdvCallbacks : public NimBLEScanCallbacks {
     void onResult(const NimBLEAdvertisedDevice* advertisedDevice) override {
-        String name = advertisedDevice->getName().c_str();
-        Serial.printf("[FLIP] Found BLE device: %s\n", name.c_str());
+        const char* name = advertisedDevice->getName().c_str();
+        Serial.printf("[FLIP] Found BLE device: %s\n", name);
 
         /* Check if this is a Flipper Zero */
         bool isTarget = false;
 
         if (FlipperBLE::_instance) {
-            const char* target = FlipperBLE::_instance->getDeviceName();
             /* If a specific target name is set, match it */
             if (strlen(FlipperBLE::_instance->_targetName) > 0) {
-                isTarget = (name.indexOf(FlipperBLE::_instance->_targetName) >= 0);
+                isTarget = (strstr(name, FlipperBLE::_instance->_targetName) != nullptr);
             } else {
                 /* Match any Flipper device */
-                isTarget = (name.indexOf("Flipper") >= 0);
+                isTarget = (strstr(name, "Flipper") != nullptr);
             }
         }
 
         if (isTarget) {
-            Serial.printf("[FLIP] Target Flipper found: %s\n", name.c_str());
+            Serial.printf("[FLIP] Target Flipper found: %s\n", name);
             /* Copy the device - must use new to persist beyond callback */
             s_pTargetDevice = new NimBLEAdvertisedDevice(*advertisedDevice);
             s_deviceFound = true;
@@ -418,12 +417,17 @@ void FlipperBLE::sendNextCommand() {
         return;
     }
 
-    /* Prepare command string with CRLF */
-    String cmdStr = String(cmd->cmd) + "\r\n";
+    /* Prepare command string with CRLF using stack buffer */
+    size_t cmdLen = strlen(cmd->cmd);
+    char cmdBuf[132];  /* 128 cmd + 2 CRLF + 1 null + 1 margin */
+    if (cmdLen > sizeof(cmdBuf) - 3) cmdLen = sizeof(cmdBuf) - 3;
+    memcpy(cmdBuf, cmd->cmd, cmdLen);
+    cmdBuf[cmdLen] = '\r';
+    cmdBuf[cmdLen + 1] = '\n';
+    cmdBuf[cmdLen + 2] = '\0';
 
     /* Write to Flipper */
-    bool ok = s_pTxChar->writeValue((const uint8_t*)cmdStr.c_str(),
-                                     cmdStr.length(), false);
+    bool ok = s_pTxChar->writeValue((const uint8_t*)cmdBuf, cmdLen + 2, false);
 
     if (ok) {
         _activeCmdId = cmd->id;

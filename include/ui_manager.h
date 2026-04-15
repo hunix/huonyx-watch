@@ -119,14 +119,9 @@ private:
 
     /* WiFi Setup */
     lv_obj_t* _scrWifiSetup;
-    lv_obj_t* _wifiList;
 
     /* Gateway Setup */
     lv_obj_t* _scrGatewaySetup;
-    lv_obj_t* _taGwHost;
-    lv_obj_t* _taGwToken;
-    lv_obj_t* _taGwPort;
-    lv_obj_t* _btnGwSave;
     lv_obj_t* _lblGwStatus;
 
     /* Supabase Setup */
@@ -156,7 +151,6 @@ private:
 
     /* ── Helpers ──────────────────────────────────────── */
     lv_obj_t* createRoundScreen();
-    void applyCircleMask(lv_obj_t* obj);
     void addChatBubble(const char* text, bool isUser);
     void addFlipperLogEntry(const char* text, bool isCommand);
 

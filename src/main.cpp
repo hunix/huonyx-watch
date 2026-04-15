@@ -54,16 +54,16 @@ static unsigned long lastTimeUpdate    = 0;
 static unsigned long lastWiFiCheck     = 0;
 static unsigned long lastBatteryCheck  = 0;
 static unsigned long lastStatusBcast   = 0;
-static unsigned long lastLvglTick      = 0;
 static bool          wifiConnected     = false;
 static bool          gatewayStarted    = false;
 static bool          flipperStarted    = false;
 static bool          bridgeStarted     = false;
 static bool          ntpSynced         = false;
 
-/* ── Accumulator for streaming chat deltas ────────────── */
-static String currentRunId    = "";
-static String accumulatedText = "";
+/* ── Accumulator for streaming chat deltas (stack-allocated to avoid heap fragmentation) ── */
+static char currentRunId[32]     = "";
+static char accumulatedText[CHAT_MAX_MSG_LEN] = "";
+static size_t accumulatedLen = 0;
 
 /* ══════════════════════════════════════════════════════════
  *  LVGL 9 CALLBACKS
@@ -113,24 +113,38 @@ static uint32_t lvglTickCb(void) {
  * ══════════════════════════════════════════════════════════ */
 
 static void onChatDelta(const char* runId, const char* text, bool isFinal) {
-    if (currentRunId != runId) {
-        currentRunId = runId;
-        accumulatedText = "";
+    if (strcmp(currentRunId, runId) != 0) {
+        strncpy(currentRunId, runId, sizeof(currentRunId) - 1);
+        currentRunId[sizeof(currentRunId) - 1] = '\0';
+        accumulatedLen = 0;
+        accumulatedText[0] = '\0';
     }
 
-    accumulatedText += text;
+    /* Append new text, respecting buffer limit */
+    size_t textLen = strlen(text);
+    size_t space = sizeof(accumulatedText) - accumulatedLen - 1;
+    if (textLen > space) textLen = space;
+    if (textLen > 0) {
+        memcpy(accumulatedText + accumulatedLen, text, textLen);
+        accumulatedLen += textLen;
+        accumulatedText[accumulatedLen] = '\0';
+    }
 
     if (isFinal) {
         ui.updateAgentTyping(false);
 
-        String displayText = accumulatedText;
-        if (displayText.length() > CHAT_MAX_MSG_LEN - 1) {
-            displayText = displayText.substring(0, CHAT_MAX_MSG_LEN - 4) + "...";
+        /* Truncate display if needed */
+        if (accumulatedLen > CHAT_MAX_MSG_LEN - 4) {
+            accumulatedText[CHAT_MAX_MSG_LEN - 4] = '.';
+            accumulatedText[CHAT_MAX_MSG_LEN - 3] = '.';
+            accumulatedText[CHAT_MAX_MSG_LEN - 2] = '.';
+            accumulatedText[CHAT_MAX_MSG_LEN - 1] = '\0';
         }
 
-        ui.addChatMessage(displayText.c_str(), false);
-        currentRunId = "";
-        accumulatedText = "";
+        ui.addChatMessage(accumulatedText, false);
+        currentRunId[0] = '\0';
+        accumulatedLen = 0;
+        accumulatedText[0] = '\0';
     }
 }
 

@@ -4,7 +4,7 @@
 
 [![Platform](https://img.shields.io/badge/Platform-ESP32--C3-blue)](https://www.espressif.com/)
 [![Framework](https://img.shields.io/badge/Framework-Arduino-teal)](https://www.arduino.cc/)
-[![UI](https://img.shields.io/badge/UI-LVGL%208.4-purple)](https://lvgl.io/)
+[![UI](https://img.shields.io/badge/UI-LVGL%209.2-purple)](https://lvgl.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 A production-quality firmware for the ESP32-2424S012 circular smartwatch board that transforms it into an AI-era wearable controller for the [Huonyx/House of Claws](https://github.com/hunix/HoC) autonomous AI platform, with integrated Flipper Zero remote control via BLE.
@@ -193,10 +193,10 @@ pio device monitor
 | Library | Version | Purpose |
 |---------|---------|---------|
 | TFT_eSPI | ^2.5.43 | GC9A01 display driver |
-| LVGL | ^8.4.0 | UI framework |
+| LVGL | ^9.2.0 | UI framework |
 | ArduinoJson | ^7.2.1 | JSON protocol handling |
 | WebSockets | ^2.6.1 | Gateway & Supabase connections |
-| NimBLE-Arduino | ^1.4.3 | BLE central (Flipper connection) |
+| NimBLE-Arduino | ^2.1.1 | BLE central (Flipper connection) |
 
 ---
 

@@ -86,7 +86,8 @@ private:
     void handleMessage(uint8_t* payload, size_t length);
     void handleResponse(JsonObjectConst doc);
     void handleEvent(JsonObjectConst doc);
-    String generateId();
+    const char* generateId();
+    char _idBuf[28];
 
     /* WebSocket event handler */
     static void wsEventCallback(WStype_t type, uint8_t* payload, size_t length);

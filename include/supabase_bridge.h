@@ -108,7 +108,7 @@ private:
     void sendBroadcast(const char* event, JsonObject payload);
     void handleMessage(uint8_t* payload, size_t length);
     void handleBroadcast(JsonObjectConst payload);
-    String nextRef();
+    void nextRef(char* buf, size_t bufSize);
 
     /* WebSocket event handler */
     static void wsEventCallback(WStype_t type, uint8_t* payload, size_t length);

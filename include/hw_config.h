@@ -36,7 +36,7 @@
 #define IP5306_I2C_ADDR      0x75
 
 /* ── LVGL Buffer Config ───────────────────────────────── */
-#define LVGL_BUF_SIZE        (TFT_WIDTH * 24)  /* ~24 lines buffer */
+#define LVGL_BUF_SIZE        (TFT_WIDTH * 16)  /* ~16 lines buffer (saves ~3.8KB vs 24 lines) */
 
 /* ── WiFi ─────────────────────────────────────────────── */
 #define WIFI_CONNECT_TIMEOUT_MS  15000
@@ -55,8 +55,8 @@
 #define FLIPPER_BLE_TX_CHAR_UUID      "19ed82ae-ed21-4c9d-4145-228e63fe0000"
 #define FLIPPER_SCAN_TIMEOUT_SEC      10
 #define FLIPPER_RECONNECT_MS          5000
-#define FLIPPER_CMD_QUEUE_SIZE        8
-#define FLIPPER_RESPONSE_BUF_SIZE     512
+#define FLIPPER_CMD_QUEUE_SIZE        4
+#define FLIPPER_RESPONSE_BUF_SIZE     384
 #define FLIPPER_CMD_TIMEOUT_MS        10000
 
 /* ── Supabase Realtime ────────────────────────────────── */

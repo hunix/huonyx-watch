@@ -211,8 +211,166 @@ void WebPortal::handleRoot() {
 }
 
 void WebPortal::handleSetup() {
-    _server.send(200, "text/html", generateSetupHTML());
+    /* Use chunked transfer to avoid building one massive String in heap */
+    _server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    _server.send(200, "text/html", "");
+
+    /* Send static header + CSS (raw literal already in flash) */
+    _server.sendContent(generateHTML());
+
+    WatchConfig& c = _cfg->config();
+    char buf[300];  /* Reusable small buffer for dynamic parts */
+
+    _server.sendContent(F("<form method='POST' action='/save'>"));
+
+    /* WiFi Card */
+    _server.sendContent(F("<div class='card'><h2>&#x1F4F6; WiFi Network <span class='badge required'>Required</span></h2>"));
+    _server.sendContent(F("<div class='field'><label>SSID</label>"));
+    snprintf(buf, sizeof(buf), "<input type='text' name='ssid' placeholder='Network name' value='%s'></div>", c.wifiSSID);
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Password</label><input type='password' name='wifi_pass' placeholder='WiFi password' value='%s'></div></div>", c.wifiPass);
+    _server.sendContent(buf);
+
+    /* Gateway Card */
+    _server.sendContent(F("<div class='card'><h2>&#x1F916; HoC Gateway <span class='badge required'>Required</span></h2>"));
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Host / IP</label><input type='text' name='gw_host' placeholder='192.168.1.100' value='%s'><div class='hint'>Your Huonyx/OpenClaw gateway host</div></div>", c.gwHost);
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Port</label><input type='number' name='gw_port' placeholder='18789' value='%u'></div>", c.gwPort);
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Gateway Token</label><input type='password' name='gw_token' placeholder='OPENCLAW_GATEWAY_TOKEN' value='%s'><div class='hint'>Token to authenticate with the gateway</div></div>", c.gwToken);
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='toggle'><input type='checkbox' name='gw_ssl' id='ssl'%s><label for='ssl' style='color:#E8E8F0;font-size:14px'>Use SSL (wss://)</label></div></div>", c.gwUseSSL ? " checked" : "");
+    _server.sendContent(buf);
+
+    _server.sendContent(F("<hr class='section-divider'>"));
+
+    /* Supabase Card */
+    _server.sendContent(F("<div class='card'><h2 class='purple'>&#x1F504; Supabase Realtime Bridge <span class='badge optional'>Optional</span></h2>"));
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Project URL</label><input type='text' name='sb_url' placeholder='abcdefg.supabase.co' value='%s'><div class='hint'>Supabase project URL (without https://)</div></div>", c.sbUrl);
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>API Key (anon)</label><input type='password' name='sb_key' placeholder='eyJhbGciOi...' value='%s'><div class='hint'>Supabase anon key for Realtime channel access</div></div>", c.sbKey);
+    _server.sendContent(buf);
+    _server.sendContent(F("<div style='color:#6B6B8D;font-size:12px;padding:8px;background:#1A1A2E;border-radius:8px'>&#x1F4A1; Agent &#x2192; Supabase &#x2192; Watch &#x2192; Flipper</div></div>"));
+
+    /* Flipper Card */
+    _server.sendContent(F("<div class='card'><h2 class='orange'>&#x1F42C; Flipper Zero BLE <span class='badge optional'>Optional</span></h2>"));
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Device Name</label><input type='text' name='flip_name' placeholder='Flipper (leave empty for any)' value='%s'><div class='hint'>Specific device name or empty for any</div></div>", c.flipperName);
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='toggle'><input type='checkbox' name='flip_auto' id='flipauto'%s><label for='flipauto' style='color:#E8E8F0;font-size:14px'>Auto-connect on boot</label></div>", c.flipperAuto ? " checked" : "");
+    _server.sendContent(buf);
+    _server.sendContent(F("<div style='color:#6B6B8D;font-size:12px;padding:8px;background:#1A1A2E;border-radius:8px'>&#x1F4A1; BLE Serial to Flipper Zero CLI (~10m range)</div></div>"));
+
+    _server.sendContent(F("<hr class='section-divider'>"));
+
+    /* Display Card */
+    _server.sendContent(F("<div class='card'><h2>&#x1F4A1; Display</h2>"));
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Brightness (10-255)</label><input type='range' name='brightness' min='10' max='255' value='%u' style='accent-color:#00D4FF'></div>", c.brightness);
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Timezone (UTC offset)</label><input type='number' name='timezone' min='-12' max='14' value='%d'></div></div>", c.timezone);
+    _server.sendContent(buf);
+
+    _server.sendContent(F("<button type='submit' class='btn'>&#x1F680; Save & Restart</button></form>"));
+    snprintf(buf, sizeof(buf), "<div class='info'>Huonyx Watch v" FIRMWARE_VERSION " | ESP32-C3 | %lu bytes free</div></body></html>", (unsigned long)ESP.getFreeHeap());
+    _server.sendContent(buf);
+    _server.sendContent("");
 }
+
+void WebPortal::handleSave() {
+    /* WiFi */
+    if (_server.hasArg("ssid")) {
+        _cfg->setWiFi(_server.arg("ssid").c_str(), _server.arg("wifi_pass").c_str());
+    }
+
+    /* Gateway */
+    if (_server.hasArg("gw_host")) {
+        _cfg->setGateway(
+            _server.arg("gw_host").c_str(),
+            _server.arg("gw_port").toInt(),
+            _server.arg("gw_token").c_str(),
+            _server.hasArg("gw_ssl")
+        );
+    }
+
+    /* Supabase */
+    if (_server.hasArg("sb_url") || _server.hasArg("sb_key")) {
+        _cfg->setSupabase(_server.arg("sb_url").c_str(), _server.arg("sb_key").c_str());
+    }
+
+    /* Flipper */
+    if (_server.hasArg("flip_name") || _server.hasArg("flip_auto")) {
+        _cfg->setFlipper(_server.arg("flip_name").c_str(), _server.hasArg("flip_auto"));
+    }
+
+    /* Display */
+    if (_server.hasArg("brightness")) {
+        _cfg->setBrightness(_server.arg("brightness").toInt());
+    }
+    if (_server.hasArg("timezone")) {
+        _cfg->setTimezone(_server.arg("timezone").toInt());
+    }
+
+    /* Send response using chunked transfer */
+    _server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    _server.send(200, "text/html", "");
+    _server.sendContent(generateHTML());
+    _server.sendContent(F("<div class='card' style='text-align:center'>"));
+    _server.sendContent(F("<h2 style='color:#00FF88'>&#x2705; Settings Saved!</h2>"));
+    _server.sendContent(F("<p style='color:#E8E8F0;margin:16px 0'>The watch will restart in 3 seconds...</p><div style='margin-top:12px'>"));
+
+    char buf[128];
+    snprintf(buf, sizeof(buf), "<div class='status'><span>WiFi</span><span class='dot %s'></span></div>",
+             strlen(_cfg->config().wifiSSID) > 0 ? "green" : "red");
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='status'><span>Gateway</span><span class='dot %s'></span></div>",
+             _cfg->hasGatewayConfig() ? "green" : "red");
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='status'><span>Supabase</span><span class='dot %s'></span></div>",
+             _cfg->hasSupabaseConfig() ? "purple" : "yellow");
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='status'><span>Flipper</span><span class='dot %s'></span></div>",
+             _cfg->config().flipperAuto ? "orange" : "yellow");
+    _server.sendContent(buf);
+    _server.sendContent(F("</div></div><script>setTimeout(()=>window.location='/setup',5000)</script></body></html>"));
+    _server.sendContent("");
+
+    delay(2000);
+    ESP.restart();
+}
+
+void WebPortal::handleStatus() {
+    /* Use snprintf into stack buffer instead of 15+ String concatenations */
+    char json[512];
+    snprintf(json, sizeof(json),
+        "{\"firmware\":\"" FIRMWARE_VERSION "\","
+        "\"wifi_connected\":%s,"
+        "\"wifi_ssid\":\"%s\","
+        "\"wifi_rssi\":%d,"
+        "\"gateway_host\":\"%s\","
+        "\"gateway_port\":%u,"
+        "\"supabase_url\":\"%s\","
+        "\"supabase_configured\":%s,"
+        "\"flipper_name\":\"%s\","
+        "\"flipper_auto\":%s,"
+        "\"free_heap\":%lu}",
+        WiFi.isConnected() ? "true" : "false",
+        _cfg->config().wifiSSID,
+        WiFi.RSSI(),
+        _cfg->config().gwHost,
+        _cfg->config().gwPort,
+        _cfg->config().sbUrl,
+        _cfg->hasSupabaseConfig() ? "true" : "false",
+        _cfg->config().flipperName,
+        _cfg->config().flipperAuto ? "true" : "false",
+        (unsigned long)ESP.getFreeHeap()
+    );
+    _server.send(200, "application/json", json);
+}
+
+void WebPortal::handleNotFound() {
+    _server.sendHeader("Location", "/setup", true);
+    _server.send(302, "text/plain", "");
+}
+
 
 void WebPortal::handleSave() {
     /* WiFi */
