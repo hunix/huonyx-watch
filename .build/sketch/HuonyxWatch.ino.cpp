@@ -1,673 +1,1304 @@
 #line 1 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 /**
+
  * ╔══════════════════════════════════════════════════════════╗
+
  * ║           HUONYX AI SMARTWATCH FIRMWARE v2.1             ║
+
  * ║     ESP32-2424S012 (ESP32-C3 + GC9A01 + CST816D)       ║
+
  * ║                                                          ║
+
  * ║  A beautiful AI-era smartwatch interface for the         ║
+
  * ║  Huonyx (House of Claws) autonomous AI platform.        ║
+
  * ║                                                          ║
+
  * ║  Features:                                               ║
+
  * ║  - Digital watch face with battery & status indicators   ║
+
  * ║  - AI chat interface with quick replies                  ║
+
  * ║  - Flipper Zero BLE control screen                       ║
+
  * ║  - Supabase Realtime bridge for remote agent control     ║
+
  * ║  - WebSocket gateway client for HoC protocol             ║
+
  * ║  - Web-based configuration portal                        ║
+
  * ║  - Gesture navigation (swipe between screens)            ║
+
  * ║                                                          ║
+
  * ║  Compatible with: LVGL 9.x, ESP32 core 3.x,            ║
+
  * ║  ArduinoJson 7.x, NimBLE-Arduino 2.x                   ║
+
  * ╚══════════════════════════════════════════════════════════╝
+
  */
+
+
 
 #include "build_config.h"
 #include <Arduino.h>
+
 #include <WiFi.h>
+
 #include <time.h>
+
 #include "gc9a01_driver.h"
+
 #include <lvgl.h>
 
+
+
 #include "hw_config.h"
+
 #include "touch_driver.h"
+
 #include "config_manager.h"
+
 #include "gateway_client.h"
+
 #include "flipper_ble.h"
+
 #include "supabase_bridge.h"
+
 #include "ui_manager.h"
+
 #include "web_portal.h"
 
+
+
 /* ── Global Objects ───────────────────────────────────── */
+
 static GC9A01 tft;
+
 static CST816D_Driver   touch(PIN_TOUCH_SDA, PIN_TOUCH_SCL, PIN_TOUCH_INT, PIN_TOUCH_RST, TOUCH_I2C_ADDR);
+
 static ConfigManager    configMgr;
+
 static GatewayClient    gateway;
+
 static FlipperBLE       flipper;
+
 static SupabaseBridge   bridge;
+
 static UIManager        ui;
+
 static WebPortal        webPortal(&configMgr);
 
+
+
 /* ── LVGL 9 Display Buffer ────────────────────────────── */
+
 /* In LVGL 9, buffers are raw uint8_t arrays sized in bytes */
+
 static uint8_t lvgl_buf1[LVGL_BUF_SIZE * 2];  /* RGB565 = 2 bytes per pixel */
 
+
+
 /* ── Timing ───────────────────────────────────────────── */
+
 static unsigned long lastTimeUpdate    = 0;
+
 static unsigned long lastWiFiCheck     = 0;
+
 static unsigned long lastBatteryCheck  = 0;
+
 static unsigned long lastStatusBcast   = 0;
+
 static bool          wifiConnected     = false;
+
 static bool          gatewayStarted    = false;
+
 static bool          flipperStarted    = false;
+
 static bool          bridgeStarted     = false;
+
 static bool          ntpSynced         = false;
 
+
+
 /* ── Accumulator for streaming chat deltas (stack-allocated to avoid heap fragmentation) ── */
+
 static char currentRunId[32]     = "";
+
 static char accumulatedText[CHAT_MAX_MSG_LEN] = "";
+
 static size_t accumulatedLen = 0;
 
+
+
 /* ══════════════════════════════════════════════════════════
+
  *  LVGL 9 CALLBACKS
+
  * ══════════════════════════════════════════════════════════ */
 
+
+
 /**
+
  * LVGL 9 flush callback.
+
  * Signature: void flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
+
  * In LVGL 9, the pixel map is a raw byte buffer (RGB565 in our case).
+
  */
-#line 78 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+
+#line 154 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map);
-#line 99 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 196 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void lvglTouchReadCb(lv_indev_t* indev, lv_indev_data_t* data);
-#line 113 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 224 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static uint32_t lvglTickCb(void);
-#line 121 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 240 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onChatDelta(const char* runId, const char* text, bool isFinal);
-#line 157 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 312 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onGatewayStateChange(GatewayState newState);
-#line 165 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 328 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onGatewayFlipperCommand(const char* command, const char* source);
-#line 189 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 376 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onFlipperResponse(uint32_t cmdId, const char* response, bool complete);
-#line 207 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 412 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onFlipperStateChange(FlipperState newState);
-#line 244 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 486 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onBridgeCommand(const char* command, const char* source);
-#line 275 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 548 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onBridgeStateChange(BridgeState newState);
-#line 284 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 566 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onBridgeAgentMessage(const char* message);
-#line 294 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 586 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void connectWiFi();
-#line 333 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 664 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void startGateway();
-#line 352 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 702 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void startFlipper();
-#line 367 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 732 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void startBridge();
-#line 388 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 774 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static int readBatteryLevel();
-#line 407 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 812 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static bool isBatteryCharging();
-#line 423 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 844 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void updateTimeDisplay();
-#line 451 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 900 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 void setup();
-#line 546 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 1090 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 void loop();
-#line 78 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 154 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map) {
+
     uint32_t w = (area->x2 - area->x1 + 1);
+
     uint32_t h = (area->y2 - area->y1 + 1);
+
     uint32_t len = w * h;
 
+
+
     /* Swap bytes in-place: LVGL=little-endian, GC9A01=big-endian */
+
     uint16_t* px = (uint16_t*)px_map;
+
     for (uint32_t i = 0; i < len; i++) {
+
         px[i] = (px[i] >> 8) | (px[i] << 8);
+
     }
+
+
 
     tft.setWindow(area->x1, area->y1, area->x2, area->y2);
+
     tft.pushPixelsRaw(px_map, len * 2);
 
+
+
     lv_display_flush_ready(disp);
+
 }
 
+
+
 /**
+
  * LVGL 9 touch read callback.
+
  * Signature: void read_cb(lv_indev_t *indev, lv_indev_data_t *data)
+
  */
+
 static void lvglTouchReadCb(lv_indev_t* indev, lv_indev_data_t* data) {
+
     TouchPoint tp;
+
     if (touch.read(tp) && tp.pressed) {
+
         data->state = LV_INDEV_STATE_PRESSED;
+
         data->point.x = tp.x;
+
         data->point.y = tp.y;
+
     } else {
+
         data->state = LV_INDEV_STATE_RELEASED;
+
     }
+
 }
 
+
+
 /**
+
  * LVGL 9 tick callback - provides millisecond ticks to LVGL.
+
  */
+
 static uint32_t lvglTickCb(void) {
+
     return millis();
+
 }
+
+
 
 /* ══════════════════════════════════════════════════════════
+
  *  GATEWAY CALLBACKS
+
  * ══════════════════════════════════════════════════════════ */
+
+
 
 static void onChatDelta(const char* runId, const char* text, bool isFinal) {
+
     if (strcmp(currentRunId, runId) != 0) {
+
         strncpy(currentRunId, runId, sizeof(currentRunId) - 1);
+
         currentRunId[sizeof(currentRunId) - 1] = '\0';
+
         accumulatedLen = 0;
+
         accumulatedText[0] = '\0';
+
     }
+
+
 
     /* Append new text, respecting buffer limit */
+
     size_t textLen = strlen(text);
+
     size_t space = sizeof(accumulatedText) - accumulatedLen - 1;
+
     if (textLen > space) textLen = space;
+
     if (textLen > 0) {
+
         memcpy(accumulatedText + accumulatedLen, text, textLen);
+
         accumulatedLen += textLen;
+
         accumulatedText[accumulatedLen] = '\0';
+
     }
+
+
 
     if (isFinal) {
+
         ui.updateAgentTyping(false);
 
+
+
         /* Truncate display if needed */
+
         if (accumulatedLen > CHAT_MAX_MSG_LEN - 4) {
+
             accumulatedText[CHAT_MAX_MSG_LEN - 4] = '.';
+
             accumulatedText[CHAT_MAX_MSG_LEN - 3] = '.';
+
             accumulatedText[CHAT_MAX_MSG_LEN - 2] = '.';
+
             accumulatedText[CHAT_MAX_MSG_LEN - 1] = '\0';
+
         }
+
+
 
         ui.addChatMessage(accumulatedText, false);
+
         currentRunId[0] = '\0';
+
         accumulatedLen = 0;
+
         accumulatedText[0] = '\0';
+
     }
+
 }
+
+
 
 static void onGatewayStateChange(GatewayState newState) {
+
     ui.updateGatewayStatus(newState);
+
     Serial.printf("[MAIN] Gateway state: %d\n", newState);
+
 }
 
+
+
 /**
+
  * Called when the agent sends a flipper command via the HoC gateway
+
  */
+
 static void onGatewayFlipperCommand(const char* command, const char* source) {
+
     Serial.printf("[GW-FLIP] Command from %s: %s\n", source, command);
 
+
+
     char logBuf[160];
+
     snprintf(logBuf, sizeof(logBuf), "[%s] %s", source, command);
+
     ui.addFlipperLog(logBuf, true);
 
+
+
     if (flipper.isReady()) {
+
         uint32_t cmdId = flipper.sendCommand(command);
+
         if (cmdId == 0) {
+
             ui.addFlipperLog("Queue full!", false);
+
         }
+
     } else {
+
         ui.addFlipperLog("Flipper not connected", false);
+
     }
+
 }
+
+
 
 /* ══════════════════════════════════════════════════════════
+
  *  FLIPPER BLE CALLBACKS
+
  * ══════════════════════════════════════════════════════════ */
 
+
+
 /**
+
  * Called when a Flipper command completes (or times out)
+
  */
+
 static void onFlipperResponse(uint32_t cmdId, const char* response, bool complete) {
+
     Serial.printf("[FLIP-CB] Cmd #%u %s: %s\n", cmdId,
+
                   complete ? "complete" : "partial", response);
 
+
+
     if (complete) {
+
         /* Show result in Flipper log */
+
         ui.addFlipperLog(response, false);
 
+
+
         /* Forward result to Supabase bridge for the agent */
+
         if (bridgeStarted && bridge.isJoined()) {
+
             bridge.sendFlipperResult(cmdId, response, true);
+
         }
+
     }
+
 }
 
+
+
 /**
+
  * Called when Flipper connection state changes
+
  */
+
 static void onFlipperStateChange(FlipperState newState) {
+
     ui.updateFlipperStatus(newState);
 
+
+
     const char* stateStr = "idle";
+
     switch (newState) {
+
         case FLIP_SCANNING:   stateStr = "scanning"; break;
+
         case FLIP_CONNECTING: stateStr = "connecting"; break;
+
         case FLIP_CONNECTED:  stateStr = "connected"; break;
+
         case FLIP_READY:      stateStr = "ready"; break;
+
         case FLIP_BUSY:       stateStr = "busy"; break;
+
         case FLIP_ERROR:      stateStr = "error"; break;
+
         default: break;
+
     }
+
+
 
     Serial.printf("[MAIN] Flipper state: %s\n", stateStr);
 
+
+
     /* Notify bridge of Flipper state changes */
+
     if (bridgeStarted && bridge.isJoined()) {
+
         bridge.sendFlipperStatus(stateStr, flipper.getDeviceName(), flipper.getRssi());
+
     }
+
+
 
     /* Update Flipper info on UI */
+
     if (newState >= FLIP_CONNECTED) {
+
         ui.updateFlipperInfo(flipper.getDeviceName(), flipper.getRssi());
+
     } else {
+
         ui.updateFlipperInfo("---", 0);
+
     }
+
 }
 
+
+
 /* ══════════════════════════════════════════════════════════
+
  *  SUPABASE BRIDGE CALLBACKS
+
  * ══════════════════════════════════════════════════════════ */
 
+
+
 /**
+
  * Called when a Flipper command arrives from the remote agent
+
  * via the Supabase Realtime broadcast channel.
+
  */
+
 static void onBridgeCommand(const char* command, const char* source) {
+
     Serial.printf("[BRIDGE-CB] Command from %s: %s\n", source, command);
 
+
+
     /* Show in Flipper log */
+
     char logBuf[160];
+
     snprintf(logBuf, sizeof(logBuf), "[%s] %s", source, command);
+
     ui.addFlipperLog(logBuf, true);
 
+
+
     /* Forward to Flipper if connected */
+
     if (flipper.isReady()) {
+
         uint32_t cmdId = flipper.sendCommand(command);
+
         if (cmdId == 0) {
+
             /* Queue full */
+
             ui.addFlipperLog("Queue full!", false);
+
             if (bridgeStarted && bridge.isJoined()) {
+
                 bridge.sendFlipperResult(0, "Command queue full", false);
+
             }
+
         }
+
     } else {
+
         /* Flipper not connected */
+
         const char* errMsg = "Flipper not connected";
+
         ui.addFlipperLog(errMsg, false);
+
         if (bridgeStarted && bridge.isJoined()) {
+
             bridge.sendFlipperResult(0, errMsg, false);
+
         }
+
     }
+
 }
 
+
+
 /**
+
  * Called when the bridge connection state changes
+
  */
+
 static void onBridgeStateChange(BridgeState newState) {
+
     ui.updateBridgeStatus(newState);
+
     Serial.printf("[MAIN] Bridge state: %d\n", newState);
+
 }
 
+
+
 /**
+
  * Called when the agent sends a text message via the bridge
+
  * (separate from Flipper commands - e.g., status updates, notifications)
+
  */
+
 static void onBridgeAgentMessage(const char* message) {
+
     Serial.printf("[BRIDGE-CB] Agent message: %s\n", message);
+
     /* Show in chat as an agent message */
+
     ui.addChatMessage(message, false);
+
 }
+
+
 
 /* ══════════════════════════════════════════════════════════
+
  *  WIFI MANAGEMENT
+
  * ══════════════════════════════════════════════════════════ */
+
+
 
 static void connectWiFi() {
+
     if (!configMgr.hasWiFiConfig()) {
+
         Serial.println("[WIFI] No WiFi config, starting AP mode");
+
         webPortal.startAP();
+
         return;
+
     }
+
+
 
     Serial.printf("[WIFI] Connecting to: %s\n", configMgr.config().wifiSSID);
+
     WiFi.mode(WIFI_STA);
+
     WiFi.begin(configMgr.config().wifiSSID, configMgr.config().wifiPass);
 
+
+
     unsigned long start = millis();
+
     while (WiFi.status() != WL_CONNECTED && millis() - start < WIFI_CONNECT_TIMEOUT_MS) {
+
         delay(100);
+
         lv_timer_handler();
+
     }
+
+
 
     if (WiFi.status() == WL_CONNECTED) {
+
         wifiConnected = true;
+
         Serial.printf("[WIFI] Connected! IP: %s\n", WiFi.localIP().toString().c_str());
 
+
+
         /* Start web portal in STA mode */
+
         webPortal.startSTA();
 
+
+
         /* Configure NTP */
+
         int8_t tz = configMgr.config().timezone;
+
         configTime(tz * 3600, 0, "pool.ntp.org", "time.nist.gov");
+
         Serial.printf("[NTP] Configured with UTC%+d\n", tz);
+
     } else {
+
         Serial.println("[WIFI] Connection failed, starting AP mode");
+
         WiFi.disconnect();
+
         webPortal.startAP();
+
     }
+
 }
 
+
+
 /* ══════════════════════════════════════════════════════════
+
  *  SERVICE STARTUP
+
  * ══════════════════════════════════════════════════════════ */
+
+
 
 static void startGateway() {
+
     if (!configMgr.hasGatewayConfig() || !wifiConnected) return;
 
+
+
     gateway.onChatDelta(onChatDelta);
+
     gateway.onStateChange(onGatewayStateChange);
+
     gateway.onFlipperCommand(onGatewayFlipperCommand);
 
+
+
     gateway.begin(
+
         configMgr.config().gwHost,
+
         configMgr.config().gwPort,
+
         configMgr.config().gwToken,
+
         configMgr.config().gwUseSSL
+
     );
+
+
 
     gatewayStarted = true;
+
     Serial.printf("[GW] Starting connection to %s:%d\n",
+
                   configMgr.config().gwHost, configMgr.config().gwPort);
+
 }
+
+
 
 static void startFlipper() {
+
     flipper.onResponse(onFlipperResponse);
+
     flipper.onStateChange(onFlipperStateChange);
+
     flipper.begin();
+
     flipperStarted = true;
 
+
+
     /* Auto-connect if configured */
+
     if (configMgr.config().flipperAuto) {
+
         const char* name = configMgr.config().flipperName;
+
         flipper.startScan(name);
+
         Serial.printf("[FLIP] Auto-scanning for: %s\n",
+
                       name[0] ? name : "any Flipper");
+
     }
+
 }
+
+
 
 static void startBridge() {
+
     if (!configMgr.hasSupabaseConfig() || !wifiConnected) return;
 
+
+
     bridge.onCommand(onBridgeCommand);
+
     bridge.onStateChange(onBridgeStateChange);
+
     bridge.onAgentMessage(onBridgeAgentMessage);
 
+
+
     bridge.begin(
+
         configMgr.config().sbUrl,
+
         configMgr.config().sbKey
+
     );
 
+
+
     bridgeStarted = true;
+
     Serial.printf("[BRIDGE] Starting Supabase bridge to: %s\n",
+
                   configMgr.config().sbUrl);
+
 }
 
+
+
 /* ══════════════════════════════════════════════════════════
+
  *  BATTERY READING (IP5306)
+
  * ══════════════════════════════════════════════════════════ */
+
+
 
 static int readBatteryLevel() {
+
     Wire.beginTransmission(IP5306_I2C_ADDR);
+
     Wire.write(0x78);
+
     if (Wire.endTransmission() != 0) {
+
         return -1;
+
     }
 
+
+
     Wire.requestFrom((uint8_t)IP5306_I2C_ADDR, (uint8_t)1);
+
     if (!Wire.available()) return -1;
 
+
+
     uint8_t raw = Wire.read();
+
+
 
     if (raw & 0x08) return 100;
+
     if (raw & 0x04) return 75;
+
     if (raw & 0x02) return 50;
+
     if (raw & 0x01) return 25;
+
     return 5;
+
 }
+
+
 
 static bool isBatteryCharging() {
+
     Wire.beginTransmission(IP5306_I2C_ADDR);
+
     Wire.write(0x70);
+
     if (Wire.endTransmission() != 0) return false;
 
+
+
     Wire.requestFrom((uint8_t)IP5306_I2C_ADDR, (uint8_t)1);
+
     if (!Wire.available()) return false;
 
+
+
     uint8_t raw = Wire.read();
+
     return (raw & 0x08) != 0;
+
 }
 
+
+
 /* ══════════════════════════════════════════════════════════
+
  *  TIME UPDATE
+
  * ══════════════════════════════════════════════════════════ */
+
+
 
 static void updateTimeDisplay() {
+
     struct tm timeinfo;
+
     if (!getLocalTime(&timeinfo, 100)) {
+
         if (!ntpSynced) {
+
             unsigned long sec = millis() / 1000;
+
             int h = (sec / 3600) % 24;
+
             int m = (sec / 60) % 60;
+
             ui.updateTime(h, m, sec % 60);
+
         }
+
         return;
+
     }
+
+
 
     ntpSynced = true;
+
     ui.updateTime(timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
 
+
+
     char dateBuf[32];
+
     static const char* days[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+
     static const char* months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+
                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
     snprintf(dateBuf, sizeof(dateBuf), "%s, %s %d",
+
              days[timeinfo.tm_wday], months[timeinfo.tm_mon], timeinfo.tm_mday);
+
     ui.updateDate(dateBuf);
+
 }
 
+
+
 /* ══════════════════════════════════════════════════════════
+
  *  SETUP
+
  * ══════════════════════════════════════════════════════════ */
 
+
+
 void setup() {
+
     Serial.begin(115200);
+
     delay(500);
+
     Serial.println("\n╔══════════════════════════════════════╗");
+
     Serial.println("║   HUONYX AI SMARTWATCH v" FIRMWARE_VERSION "        ║");
+
     Serial.println("║   ESP32-2424S012 + Flipper Bridge    ║");
+
     Serial.println("╚══════════════════════════════════════╝\n");
 
+
+
     /* ── Initialize display ───────────────────────── */
+
     tft.init();
+
     tft.setBacklight(200);
+
     Serial.println("[INIT] Display initialized");
 
+
+
     /* ── Initialize touch ─────────────────────────── */
+
     if (touch.begin()) {
+
         Serial.println("[INIT] Touch initialized");
+
     } else {
+
         Serial.println("[INIT] Touch init FAILED");
+
     }
 
+
+
     /* ── Initialize LVGL 9 ────────────────────────── */
+
     lv_init();
 
+
+
     /* Set tick source for LVGL 9 */
+
     lv_tick_set_cb(lvglTickCb);
 
+
+
     /* Create display (LVGL 9 API - no more driver structs) */
+
     lv_display_t* disp = lv_display_create(TFT_WIDTH, TFT_HEIGHT);
+
     lv_display_set_flush_cb(disp, lvglFlushCb);
+
     lv_display_set_buffers(disp, lvgl_buf1, NULL,
+
                            sizeof(lvgl_buf1),
+
                            LV_DISPLAY_RENDER_MODE_PARTIAL);
 
+
+
     /* Create input device (LVGL 9 API - no more driver structs) */
+
     lv_indev_t* indev = lv_indev_create();
+
     lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+
     lv_indev_set_read_cb(indev, lvglTouchReadCb);
+
+
 
     Serial.println("[INIT] LVGL 9 initialized");
 
+
+
     /* ── Load configuration ───────────────────────── */
+
     configMgr.begin();
+
     Serial.printf("[INIT] Config loaded\n");
+
     Serial.printf("  WiFi: %s\n", configMgr.config().wifiSSID);
+
     Serial.printf("  Gateway: %s:%d\n", configMgr.config().gwHost, configMgr.config().gwPort);
+
     Serial.printf("  Supabase: %s\n", configMgr.config().sbUrl);
+
     Serial.printf("  Flipper: %s (auto=%d)\n", configMgr.config().flipperName,
+
                   configMgr.config().flipperAuto);
 
+
+
     /* Apply saved brightness */
+
     tft.setBacklight(configMgr.config().brightness);
 
+
+
     /* ── Build UI ─────────────────────────────────── */
+
     ui.begin(&gateway, &configMgr, &flipper, &bridge);
+
     ui.updateSettingsValues();
+
     Serial.println("[INIT] UI built");
 
+
+
     /* ── Connect WiFi ─────────────────────────────── */
+
     connectWiFi();
 
+
+
     if (wifiConnected) {
+
         ui.updateWiFiStrength(WiFi.RSSI());
+
     } else {
+
         ui.updateWiFiStrength(0);
+
     }
+
+
 
     /* ── Start Gateway ────────────────────────────── */
+
     if (wifiConnected && configMgr.hasGatewayConfig()) {
+
         startGateway();
+
     }
+
+
 
     /* ── Start Flipper BLE ────────────────────────── */
+
     startFlipper();
 
+
+
     /* ── Start Supabase Bridge ────────────────────── */
+
     if (wifiConnected && configMgr.hasSupabaseConfig()) {
+
         startBridge();
+
     }
+
+
 
     /* ── Initial battery read ─────────────────────── */
+
     int batt = readBatteryLevel();
+
     if (batt >= 0) {
+
         ui.updateBattery(batt, isBatteryCharging());
+
     } else {
+
         ui.updateBattery(100, false);
+
     }
+
+
 
     Serial.printf("[INIT] Free heap: %d bytes\n", ESP.getFreeHeap());
+
     Serial.println("[INIT] Setup complete!\n");
+
 }
+
+
 
 /* ══════════════════════════════════════════════════════════
+
  *  MAIN LOOP
+
  * ══════════════════════════════════════════════════════════ */
 
+
+
 void loop() {
+
     /* ── LVGL tick ────────────────────────────────── */
+
     lv_timer_handler();
 
+
+
     /* ── Gateway loop ─────────────────────────────── */
+
     if (gatewayStarted) {
+
         gateway.loop();
+
     }
+
+
 
     /* ── Flipper BLE loop ─────────────────────────── */
+
     if (flipperStarted) {
+
         flipper.loop();
+
     }
+
+
 
     /* ── Supabase bridge loop ─────────────────────── */
+
     if (bridgeStarted) {
+
         bridge.loop();
+
     }
+
+
 
     /* ── Web portal loop ──────────────────────────── */
+
     webPortal.loop();
 
+
+
     /* ── Time update (every second) ───────────────── */
+
     if (millis() - lastTimeUpdate >= 1000) {
+
         lastTimeUpdate = millis();
+
         updateTimeDisplay();
+
     }
+
+
 
     /* ── WiFi check (every 30 seconds) ────────────── */
+
     if (millis() - lastWiFiCheck >= WIFI_RECONNECT_INTERVAL) {
+
         lastWiFiCheck = millis();
 
+
+
         if (WiFi.status() == WL_CONNECTED) {
+
             if (!wifiConnected) {
+
                 wifiConnected = true;
+
                 Serial.println("[WIFI] Reconnected");
 
+
+
                 /* Start services that need WiFi */
+
                 if (!gatewayStarted && configMgr.hasGatewayConfig()) {
+
                     startGateway();
+
                 }
+
                 if (!bridgeStarted && configMgr.hasSupabaseConfig()) {
+
                     startBridge();
+
                 }
+
             }
+
             ui.updateWiFiStrength(WiFi.RSSI());
+
         } else {
+
             if (wifiConnected) {
+
                 wifiConnected = false;
+
                 Serial.println("[WIFI] Disconnected");
+
                 ui.updateWiFiStrength(0);
+
             }
+
             if (configMgr.hasWiFiConfig()) {
+
                 WiFi.reconnect();
+
             }
+
         }
+
     }
+
+
 
     /* ── Battery check (every 60 seconds) ─────────── */
+
     if (millis() - lastBatteryCheck >= 60000) {
+
         lastBatteryCheck = millis();
+
         int batt = readBatteryLevel();
+
         if (batt >= 0) {
+
             ui.updateBattery(batt, isBatteryCharging());
+
         }
+
     }
+
+
 
     /* ── Periodic status broadcast (every 60 seconds) ── */
+
     if (bridgeStarted && bridge.isJoined() && millis() - lastStatusBcast >= 60000) {
+
         lastStatusBcast = millis();
+
         int batt = readBatteryLevel();
+
         bridge.sendWatchStatus(
+
             batt >= 0 ? batt : 100,
+
             isBatteryCharging(),
+
             wifiConnected,
+
             gatewayStarted && gateway.isConnected(),
+
             flipperStarted && flipper.isConnected()
+
         );
+
     }
 
+
+
     /* ── Small delay to prevent watchdog ──────────── */
+
     delay(5);
+
 }
+
+
+
+
+
 
 
 
