@@ -78,11 +78,16 @@ static size_t accumulatedLen = 0;
 static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map) {
     uint32_t w = (area->x2 - area->x1 + 1);
     uint32_t h = (area->y2 - area->y1 + 1);
+    uint32_t len = w * h;
 
-    /* raw SPI - no startWrite needed */
+    /* Swap bytes in-place: LVGL=little-endian, GC9A01=big-endian */
+    uint16_t* px = (uint16_t*)px_map;
+    for (uint32_t i = 0; i < len; i++) {
+        px[i] = (px[i] >> 8) | (px[i] << 8);
+    }
+
     tft.setWindow(area->x1, area->y1, area->x2, area->y2);
-    tft.pushPixels((uint16_t*)px_map, w * h);
-    /* raw SPI - no endWrite needed */
+    tft.pushPixelsRaw(px_map, len * 2);
 
     lv_display_flush_ready(disp);
 }
@@ -453,10 +458,23 @@ void setup() {
 
     /* ── Initialize display ───────────────────────── */
     tft.init();
-    /* rotation handled in GC9A01 init */
-    /* screen cleared in GC9A01 init */
     tft.setBacklight(200);
     Serial.println("[INIT] Display initialized");
+
+    /* === DISPLAY TEST: solid colors to verify GC9A01 init === */
+    Serial.println("[TEST] RED...");
+    tft.fillScreen(0xF800);  // RED
+    delay(1500);
+    Serial.println("[TEST] GREEN...");
+    tft.fillScreen(0x07E0);  // GREEN
+    delay(1500);
+    Serial.println("[TEST] BLUE...");
+    tft.fillScreen(0x001F);  // BLUE
+    delay(1500);
+    Serial.println("[TEST] BLACK...");
+    tft.fillScreen(0x0000);  // BLACK
+    delay(500);
+    Serial.println("[TEST] Color test done!");
 
     /* ── Initialize touch ─────────────────────────── */
     if (touch.begin()) {

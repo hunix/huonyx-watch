@@ -78,53 +78,58 @@ static size_t accumulatedLen = 0;
  */
 #line 78 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map);
-#line 94 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 99 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void lvglTouchReadCb(lv_indev_t* indev, lv_indev_data_t* data);
-#line 108 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 113 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static uint32_t lvglTickCb(void);
-#line 116 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 121 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onChatDelta(const char* runId, const char* text, bool isFinal);
-#line 152 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 157 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onGatewayStateChange(GatewayState newState);
-#line 160 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 165 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onGatewayFlipperCommand(const char* command, const char* source);
-#line 184 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 189 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onFlipperResponse(uint32_t cmdId, const char* response, bool complete);
-#line 202 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 207 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onFlipperStateChange(FlipperState newState);
-#line 239 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 244 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onBridgeCommand(const char* command, const char* source);
-#line 270 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 275 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onBridgeStateChange(BridgeState newState);
-#line 279 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 284 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void onBridgeAgentMessage(const char* message);
-#line 289 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 294 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void connectWiFi();
-#line 328 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 333 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void startGateway();
-#line 347 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 352 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void startFlipper();
-#line 362 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 367 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void startBridge();
-#line 383 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 388 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static int readBatteryLevel();
-#line 402 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 407 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static bool isBatteryCharging();
-#line 418 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 423 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void updateTimeDisplay();
-#line 446 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 451 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 void setup();
-#line 543 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 561 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 void loop();
 #line 78 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map) {
     uint32_t w = (area->x2 - area->x1 + 1);
     uint32_t h = (area->y2 - area->y1 + 1);
+    uint32_t len = w * h;
 
-    /* raw SPI - no startWrite needed */
+    /* Swap bytes in-place: LVGL=little-endian, GC9A01=big-endian */
+    uint16_t* px = (uint16_t*)px_map;
+    for (uint32_t i = 0; i < len; i++) {
+        px[i] = (px[i] >> 8) | (px[i] << 8);
+    }
+
     tft.setWindow(area->x1, area->y1, area->x2, area->y2);
-    tft.pushPixels((uint16_t*)px_map, w * h);
-    /* raw SPI - no endWrite needed */
+    tft.pushPixelsRaw(px_map, len * 2);
 
     lv_display_flush_ready(disp);
 }
@@ -495,10 +500,23 @@ void setup() {
 
     /* ── Initialize display ───────────────────────── */
     tft.init();
-    /* rotation handled in GC9A01 init */
-    /* screen cleared in GC9A01 init */
     tft.setBacklight(200);
     Serial.println("[INIT] Display initialized");
+
+    /* === DISPLAY TEST: solid colors to verify GC9A01 init === */
+    Serial.println("[TEST] RED...");
+    tft.fillScreen(0xF800);  // RED
+    delay(1500);
+    Serial.println("[TEST] GREEN...");
+    tft.fillScreen(0x07E0);  // GREEN
+    delay(1500);
+    Serial.println("[TEST] BLUE...");
+    tft.fillScreen(0x001F);  // BLUE
+    delay(1500);
+    Serial.println("[TEST] BLACK...");
+    tft.fillScreen(0x0000);  // BLACK
+    delay(500);
+    Serial.println("[TEST] Color test done!");
 
     /* ── Initialize touch ─────────────────────────── */
     if (touch.begin()) {
