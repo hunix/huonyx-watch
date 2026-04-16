@@ -109,6 +109,177 @@
     }
   },
   {
+    "missing_include_h": "TFT_eSPI.h"
+  },
+  {
+    "added_include_path": "C:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI"
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp",
+      "object_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp.o",
+      "depfile_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-rv32\\2302/bin/riscv32-esp-elf-g++",
+        "-c",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=160000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32C3_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32C3_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32c3\"",
+        "-DARDUINO_PARTITION_min_spiffs",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=min_spiffs,UploadSpeed=921600\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_USB_MODE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=1",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/defines",
+        "-IC:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\ScreenTest",
+        "-iprefix",
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/include/",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/includes",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/qio_qspi/include",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\cores\\esp32",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\variants\\esp32c3",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPI\\src",
+        "-IC:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/build_opt.h",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/file_opts",
+        "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp",
+        "-o",
+        "nul"
+      ]
+    }
+  },
+  {
+    "missing_include_h": "FS.h"
+  },
+  {
+    "added_include_path": "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src"
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp",
+      "object_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp.o",
+      "depfile_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-rv32\\2302/bin/riscv32-esp-elf-g++",
+        "-c",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=160000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32C3_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32C3_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32c3\"",
+        "-DARDUINO_PARTITION_min_spiffs",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=min_spiffs,UploadSpeed=921600\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_USB_MODE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=1",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/defines",
+        "-IC:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\ScreenTest",
+        "-iprefix",
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/include/",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/includes",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/qio_qspi/include",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\cores\\esp32",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\variants\\esp32c3",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPI\\src",
+        "-IC:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/build_opt.h",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/file_opts",
+        "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp",
+        "-o",
+        "nul"
+      ]
+    }
+  },
+  {
+    "missing_include_h": "SPIFFS.h"
+  },
+  {
+    "added_include_path": "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPIFFS\\src"
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp",
+      "object_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp.o",
+      "depfile_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-rv32\\2302/bin/riscv32-esp-elf-g++",
+        "-c",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=160000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32C3_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32C3_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32c3\"",
+        "-DARDUINO_PARTITION_min_spiffs",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=min_spiffs,UploadSpeed=921600\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_USB_MODE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=1",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/defines",
+        "-IC:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\ScreenTest",
+        "-iprefix",
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/include/",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/includes",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/qio_qspi/include",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\cores\\esp32",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\variants\\esp32c3",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPI\\src",
+        "-IC:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPIFFS\\src",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/build_opt.h",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/file_opts",
+        "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\sketch\\ScreenTest.ino.cpp",
+        "-o",
+        "nul"
+      ]
+    }
+  },
+  {
     "missing_include_h": ""
   },
   {
@@ -152,9 +323,232 @@
         "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\cores\\esp32",
         "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\variants\\esp32c3",
         "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPI\\src",
+        "-IC:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPIFFS\\src",
         "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/build_opt.h",
         "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/file_opts",
         "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPI\\src\\SPI.cpp",
+        "-o",
+        "nul"
+      ]
+    }
+  },
+  {
+    "missing_include_h": ""
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI\\TFT_eSPI.cpp",
+      "object_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\libraries\\TFT_eSPI\\TFT_eSPI.cpp.o",
+      "depfile_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\libraries\\TFT_eSPI\\TFT_eSPI.cpp.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-rv32\\2302/bin/riscv32-esp-elf-g++",
+        "-c",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=160000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32C3_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32C3_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32c3\"",
+        "-DARDUINO_PARTITION_min_spiffs",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=min_spiffs,UploadSpeed=921600\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_USB_MODE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=1",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/defines",
+        "-IC:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\ScreenTest",
+        "-iprefix",
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/include/",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/includes",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/qio_qspi/include",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\cores\\esp32",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\variants\\esp32c3",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPI\\src",
+        "-IC:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPIFFS\\src",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/build_opt.h",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/file_opts",
+        "C:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI\\TFT_eSPI.cpp",
+        "-o",
+        "nul"
+      ]
+    }
+  },
+  {
+    "missing_include_h": ""
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src\\FS.cpp",
+      "object_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\libraries\\FS\\FS.cpp.o",
+      "depfile_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\libraries\\FS\\FS.cpp.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-rv32\\2302/bin/riscv32-esp-elf-g++",
+        "-c",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=160000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32C3_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32C3_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32c3\"",
+        "-DARDUINO_PARTITION_min_spiffs",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=min_spiffs,UploadSpeed=921600\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_USB_MODE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=1",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/defines",
+        "-IC:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\ScreenTest",
+        "-iprefix",
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/include/",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/includes",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/qio_qspi/include",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\cores\\esp32",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\variants\\esp32c3",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPI\\src",
+        "-IC:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPIFFS\\src",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/build_opt.h",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/file_opts",
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src\\FS.cpp",
+        "-o",
+        "nul"
+      ]
+    }
+  },
+  {
+    "missing_include_h": ""
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src\\vfs_api.cpp",
+      "object_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\libraries\\FS\\vfs_api.cpp.o",
+      "depfile_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\libraries\\FS\\vfs_api.cpp.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-rv32\\2302/bin/riscv32-esp-elf-g++",
+        "-c",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=160000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32C3_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32C3_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32c3\"",
+        "-DARDUINO_PARTITION_min_spiffs",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=min_spiffs,UploadSpeed=921600\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_USB_MODE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=1",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/defines",
+        "-IC:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\ScreenTest",
+        "-iprefix",
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/include/",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/includes",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/qio_qspi/include",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\cores\\esp32",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\variants\\esp32c3",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPI\\src",
+        "-IC:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPIFFS\\src",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/build_opt.h",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/file_opts",
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src\\vfs_api.cpp",
+        "-o",
+        "nul"
+      ]
+    }
+  },
+  {
+    "missing_include_h": ""
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPIFFS\\src\\SPIFFS.cpp",
+      "object_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\libraries\\SPIFFS\\SPIFFS.cpp.o",
+      "depfile_path": "C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test\\libraries\\SPIFFS\\SPIFFS.cpp.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-rv32\\2302/bin/riscv32-esp-elf-g++",
+        "-c",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=160000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32C3_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32C3_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32c3\"",
+        "-DARDUINO_PARTITION_min_spiffs",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=min_spiffs,UploadSpeed=921600\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_USB_MODE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=1",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/defines",
+        "-IC:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\ScreenTest",
+        "-iprefix",
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/include/",
+        "@C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/flags/includes",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-632e0c2a\\esp32c3/qio_qspi/include",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\cores\\esp32",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\variants\\esp32c3",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPI\\src",
+        "-IC:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries\\TFT_eSPI",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\FS\\src",
+        "-IC:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPIFFS\\src",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/build_opt.h",
+        "@C:\\Users\\H\\source\\repos\\huonyx-watch\\.build_test/file_opts",
+        "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7\\libraries\\SPIFFS\\src\\SPIFFS.cpp",
         "-o",
         "nul"
       ]
