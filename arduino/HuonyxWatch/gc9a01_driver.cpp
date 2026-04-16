@@ -160,9 +160,12 @@ void GC9A01::pushPixels(const uint16_t* data, uint32_t len) {
     dcData();
     csLow();
     
-    /* Use SPI transfer for pixel data - swap bytes for RGB565 big-endian */
+    /* Send each pixel as two bytes: high byte first (big-endian for GC9A01).
+     * Using explicit byte transfers avoids transfer16 endianness issues on RISC-V. */
     for (uint32_t i = 0; i < len; i++) {
-        _spi->transfer16(data[i]);
+        uint16_t px = data[i];
+        _spi->transfer(px >> 8);    // high byte first
+        _spi->transfer(px & 0xFF);  // low byte second
     }
     
     csHigh();
@@ -177,11 +180,14 @@ void GC9A01::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color
 
     setWindow(x, y, x + w - 1, y + h - 1);
 
+    uint8_t hi = color >> 8;
+    uint8_t lo = color & 0xFF;
     dcData();
     csLow();
     uint32_t pixels = (uint32_t)w * h;
     for (uint32_t i = 0; i < pixels; i++) {
-        _spi->transfer16(color);
+        _spi->transfer(hi);
+        _spi->transfer(lo);
     }
     csHigh();
 }
