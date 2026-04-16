@@ -25,7 +25,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <time.h>
-#include <TFT_eSPI.h>
+#include "gc9a01_driver.h"
 #include <lvgl.h>
 
 #include "hw_config.h"
@@ -38,7 +38,7 @@
 #include "web_portal.h"
 
 /* ── Global Objects ───────────────────────────────────── */
-static TFT_eSPI        tft = TFT_eSPI();
+static GC9A01 tft;
 static CST816D_Driver   touch(PIN_TOUCH_SDA, PIN_TOUCH_SCL, PIN_TOUCH_INT, PIN_TOUCH_RST, TOUCH_I2C_ADDR);
 static ConfigManager    configMgr;
 static GatewayClient    gateway;
@@ -121,10 +121,10 @@ static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_m
     uint32_t w = (area->x2 - area->x1 + 1);
     uint32_t h = (area->y2 - area->y1 + 1);
 
-    tft.startWrite();
-    tft.setAddrWindow(area->x1, area->y1, w, h);
-    tft.pushColors((uint16_t*)px_map, w * h, true);
-    tft.endWrite();
+    /* raw SPI - no startWrite needed */
+    tft.setWindow(area->x1, area->y1, area->x2, area->y2);
+    tft.pushPixels((uint16_t*)px_map, w * h);
+    /* raw SPI - no endWrite needed */
 
     lv_display_flush_ready(disp);
 }
@@ -495,9 +495,9 @@ void setup() {
 
     /* ── Initialize display ───────────────────────── */
     tft.init();
-    tft.setRotation(0);
-    tft.fillScreen(TFT_BLACK);
-    analogWrite(PIN_TFT_BL, 200);
+    /* rotation handled in GC9A01 init */
+    /* screen cleared in GC9A01 init */
+    tft.setBacklight(200);
     Serial.println("[INIT] Display initialized");
 
     /* ── Initialize touch ─────────────────────────── */
@@ -537,7 +537,7 @@ void setup() {
                   configMgr.config().flipperAuto);
 
     /* Apply saved brightness */
-    analogWrite(PIN_TFT_BL, configMgr.config().brightness);
+    tft.setBacklight(configMgr.config().brightness);
 
     /* ── Build UI ─────────────────────────────────── */
     ui.begin(&gateway, &configMgr, &flipper, &bridge);
@@ -665,4 +665,5 @@ void loop() {
     /* ── Small delay to prevent watchdog ──────────── */
     delay(5);
 }
+
 

@@ -1,8 +1,8 @@
 {
-  "additionalFiles": "..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..",
+  "additionalFiles": "..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..",
   "compiler.optimization_flags": "-Os",
   "customBuildProperties": "",
-  "fqbn": "esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=min_spiffs,UploadSpeed=921600",
+  "fqbn": "esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashFreq=80,FlashSize=4M,PartitionScheme=min_spiffs,UploadSpeed=115200",
   "hardwareFolders": "C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7,C:\\Users\\H\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.7",
   "otherLibrariesFolders": "C:\\Users\\H\\OneDrive - Zenithr Intelligent Solutions\\Documents\\Arduino\\libraries",
   "sketchLocation": "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch"
