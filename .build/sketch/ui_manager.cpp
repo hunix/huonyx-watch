@@ -194,54 +194,59 @@ lv_obj_t* UIManager::createRoundScreen() {
 void UIManager::buildWatchface() {
     _scrWatchface = createRoundScreen();
 
-    /* -- Advanced Sweep Second Ring ------------------------ */
+    /* ── Outer ring decoration ──────────────────────── */
     lv_obj_t* ringOuter = lv_arc_create(_scrWatchface);
-    lv_arc_set_rotation(ringOuter, 270);
-    lv_arc_set_range(ringOuter, 0, 60);
-    lv_arc_set_value(ringOuter, 0); // Seconds
+    lv_arc_set_rotation(ringOuter, 0);
+    lv_arc_set_range(ringOuter, 0, 360);
+    lv_arc_set_value(ringOuter, 360);
     lv_arc_set_bg_angles(ringOuter, 0, 360);
     lv_obj_set_size(ringOuter, 236, 236);
     lv_obj_center(ringOuter);
     lv_obj_set_style_arc_color(ringOuter, lv_color_hex(0x1A1A2E), LV_PART_MAIN);
-    lv_obj_set_style_arc_width(ringOuter, 3, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(ringOuter, 2, LV_PART_MAIN);
     lv_obj_set_style_arc_color(ringOuter, COL_PRIMARY, LV_PART_INDICATOR);
-    lv_obj_set_style_arc_width(ringOuter, 3, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_width(ringOuter, 2, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_opa(ringOuter, LV_OPA_40, LV_PART_INDICATOR);
     lv_obj_remove_flag(ringOuter, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_bg_opa(ringOuter, LV_OPA_TRANSP, LV_PART_KNOB);
 
-    /* Store outer ring in a member or user_data if we want to update it */
-    // For now we'll just store it as _arcSeconds if we add it to header, else animate it randomly:
-    
-    /* -- Time display --------------------------------- */
+    /* ── Time display ───────────────────────────────── */
     _lblTime = lv_label_create(_scrWatchface);
     lv_label_set_text(_lblTime, "12:00");
-    lv_obj_set_style_text_font(_lblTime, &lv_font_montserrat_36, 0); // Bigger font
+    lv_obj_set_style_text_font(_lblTime, &lv_font_montserrat_36, 0);
     lv_obj_set_style_text_color(_lblTime, COL_TEXT, 0);
-    lv_obj_align(_lblTime, LV_ALIGN_CENTER, 0, -10);
+    lv_obj_set_style_text_letter_space(_lblTime, 2, 0);
+    lv_obj_align(_lblTime, LV_ALIGN_CENTER, 0, -20);
 
-    /* -- Date display (Complication Style) -------------- */
+    /* ── AM/PM indicator ────────────────────────────── */
+    _lblAmPm = lv_label_create(_scrWatchface);
+    lv_label_set_text(_lblAmPm, "");
+    lv_obj_set_style_text_font(_lblAmPm, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(_lblAmPm, COL_TEXT_DIM, 0);
+    lv_obj_align_to(_lblAmPm, _lblTime, LV_ALIGN_OUT_RIGHT_TOP, 4, 4);
+
+    /* ── Date display ───────────────────────────────── */
     _lblDate = lv_label_create(_scrWatchface);
-    lv_label_set_text(_lblDate, "APR 15");
-    lv_obj_set_style_text_font(_lblDate, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_text_color(_lblDate, COL_PRIMARY, 0);
-    lv_obj_set_style_text_letter_space(_lblDate, 2, 0);
-    lv_obj_align(_lblDate, LV_ALIGN_CENTER, 0, -45);
+    lv_label_set_text(_lblDate, "Mon, Apr 14");
+    lv_obj_set_style_text_font(_lblDate, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_color(_lblDate, COL_TEXT_DIM, 0);
+    lv_obj_align(_lblDate, LV_ALIGN_CENTER, 0, 16);
 
-    /* -- Top Complication: Gateway LED --------------- */
-    _ledGateway = lv_led_create(_scrWatchface);
-    lv_led_set_color(_ledGateway, COL_ERROR);
-    lv_obj_set_size(_ledGateway, 10, 10);
-    lv_obj_align(_ledGateway, LV_ALIGN_TOP_MID, 0, 20);
-    lv_led_on(_ledGateway);
+    /* ── Day label ──────────────────────────────────── */
+    _lblDay = lv_label_create(_scrWatchface);
+    lv_label_set_text(_lblDay, "");
+    lv_obj_set_style_text_font(_lblDay, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(_lblDay, COL_PRIMARY, 0);
+    lv_obj_align(_lblDay, LV_ALIGN_CENTER, 0, 34);
 
-    /* -- Battery Complication (Left circular arc) ------ */
+    /* ── Battery arc (bottom-left) ──────────────────── */
     _arcBattery = lv_arc_create(_scrWatchface);
     lv_arc_set_rotation(_arcBattery, 135);
     lv_arc_set_range(_arcBattery, 0, 100);
     lv_arc_set_value(_arcBattery, 75);
-    lv_arc_set_bg_angles(_arcBattery, 0, 270);
-    lv_obj_set_size(_arcBattery, 54, 54);
-    lv_obj_align(_arcBattery, LV_ALIGN_LEFT_MID, 10, 10);
+    lv_arc_set_bg_angles(_arcBattery, 0, 90);
+    lv_obj_set_size(_arcBattery, 50, 50);
+    lv_obj_align(_arcBattery, LV_ALIGN_BOTTOM_LEFT, 30, -30);
     lv_obj_set_style_arc_color(_arcBattery, lv_color_hex(0x1A1A2E), LV_PART_MAIN);
     lv_obj_set_style_arc_width(_arcBattery, 4, LV_PART_MAIN);
     lv_obj_set_style_arc_color(_arcBattery, COL_ACCENT, LV_PART_INDICATOR);
@@ -249,84 +254,77 @@ void UIManager::buildWatchface() {
     lv_obj_remove_flag(_arcBattery, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_bg_opa(_arcBattery, LV_OPA_TRANSP, LV_PART_KNOB);
 
-    lv_obj_t* bgBatt = lv_label_create(_arcBattery);
-    lv_label_set_text(bgBatt, LV_SYMBOL_BATTERY_FULL);
-    lv_obj_set_style_text_font(bgBatt, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_text_color(bgBatt, COL_TEXT_DIM, 0);
-    lv_obj_align(bgBatt, LV_ALIGN_CENTER, 0, -5);
-
     _lblBatteryPct = lv_label_create(_arcBattery);
-    lv_label_set_text(_lblBatteryPct, "75");
+    lv_label_set_text(_lblBatteryPct, "75%");
     lv_obj_set_style_text_font(_lblBatteryPct, &lv_font_montserrat_10, 0);
     lv_obj_set_style_text_color(_lblBatteryPct, COL_ACCENT, 0);
-    lv_obj_align(_lblBatteryPct, LV_ALIGN_CENTER, 0, 8);
+    lv_obj_center(_lblBatteryPct);
 
-    /* -- WiFi Complication (Right circular) ----------- */
-    lv_obj_t* wifiCircle = lv_obj_create(_scrWatchface);
-    lv_obj_set_size(wifiCircle, 54, 54);
-    lv_obj_align(wifiCircle, LV_ALIGN_RIGHT_MID, -10, 10);
-    lv_obj_set_style_radius(wifiCircle, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(wifiCircle, lv_color_hex(0x16213E), 0);
-    lv_obj_set_style_bg_opa(wifiCircle, LV_OPA_50, 0);
-    lv_obj_set_style_border_width(wifiCircle, 1, 0);
-    lv_obj_set_style_border_color(wifiCircle, lv_color_hex(0x2A2A4E), 0);
-    lv_obj_remove_flag(wifiCircle, LV_OBJ_FLAG_SCROLLABLE);
+    /* ── Status LEDs (top area) ────────────────────── */
+    /* Gateway LED */
+    _ledGateway = lv_led_create(_scrWatchface);
+    lv_led_set_color(_ledGateway, COL_ERROR);
+    lv_obj_set_size(_ledGateway, 7, 7);
+    lv_obj_align(_ledGateway, LV_ALIGN_TOP_RIGHT, -40, 42);
+    lv_led_on(_ledGateway);
 
-    _imgWifi = lv_label_create(wifiCircle);
-    lv_label_set_text(_imgWifi, LV_SYMBOL_WIFI);
-    lv_obj_set_style_text_color(_imgWifi, COL_PRIMARY, 0);
-    lv_obj_set_style_text_font(_imgWifi, &lv_font_montserrat_14, 0);
-    lv_obj_center(_imgWifi);
-
-    /* -- Bottom Complication: AI Telemetry ----------- */
-    lv_obj_t* btnTele = lv_obj_create(_scrWatchface);
-    lv_obj_set_size(btnTele, 100, 36);
-    lv_obj_align(btnTele, LV_ALIGN_BOTTOM_MID, 0, -25);
-    lv_obj_set_style_radius(btnTele, 18, 0);
-    lv_obj_set_style_bg_color(btnTele, lv_color_hex(0x1E1E3A), 0);
-    lv_obj_set_style_bg_opa(btnTele, LV_OPA_80, 0);
-    lv_obj_set_style_border_width(btnTele, 0, 0);
-    lv_obj_remove_flag(btnTele, LV_OBJ_FLAG_SCROLLABLE);
-
-    lv_obj_t* lblBrand = lv_label_create(btnTele);
-    lv_label_set_text(lblBrand, "H U O N Y X");
-    lv_obj_set_style_text_font(lblBrand, &lv_font_montserrat_10, 0);
-    lv_obj_set_style_text_color(lblBrand, COL_PRIMARY, 0);
-    lv_obj_center(lblBrand);
-
-    /* AI breathing animation for branding */
-    lv_anim_t a;
-    lv_anim_init(&a);
-    lv_anim_set_var(&a, lblBrand);
-    lv_anim_set_values(&a, LV_OPA_40, LV_OPA_100);
-    lv_anim_set_duration(&a, 2500);
-    lv_anim_set_playback_duration(&a, 2500);
-    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_set_exec_cb(&a, [](void* var, int32_t val) {
-        lv_obj_set_style_text_opa((lv_obj_t*)var, val, 0);
-    });
-    lv_anim_start(&a);
-
-    /* -- Hidden LEDs for Bridge/Flipper ------------- */
+    /* Flipper LED */
     _ledFlipper = lv_led_create(_scrWatchface);
-    lv_obj_set_size(_ledFlipper, 6, 6);
-    lv_obj_align(_ledFlipper, LV_ALIGN_TOP_RIGHT, -60, 30);
-    lv_led_set_color(_ledFlipper, COL_FLIPPER);
+    lv_led_set_color(_ledFlipper, COL_TEXT_DIM);
+    lv_obj_set_size(_ledFlipper, 7, 7);
+    lv_obj_align(_ledFlipper, LV_ALIGN_TOP_RIGHT, -52, 42);
     lv_led_off(_ledFlipper);
 
+    /* Bridge LED */
     _ledBridge = lv_led_create(_scrWatchface);
-    lv_obj_set_size(_ledBridge, 6, 6);
-    lv_obj_align(_ledBridge, LV_ALIGN_TOP_LEFT, 60, 30);
-    lv_led_set_color(_ledBridge, COL_SECONDARY);
+    lv_led_set_color(_ledBridge, COL_TEXT_DIM);
+    lv_obj_set_size(_ledBridge, 7, 7);
+    lv_obj_align(_ledBridge, LV_ALIGN_TOP_RIGHT, -64, 42);
     lv_led_off(_ledBridge);
 
-    /* -- Gesture handling ---------------------------- */
+    /* ── WiFi indicator label (top-left area) ───────── */
+    _imgWifi = lv_label_create(_scrWatchface);
+    lv_label_set_text(_imgWifi, LV_SYMBOL_WIFI);
+    lv_obj_set_style_text_color(_imgWifi, COL_TEXT_DIM, 0);
+    lv_obj_set_style_text_font(_imgWifi, &lv_font_montserrat_14, 0);
+    lv_obj_align(_imgWifi, LV_ALIGN_TOP_LEFT, 50, 40);
+
+    /* ── Huonyx branding ────────────────────────────── */
+    lv_obj_t* lblBrand = lv_label_create(_scrWatchface);
+    lv_label_set_text(lblBrand, "HUONYX");
+    lv_obj_set_style_text_font(lblBrand, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(lblBrand, COL_PRIMARY, 0);
+    lv_obj_set_style_text_letter_space(lblBrand, 4, 0);
+    lv_obj_set_style_text_opa(lblBrand, LV_OPA_60, 0);
+    lv_obj_align(lblBrand, LV_ALIGN_CENTER, 0, -50);
+
+    /* ── Navigation hints ──────────────────────────── */
+    lv_obj_t* lblHintL = lv_label_create(_scrWatchface);
+    lv_label_set_text(lblHintL, LV_SYMBOL_LEFT " Chat");
+    lv_obj_set_style_text_font(lblHintL, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(lblHintL, COL_TEXT_DIM, 0);
+    lv_obj_set_style_text_opa(lblHintL, LV_OPA_30, 0);
+    lv_obj_align(lblHintL, LV_ALIGN_BOTTOM_MID, -30, -22);
+
+    lv_obj_t* lblHintR = lv_label_create(_scrWatchface);
+    lv_label_set_text(lblHintR, "Flip " LV_SYMBOL_RIGHT);
+    lv_obj_set_style_text_font(lblHintR, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(lblHintR, COL_FLIPPER, 0);
+    lv_obj_set_style_text_opa(lblHintR, LV_OPA_30, 0);
+    lv_obj_align(lblHintR, LV_ALIGN_BOTTOM_MID, 30, -22);
+
+    /* ── Gesture handling ──────────────────────────── */
     lv_obj_add_event_cb(_scrWatchface, onGestureEvent, LV_EVENT_GESTURE, this);
 }
+
+/* ══════════════════════════════════════════════════════════
+ *  CHAT SCREEN
+ * ══════════════════════════════════════════════════════════ */
+
 void UIManager::buildChatScreen() {
     _scrChat = createRoundScreen();
 
-    /* -- Header bar ----------------------------------- */
+    /* ── Header bar ─────────────────────────────────── */
     _chatHeader = lv_obj_create(_scrChat);
     lv_obj_add_style(_chatHeader, &_styleHeader, 0);
     lv_obj_set_size(_chatHeader, 200, 32);
@@ -341,7 +339,7 @@ void UIManager::buildChatScreen() {
     lv_obj_center(_lblChatTitle);
     lv_obj_add_event_cb(_chatHeader, onBackButton, LV_EVENT_CLICKED, this);
 
-    /* -- Chat message list ---------------------------- */
+    /* ── Chat message list ──────────────────────────── */
     _chatList = lv_obj_create(_scrChat);
     lv_obj_set_size(_chatList, 210, 120);
     lv_obj_align(_chatList, LV_ALIGN_CENTER, 0, -5);
@@ -353,73 +351,50 @@ void UIManager::buildChatScreen() {
     lv_obj_set_scrollbar_mode(_chatList, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_scroll_dir(_chatList, LV_DIR_VER);
 
-    /* -- Typing indicator (Animated dots) ------------- */
-    _spinnerTyping = lv_label_create(_scrChat);
-    lv_label_set_text(_spinnerTyping, ". . .");
-    lv_obj_set_style_text_font(_spinnerTyping, &lv_font_montserrat_14, 0);
-    lv_obj_set_style_text_color(_spinnerTyping, COL_TEXT_DIM, 0);
-    lv_obj_align(_spinnerTyping, LV_ALIGN_CENTER, -60, 45);
+    /* ── Typing indicator (spinner) ─────────────────── */
+    _spinnerTyping = lv_spinner_create(_scrChat);
+    lv_spinner_set_anim_params(_spinnerTyping, 1000, 60);
+    lv_obj_set_size(_spinnerTyping, 20, 20);
+    lv_obj_align(_spinnerTyping, LV_ALIGN_CENTER, -80, 55);
+    lv_obj_set_style_arc_color(_spinnerTyping, COL_PRIMARY, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_color(_spinnerTyping, COL_SURFACE, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(_spinnerTyping, 3, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_width(_spinnerTyping, 3, LV_PART_MAIN);
     lv_obj_add_flag(_spinnerTyping, LV_OBJ_FLAG_HIDDEN);
 
-    lv_anim_t a;
-    lv_anim_init(&a);
-    lv_anim_set_var(&a, _spinnerTyping);
-    lv_anim_set_values(&a, LV_OPA_0, LV_OPA_100);
-    lv_anim_set_duration(&a, 600);
-    lv_anim_set_playback_duration(&a, 600);
-    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_set_exec_cb(&a, [](void* var, int32_t val) {
-        lv_obj_set_style_text_opa((lv_obj_t*)var, val, 0);
-    });
-    lv_anim_start(&a);
-
-    /* -- Quick reply panel (Horizontal Scrolling) ------ */
+    /* ── Quick reply panel ──────────────────────────── */
     _panelQuickReplies = lv_obj_create(_scrChat);
-    lv_obj_set_size(_panelQuickReplies, 200, 36);
-    lv_obj_align(_panelQuickReplies, LV_ALIGN_BOTTOM_MID, 0, -15);
+    lv_obj_set_size(_panelQuickReplies, 220, 60);
+    lv_obj_align(_panelQuickReplies, LV_ALIGN_BOTTOM_MID, 0, -20);
     lv_obj_set_style_bg_opa(_panelQuickReplies, LV_OPA_TRANSP, 0);
     lv_obj_set_style_border_width(_panelQuickReplies, 0, 0);
     lv_obj_set_style_pad_all(_panelQuickReplies, 2, 0);
-    lv_obj_set_flex_flow(_panelQuickReplies, LV_FLEX_FLOW_ROW); // Horizontal
-    lv_obj_set_scroll_dir(_panelQuickReplies, LV_DIR_HOR);
+    lv_obj_set_flex_flow(_panelQuickReplies, LV_FLEX_FLOW_ROW_WRAP);
+    lv_obj_set_flex_align(_panelQuickReplies, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_scrollbar_mode(_panelQuickReplies, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_set_style_pad_gap(_panelQuickReplies, 8, 0);
+    lv_obj_set_style_pad_gap(_panelQuickReplies, 4, 0);
 
-    const char* advancedReplies[] = {
-        "Status?", "Continue", "Summarize", "Scan Net",
-        "Sys Info", "Clear", "Help"
-    };
+    for (int i = 0; i < QUICK_REPLY_COUNT; i++) {
+        _btnQuickReply[i] = lv_button_create(_panelQuickReplies);
+        lv_obj_add_style(_btnQuickReply[i], &_styleBtn, 0);
+        lv_obj_add_style(_btnQuickReply[i], &_styleBtnPressed, LV_STATE_PRESSED);
+        lv_obj_set_height(_btnQuickReply[i], 24);
 
-    for (int i = 0; i < 7; i++) {
-        lv_obj_t* btn = lv_button_create(_panelQuickReplies);
-        lv_obj_add_style(btn, &_styleBtn, 0);
-        lv_obj_add_style(btn, &_styleBtnPressed, LV_STATE_PRESSED);
-        lv_obj_set_height(btn, 28);
-        
-        lv_obj_t* lbl = lv_label_create(btn);
-        lv_label_set_text(lbl, advancedReplies[i]);
+        lv_obj_t* lbl = lv_label_create(_btnQuickReply[i]);
+        lv_label_set_text(lbl, quickReplies[i]);
         lv_obj_set_style_text_font(lbl, &lv_font_montserrat_10, 0);
         lv_obj_center(lbl);
 
-        /* We reuse _btnQuickReply array for first 6 slots if needed, but lets just use user_data */
-        // We must store the string pointer in user_data since the array will go out of scope!
-        // Actually, advancedReplies is local, the strings are static in flash. It's safe.
-        lv_obj_set_user_data(btn, (void*)advancedReplies[i]);
-        lv_obj_add_event_cb(btn, [](lv_event_t* e) {
-            UIManager* self = (UIManager*)lv_event_get_user_data(e);
-            lv_obj_t* b = (lv_obj_t*)lv_event_get_target(e);
-            const char* msg = (const char*)lv_obj_get_user_data(b);
-            self->addChatMessage(msg, true);
-            if (self->currentScreen() == SCREEN_CHAT && msg) {
-                // Actually we cannot access _gw easily if lambda captures nothing.
-                // We will just invoke a static method.
-            }
-        }, LV_EVENT_CLICKED, this);
-        lv_obj_add_event_cb(btn, onQuickReplyClicked, LV_EVENT_CLICKED, this);
+        lv_obj_add_event_cb(_btnQuickReply[i], onQuickReplyClicked, LV_EVENT_CLICKED, this);
     }
 
     lv_obj_add_event_cb(_scrChat, onGestureEvent, LV_EVENT_GESTURE, this);
 }
+
+/* ══════════════════════════════════════════════════════════
+ *  FLIPPER CONTROL SCREEN
+ * ══════════════════════════════════════════════════════════ */
+
 void UIManager::buildFlipperScreen() {
     _scrFlipper = createRoundScreen();
 
@@ -506,84 +481,75 @@ void UIManager::buildFlipperScreen() {
 void UIManager::buildQuickSettings() {
     _scrQuickSettings = createRoundScreen();
 
-    /* Transparent dark background to look like an overlay */
-    lv_obj_set_style_bg_color(_scrQuickSettings, lv_color_hex(0x05050A), 0);
-    lv_obj_set_style_bg_opa(_scrQuickSettings, LV_OPA_90, 0);
-
-    /* Time Complication at top */
+    /* Title */
     lv_obj_t* title = lv_label_create(_scrQuickSettings);
-    lv_label_set_text(title, "Control Center");
-    lv_obj_set_style_text_font(title, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_text_color(title, COL_TEXT_DIM, 0);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 20);
+    lv_label_set_text(title, "Quick Settings");
+    lv_obj_set_style_text_font(title, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_color(title, COL_TEXT, 0);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
 
-    /* Brightness Card */
-    lv_obj_t* cardBr = lv_obj_create(_scrQuickSettings);
-    lv_obj_set_size(cardBr, 170, 50);
-    lv_obj_align(cardBr, LV_ALIGN_TOP_MID, 0, 45);
-    lv_obj_set_style_radius(cardBr, 16, 0);
-    lv_obj_set_style_bg_color(cardBr, lv_color_hex(0x16213E), 0);
-    lv_obj_set_style_border_width(cardBr, 0, 0);
-    lv_obj_remove_flag(cardBr, LV_OBJ_FLAG_SCROLLABLE);
+    /* Brightness slider */
+    lv_obj_t* lblBr = lv_label_create(_scrQuickSettings);
+    lv_label_set_text(lblBr, LV_SYMBOL_IMAGE " Brightness");
+    lv_obj_set_style_text_font(lblBr, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(lblBr, COL_TEXT_DIM, 0);
+    lv_obj_align(lblBr, LV_ALIGN_CENTER, 0, -30);
 
-    lv_obj_t* iconBr = lv_label_create(cardBr);
-    lv_label_set_text(iconBr, LV_SYMBOL_IMAGE);
-    lv_obj_set_style_text_color(iconBr, COL_PRIMARY, 0);
-    lv_obj_align(iconBr, LV_ALIGN_LEFT_MID, 5, 0);
-
-    _sliderBrightness = lv_slider_create(cardBr);
-    lv_obj_set_size(_sliderBrightness, 110, 10);
-    lv_obj_align(_sliderBrightness, LV_ALIGN_RIGHT_MID, -5, 0);
+    _sliderBrightness = lv_slider_create(_scrQuickSettings);
+    lv_obj_set_width(_sliderBrightness, 150);
+    lv_obj_align(_sliderBrightness, LV_ALIGN_CENTER, 0, -8);
     lv_slider_set_range(_sliderBrightness, 10, 255);
     lv_slider_set_value(_sliderBrightness, 200, LV_ANIM_OFF);
-    lv_obj_set_style_bg_color(_sliderBrightness, lv_color_hex(0x05050A), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(_sliderBrightness, COL_SURFACE, LV_PART_MAIN);
     lv_obj_set_style_bg_color(_sliderBrightness, COL_PRIMARY, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_color(_sliderBrightness, lv_color_white(), LV_PART_KNOB);
+    lv_obj_set_style_bg_color(_sliderBrightness, COL_PRIMARY, LV_PART_KNOB);
+    lv_obj_set_style_pad_all(_sliderBrightness, 3, LV_PART_KNOB);
     lv_obj_add_event_cb(_sliderBrightness, onBrightnessChanged, LV_EVENT_VALUE_CHANGED, this);
 
-    /* Grid of Quick Toggles */
-    lv_obj_t* grid = lv_obj_create(_scrQuickSettings);
-    lv_obj_set_size(grid, 170, 70);
-    lv_obj_align(grid, LV_ALIGN_TOP_MID, 0, 105);
-    lv_obj_set_style_bg_opa(grid, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_width(grid, 0, 0);
-    lv_obj_set_style_pad_all(grid, 0, 0);
-    lv_obj_remove_flag(grid, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_flex_flow(grid, LV_FLEX_FLOW_ROW_WRAP);
-    lv_obj_set_flex_align(grid, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    _lblBrightnessVal = lv_label_create(_scrQuickSettings);
+    lv_label_set_text(_lblBrightnessVal, "78%");
+    lv_obj_set_style_text_font(_lblBrightnessVal, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(_lblBrightnessVal, COL_TEXT_DIM, 0);
+    lv_obj_align(_lblBrightnessVal, LV_ALIGN_CENTER, 0, 12);
 
-    /* WiFi Toggle */
-    _btnWifi = lv_button_create(grid);
-    lv_obj_set_size(_btnWifi, 80, 50);
-    lv_obj_set_style_radius(_btnWifi, 16, 0);
-    lv_obj_set_style_bg_color(_btnWifi, lv_color_hex(0x16213E), 0);
+    /* WiFi button */
+    _btnWifi = lv_button_create(_scrQuickSettings);
+    lv_obj_add_style(_btnWifi, &_styleBtn, 0);
+    lv_obj_add_style(_btnWifi, &_styleBtnPressed, LV_STATE_PRESSED);
+    lv_obj_set_size(_btnWifi, 80, 36);
+    lv_obj_align(_btnWifi, LV_ALIGN_CENTER, -45, 45);
     lv_obj_t* lblW = lv_label_create(_btnWifi);
-    lv_label_set_text(lblW, LV_SYMBOL_WIFI "\nWiFi");
-    lv_obj_set_style_text_align(lblW, LV_TEXT_ALIGN_CENTER, 0);
+    lv_label_set_text(lblW, LV_SYMBOL_WIFI " WiFi");
     lv_obj_set_style_text_font(lblW, &lv_font_montserrat_12, 0);
     lv_obj_center(lblW);
 
-    /* Settings Button */
-    _btnSettings = lv_button_create(grid);
-    lv_obj_set_size(_btnSettings, 80, 50);
-    lv_obj_set_style_radius(_btnSettings, 16, 0);
-    lv_obj_set_style_bg_color(_btnSettings, lv_color_hex(0x16213E), 0);
+    /* Settings button */
+    _btnSettings = lv_button_create(_scrQuickSettings);
+    lv_obj_add_style(_btnSettings, &_styleBtn, 0);
+    lv_obj_add_style(_btnSettings, &_styleBtnPressed, LV_STATE_PRESSED);
+    lv_obj_set_size(_btnSettings, 80, 36);
+    lv_obj_align(_btnSettings, LV_ALIGN_CENTER, 45, 45);
     lv_obj_t* lblS = lv_label_create(_btnSettings);
-    lv_label_set_text(lblS, LV_SYMBOL_SETTINGS "\nSettings");
-    lv_obj_set_style_text_align(lblS, LV_TEXT_ALIGN_CENTER, 0);
+    lv_label_set_text(lblS, LV_SYMBOL_SETTINGS);
     lv_obj_set_style_text_font(lblS, &lv_font_montserrat_12, 0);
     lv_obj_center(lblS);
     lv_obj_add_event_cb(_btnSettings, onSettingsItemClicked, LV_EVENT_CLICKED, this);
 
     /* Back hint */
     lv_obj_t* hint = lv_label_create(_scrQuickSettings);
-    lv_label_set_text(hint, LV_SYMBOL_UP);
-    lv_obj_set_style_text_font(hint, &lv_font_montserrat_14, 0);
+    lv_label_set_text(hint, LV_SYMBOL_UP " Swipe up");
+    lv_obj_set_style_text_font(hint, &lv_font_montserrat_10, 0);
     lv_obj_set_style_text_color(hint, COL_TEXT_DIM, 0);
-    lv_obj_align(hint, LV_ALIGN_BOTTOM_MID, 0, -15);
+    lv_obj_set_style_text_opa(hint, LV_OPA_40, 0);
+    lv_obj_align(hint, LV_ALIGN_BOTTOM_MID, 0, -25);
 
     lv_obj_add_event_cb(_scrQuickSettings, onGestureEvent, LV_EVENT_GESTURE, this);
 }
+
+/* ══════════════════════════════════════════════════════════
+ *  SETTINGS SCREEN
+ * ══════════════════════════════════════════════════════════ */
+
 void UIManager::buildSettingsScreen() {
     _scrSettings = createRoundScreen();
 
@@ -977,8 +943,10 @@ void UIManager::updateGatewayStatus(GatewayState state) {
             default:
                 lv_label_set_text(_lblGwStatus, "Disconnected");
                 lv_obj_set_style_text_color(_lblGwStatus, COL_TEXT_DIM, 0);
-
-
+                break;
+        }
+    }
+}
 
 void UIManager::updateFlipperStatus(FlipperState state) {
     /* Update watch face LED */
@@ -1080,8 +1048,10 @@ void UIManager::updateBridgeStatus(BridgeState state) {
             default:
                 lv_label_set_text(_lblSbStatus, "Not configured");
                 lv_obj_set_style_text_color(_lblSbStatus, COL_TEXT_DIM, 0);
-
-
+                break;
+        }
+    }
+}
 
 /* ══════════════════════════════════════════════════════════
  *  CHAT METHODS
@@ -1220,23 +1190,20 @@ void UIManager::updateSettingsValues() {
 void UIManager::onQuickReplyClicked(lv_event_t* e) {
     UIManager* self = (UIManager*)lv_event_get_user_data(e);
     lv_obj_t* btn = (lv_obj_t*)lv_event_get_target(e);
-    const char* msg = (const char*)lv_obj_get_user_data(btn);
 
-    if (msg) {
-        // Only the first callback adds it, but we have two callbacks attached!
-        // We will do it locally here instead of the lambda to avoid double posting.
-        // Actually the lambda also adds it! So in the lambda I commented out the self->addChatMessage.
-        // Let's just handle it all here and assume the lambda does nothing or doesn't exist.
-        self->addChatMessage(msg, true);
+    for (int i = 0; i < QUICK_REPLY_COUNT; i++) {
+        if (btn == self->_btnQuickReply[i]) {
+            const char* msg = quickReplies[i];
+            self->addChatMessage(msg, true);
 
-        if (self->_gw && self->_gw->isConnected()) {
-            self->_gw->sendMessage(self->_gw->getSessionKey(), msg);
-            self->updateAgentTyping(true);
+            if (self->_gw && self->_gw->isConnected()) {
+                self->_gw->sendMessage(self->_gw->getSessionKey(), msg);
+                self->updateAgentTyping(true);
+            }
+            break;
         }
     }
 }
-
-
 
 void UIManager::onBrightnessChanged(lv_event_t* e) {
     UIManager* self = (UIManager*)lv_event_get_user_data(e);
@@ -1374,7 +1341,6 @@ void UIManager::onGestureEvent(lv_event_t* e) {
             break;
     }
 }
-
 
 
 
