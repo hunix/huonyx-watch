@@ -1,7 +1,7 @@
 C:\Users\H\source\repos\huonyx-watch\.build\libraries\NimBLE-Arduino\NimBLEEddystoneTLM.cpp.o: \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\NimBLE-Arduino\src\NimBLEEddystoneTLM.cpp \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\NimBLE-Arduino\src\nimconfig.h \
- C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/qio_qspi/include/sdkconfig.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32-arduino-libs\idf-release_v5.1-632e0c2a\esp32c3/qio_qspi/include/sdkconfig.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\NimBLE-Arduino\src\nimconfig_rename.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\NimBLE-Arduino\src\NimBLEEddystoneTLM.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\NimBLE-Arduino\src\NimBLEUUID.h \

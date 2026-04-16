@@ -210,7 +210,7 @@
 /* Only enable widgets actually used in the UI */
 #define LV_USE_ANIMIMG    0
 #define LV_USE_ARC        1  /* battery arc, outer ring, spinner bg */
-#define LV_USE_BAR        0  /* unused - saves ~3KB ROM */
+#define LV_USE_BAR        1  /* required by LV_USE_SLIDER */
 #define LV_USE_BUTTON     1  /* quick replies, settings, scan/disconnect */
 #define LV_USE_BUTTONMATRIX  0  /* unused - saves ~5KB ROM */
 #define LV_USE_CALENDAR   0
@@ -218,7 +218,7 @@
 #define LV_USE_CHART      0
 #define LV_USE_CHECKBOX   0  /* unused on watch - saves ~2KB ROM */
 #define LV_USE_DROPDOWN   0  /* unused on watch - saves ~4KB ROM */
-#define LV_USE_IMAGE      0  /* no images used, WiFi uses SYMBOL label - saves ~3KB ROM */
+#define LV_USE_IMAGE      1  /* needed for LVGL symbol rendering */
 #define LV_USE_IMAGEBUTTON 0
 #define LV_USE_KEYBOARD   0  /* no on-watch keyboard - saves ~6KB ROM */
 #define LV_USE_LABEL      1  /* heavily used everywhere */
