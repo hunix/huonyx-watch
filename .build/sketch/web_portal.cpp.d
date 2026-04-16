@@ -188,4 +188,9 @@ C:\Users\H\source\repos\huonyx-watch\.build\sketch\web_portal.cpp.o: \
  C:\Users\H\source\repos\huonyx-watch\.build\sketch\hw_config.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson.hpp \
- C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson/Configuration.hpp
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson/Configuration.hpp \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.0.7\libraries\DNSServer\src/DNSServer.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.0.7\libraries\AsyncUDP\src/AsyncUDP.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32-arduino-libs\idf-release_v5.1-632e0c2a\esp32c3/include/esp_netif/include/esp_netif.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32-arduino-libs\idf-release_v5.1-632e0c2a\esp32c3/include/esp_netif/include/esp_netif_types.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32-arduino-libs\idf-release_v5.1-632e0c2a\esp32c3/include/esp_netif/include/esp_netif_defaults.h

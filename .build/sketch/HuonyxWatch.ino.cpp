@@ -114,7 +114,7 @@ static bool isBatteryCharging();
 static void updateTimeDisplay();
 #line 451 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 void setup();
-#line 561 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+#line 546 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 void loop();
 #line 78 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map) {
@@ -503,21 +503,6 @@ void setup() {
     tft.setBacklight(200);
     Serial.println("[INIT] Display initialized");
 
-    /* === DISPLAY TEST: solid colors to verify GC9A01 init === */
-    Serial.println("[TEST] RED...");
-    tft.fillScreen(0xF800);  // RED
-    delay(1500);
-    Serial.println("[TEST] GREEN...");
-    tft.fillScreen(0x07E0);  // GREEN
-    delay(1500);
-    Serial.println("[TEST] BLUE...");
-    tft.fillScreen(0x001F);  // BLUE
-    delay(1500);
-    Serial.println("[TEST] BLACK...");
-    tft.fillScreen(0x0000);  // BLACK
-    delay(500);
-    Serial.println("[TEST] Color test done!");
-
     /* ── Initialize touch ─────────────────────────── */
     if (touch.begin()) {
         Serial.println("[INIT] Touch initialized");
@@ -683,6 +668,7 @@ void loop() {
     /* ── Small delay to prevent watchdog ──────────── */
     delay(5);
 }
+
 
 
 

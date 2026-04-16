@@ -5,6 +5,9 @@
 
 #include "web_portal.h"
 #include <ArduinoJson.h>
+#include <DNSServer.h>
+
+static DNSServer dnsServer;
 
 WebPortal::WebPortal(ConfigManager* cfg)
     : _server(80)
@@ -27,6 +30,9 @@ void WebPortal::begin() {
 
 void WebPortal::loop() {
     if (_running) {
+        if (_apMode) {
+            dnsServer.processNextRequest();  /* Captive portal DNS */
+        }
         _server.handleClient();
     }
 }
@@ -37,7 +43,22 @@ void WebPortal::stop() {
 }
 
 void WebPortal::startAP(const char* ssid, const char* pass) {
-    WiFi.softAP(ssid, pass);
+    WiFi.mode(WIFI_AP);
+    delay(100);
+
+    /* Explicit IP config fixes DHCP issues on Samsung/Android phones */
+    IPAddress apIP(192, 168, 4, 1);
+    IPAddress gateway(192, 168, 4, 1);
+    IPAddress subnet(255, 255, 255, 0);
+    WiFi.softAPConfig(apIP, gateway, subnet);
+    delay(100);
+
+    WiFi.softAP(ssid, pass, 1, 0, 4);  /* ch=1, hidden=0, max_conn=4 */
+    delay(500);  /* Let DHCP server stabilize */
+
+    /* DNS captive portal: redirect all domains to our IP */
+    dnsServer.start(53, "*", apIP);
+
     _apMode = true;
     Serial.printf("[WEB] AP started: %s, IP: %s\n", ssid, WiFi.softAPIP().toString().c_str());
     begin();
