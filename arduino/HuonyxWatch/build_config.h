@@ -19,8 +19,8 @@
  * in the sketch folder (patched by flash.ps1) instead of
  * searching the library folder.
  */
-#define USER_SETUP_LOADED 1
-#include "User_Setup.h"
+// #define USER_SETUP_LOADED 1
+
 
 /* ── LVGL ─────────────────────────────────────────────────
  * LV_CONF_INCLUDE_SIMPLE tells LVGL to find lv_conf.h by
