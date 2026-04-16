@@ -1,4 +1,4 @@
-#line 1 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\ui_manager.cpp"
+#line 1 "C:\\Users\\HK\\sources\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\ui_manager.cpp"
 /**
  * UI Manager Implementation - LVGL Smartwatch Interface
  * Huonyx AI Smartwatch v2.0

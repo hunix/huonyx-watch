@@ -1,4 +1,4 @@
-#line 1 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\web_portal.cpp"
+#line 1 "C:\\Users\\HK\\sources\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\web_portal.cpp"
 /**
  * Web Configuration Portal Implementation
  * Huonyx AI Smartwatch v2.0

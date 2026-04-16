@@ -1,4 +1,4 @@
-#line 1 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\hw_config.h"
+#line 1 "C:\\Users\\HK\\sources\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\hw_config.h"
 /**
  * Hardware Configuration for ESP32-2424S012
  * Huonyx AI Smartwatch
@@ -9,7 +9,7 @@
 
 /* ── Board Identification ─────────────────────────────── */
 #define BOARD_NAME          "ESP32-2424S012"
-#define FIRMWARE_VERSION    "2.1.0"
+#define FIRMWARE_VERSION    "3.0.0"
 #define FIRMWARE_NAME       "Huonyx Watch"
 
 /* ── Display (GC9A01 via SPI) ─────────────────────────── */

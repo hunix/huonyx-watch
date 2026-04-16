@@ -3,6 +3,7 @@
  * Implements the HoC Gateway Protocol for ESP32
  */
 
+#include <Arduino.h>
 #include "gateway_client.h"
 
 GatewayClient* GatewayClient::_instance = nullptr;

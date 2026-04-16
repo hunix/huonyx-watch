@@ -6,6 +6,7 @@
  * to communicate with Supabase Realtime Broadcast channels.
  */
 
+#include <Arduino.h>
 #include "supabase_bridge.h"
 
 SupabaseBridge* SupabaseBridge::_instance = nullptr;

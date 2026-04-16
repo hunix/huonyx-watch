@@ -7,6 +7,7 @@
  * CLI commands as text strings and returns output the same way.
  */
 
+#include <Arduino.h>
 #include "flipper_ble.h"
 #include <NimBLEDevice.h>
 

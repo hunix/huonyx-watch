@@ -1,5 +1,5 @@
-C:\Users\H\source\repos\huonyx-watch\.build\libraries\NimBLE-Arduino\nimble\ext\tinycrypt\src\sha256.c.o: \
- C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\NimBLE-Arduino\src\nimble\ext\tinycrypt\src\sha256.c \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\nimble-arduino\src\nimble\ext\tinycrypt\include\tinycrypt\sha256.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\nimble-arduino\src\nimble\ext\tinycrypt\include\tinycrypt\constants.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\nimble-arduino\src\nimble\ext\tinycrypt\include\tinycrypt\utils.h
+C:\Users\HK\sources\repos\huonyx-watch\.build\libraries\NimBLE-Arduino\nimble\ext\tinycrypt\src\sha256.c.o: \
+ C:\Users\HK\OneDrive\Documents\Arduino\libraries\NimBLE-Arduino\src\nimble\ext\tinycrypt\src\sha256.c \
+ c:\users\hk\onedrive\documents\arduino\libraries\nimble-arduino\src\nimble\ext\tinycrypt\include\tinycrypt\sha256.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\nimble-arduino\src\nimble\ext\tinycrypt\include\tinycrypt\constants.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\nimble-arduino\src\nimble\ext\tinycrypt\include\tinycrypt\utils.h

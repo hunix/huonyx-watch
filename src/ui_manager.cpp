@@ -15,6 +15,7 @@
  *   - Sessions list
  */
 
+#include <Arduino.h>
 #include "ui_manager.h"
 
 /* ── Color Palette (AI-era dark theme) ────────────────── */

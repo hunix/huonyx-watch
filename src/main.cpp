@@ -1,6 +1,6 @@
 /**
  * ╔══════════════════════════════════════════════════════════╗
- * ║           HUONYX AI SMARTWATCH FIRMWARE v2.1             ║
+ * ║           HUONYX AI SMARTWATCH FIRMWARE v3.0             ║
  * ║     ESP32-2424S012 (ESP32-C3 + GC9A01 + CST816D)       ║
  * ║                                                          ║
  * ║  A beautiful AI-era smartwatch interface for the         ║

@@ -1,4 +1,4 @@
-#line 1 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\lv_conf.h"
+#line 1 "C:\\Users\\HK\\sources\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\lv_conf.h"
 /**
  * LVGL Configuration for Huonyx Smartwatch
  * ESP32-2424S012 - 240x240 Round Display
@@ -137,7 +137,7 @@
 #define LV_USE_GRIDNAV  0
 #define LV_USE_FRAGMENT 0
 #define LV_USE_IMGFONT  0
-#define LV_USE_OBSERVER 1
+#define LV_USE_OBSERVER 0
 #define LV_USE_IME_PINYIN 0
 #define LV_USE_FILE_EXPLORER 0
 

@@ -70,7 +70,7 @@ $LIBRARIES = @(
 function Write-Banner {
     Write-Host ""
     Write-Host "+------------------------------------------+" -ForegroundColor Cyan
-    Write-Host "|   HUONYX AI SMARTWATCH FLASHER v2.1      |" -ForegroundColor Cyan
+    Write-Host "|   HUONYX AI SMARTWATCH FLASHER v3.0      |" -ForegroundColor Cyan
     Write-Host "|   ESP32-2424S012 + Flipper Bridge         |" -ForegroundColor Cyan
     Write-Host "+------------------------------------------+" -ForegroundColor Cyan
     Write-Host ""
@@ -487,7 +487,42 @@ $compileArgs = @(
     "--warnings", "none"
 )
 
-# No --build-property needed: all defines are in build_config.h
+# Find NimBLE-Arduino path dynamically
+$nimblePath = ""
+if ($libListJson -and $libListJson.installed_libraries) {
+    foreach ($entry in $libListJson.installed_libraries) {
+        if ($entry.library.name -eq "NimBLE-Arduino") {
+            $nimblePath = $entry.library.install_dir
+            break
+        }
+    }
+}
+if (-not $nimblePath) {
+    $nimblePath = "$env:USERPROFILE\Documents\Arduino\libraries\NimBLE-Arduino"
+}
+
+# Add NimBLE internal include paths
+$nimbleIncludes = @(
+    "src\nimble\nimble\include",
+    "src\nimble\porting\nimble\include",
+    "src\nimble\porting\npl\freertos\include",
+    "src\nimble\nimble\host\include",
+    "src\nimble\nimble\host\services\gap\include",
+    "src\nimble\nimble\host\services\gatt\include",
+    "src\nimble\nimble\host\util\include"
+)
+
+$extraFlags = ""
+foreach ($inc in $nimbleIncludes) {
+    $fullPath = Join-Path $nimblePath $inc
+    $extraFlags += "-I$fullPath "
+}
+
+$compileArgs += "--build-property"
+$compileArgs += "compiler.cpp.extra_flags=$extraFlags -DCONFIG_BT_NIMBLE_ROLE_CENTRAL=1 -DCONFIG_BT_NIMBLE_ROLE_OBSERVER=1 -DCONFIG_BT_NIMBLE_ROLE_PERIPHERAL=0 -DCONFIG_BT_NIMBLE_ROLE_BROADCASTER=0"
+$compileArgs += "--build-property"
+$compileArgs += "compiler.c.extra_flags=$extraFlags"
+
 if ($Verbose) { $compileArgs += "--verbose" }
 $compileArgs += $SketchDir
 
@@ -498,8 +533,18 @@ Write-Host ""
 
 # Capture all output - use a temp file to bypass PowerShell NativeCommandError
 $compileLogFile = Join-Path $buildDir "compile_output.txt"
+# Construct a safe argument string for Start-Process to avoid quote stripping
+$compileArgString = ""
+foreach ($arg in $compileArgs) {
+    if ($arg -match " ") {
+        $compileArgString += "`"$arg`" "
+    } else {
+        $compileArgString += "$arg "
+    }
+}
+
 $compileProcess = Start-Process -FilePath $ArduinoCliPath `
-    -ArgumentList $compileArgs `
+    -ArgumentList $compileArgString `
     -RedirectStandardOutput $compileLogFile `
     -RedirectStandardError "$compileLogFile.err" `
     -Wait -PassThru -NoNewWindow

@@ -1,4 +1,4 @@
-#line 1 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\gateway_client.cpp"
+#line 1 "C:\\Users\\HK\\sources\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\gateway_client.cpp"
 /**
  * Huonyx Gateway WebSocket Client Implementation
  * Implements the HoC Gateway Protocol for ESP32

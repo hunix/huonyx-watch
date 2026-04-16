@@ -3,6 +3,7 @@
  * Huonyx AI Smartwatch v2.0
  */
 
+#include <Arduino.h>
 #include "web_portal.h"
 #include <ArduinoJson.h>
 

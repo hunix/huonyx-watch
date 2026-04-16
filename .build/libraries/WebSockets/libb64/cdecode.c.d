@@ -1,2 +1,2 @@
-C:\Users\H\source\repos\huonyx-watch\.build\libraries\WebSockets\libb64\cdecode.c.o: \
- C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\WebSockets\src\libb64\cdecode.c
+C:\Users\HK\sources\repos\huonyx-watch\.build\libraries\WebSockets\libb64\cdecode.c.o: \
+ C:\Users\HK\OneDrive\Documents\Arduino\libraries\WebSockets\src\libb64\cdecode.c

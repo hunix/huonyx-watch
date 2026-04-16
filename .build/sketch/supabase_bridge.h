@@ -1,4 +1,4 @@
-#line 1 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\supabase_bridge.h"
+#line 1 "C:\\Users\\HK\\sources\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\supabase_bridge.h"
 /**
  * Supabase Realtime Bridge
  * Huonyx AI Smartwatch

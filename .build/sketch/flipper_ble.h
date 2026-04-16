@@ -1,4 +1,4 @@
-#line 1 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\flipper_ble.h"
+#line 1 "C:\\Users\\HK\\sources\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\flipper_ble.h"
 /**
  * Flipper Zero BLE Serial Client
  * Huonyx AI Smartwatch

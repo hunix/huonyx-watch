@@ -1,63 +1,63 @@
-C:\Users\H\source\repos\huonyx-watch\.build\libraries\lvgl\widgets\property\lv_style_properties.c.o: \
- C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\lvgl\src\widgets\property\lv_style_properties.c \
- C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\lvgl\src\widgets\property\lv_style_properties.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\core\lv_obj_property.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf_kconfig.h \
- C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32-arduino-libs\idf-release_v5.1-632e0c2a\esp32c3/qio_qspi/include/sdkconfig.h \
- C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32-arduino-libs\idf-release_v5.1-632e0c2a\esp32c3/include/esp_common/include/esp_attr.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_style.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\font\lv_font.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\font\lv_symbol_def.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\draw\lv_draw_buf.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_area.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_math.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_color.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_assert.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_log.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\stdlib\lv_mem.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\stdlib\lv_string.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_palette.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_color.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_color_op.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\stdlib\lv_string.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\draw\lv_image_dsc.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_area.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\cache\lv_cache.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\cache\lv_cache_entry.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\osal\lv_os.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\osal\lv_os_none.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\cache\lv_cache_private.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\cache\lv_cache_lru_rb.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\cache\lv_image_cache.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\cache\lv_image_header_cache.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_area.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_anim.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_timer.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\tick\lv_tick.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_ll.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_text.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\stdlib\lv_sprintf.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_bidi.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\layouts\lv_layout.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\layouts\flex/lv_flex.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_area.h \
- c:\users\h\onedrive\ -\ zenithr\ intelligent\ solutions\documents\arduino\libraries\lvgl\src\misc\lv_style_gen.h
+C:\Users\HK\sources\repos\huonyx-watch\.build\libraries\lvgl\widgets\property\lv_style_properties.c.o: \
+ C:\Users\HK\OneDrive\Documents\Arduino\libraries\lvgl\src\widgets\property\lv_style_properties.c \
+ C:\Users\HK\OneDrive\Documents\Arduino\libraries\lvgl\src\widgets\property\lv_style_properties.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\core\lv_obj_property.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf_kconfig.h \
+ C:\Users\HK\AppData\Local\Arduino15\packages\esp32\tools\esp32-arduino-libs\idf-release_v5.1-632e0c2a\esp32c3/qio_qspi/include/sdkconfig.h \
+ C:\Users\HK\AppData\Local\Arduino15\packages\esp32\tools\esp32-arduino-libs\idf-release_v5.1-632e0c2a\esp32c3/include/esp_common/include/esp_attr.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_style.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\font\lv_font.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\font\lv_symbol_def.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\draw\lv_draw_buf.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_area.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_math.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_color.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_assert.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_log.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\stdlib\lv_mem.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\stdlib\lv_string.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_palette.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_color.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_color_op.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\stdlib\lv_string.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\draw\lv_image_dsc.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_area.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\cache\lv_cache.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\cache\lv_cache_entry.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\osal\lv_os.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\osal\lv_os_none.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\cache\lv_cache_private.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\cache\lv_cache_lru_rb.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\cache\lv_image_cache.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\cache\lv_image_header_cache.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_area.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_anim.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_timer.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\tick\lv_tick.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_ll.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_text.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\stdlib\lv_sprintf.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_bidi.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\layouts\lv_layout.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_types.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\layouts\flex/lv_flex.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\lv_conf_internal.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_area.h \
+ c:\users\hk\onedrive\documents\arduino\libraries\lvgl\src\misc\lv_style_gen.h
