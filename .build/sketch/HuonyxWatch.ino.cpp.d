@@ -1,7 +1,6 @@
 C:\Users\H\source\repos\huonyx-watch\.build\sketch\HuonyxWatch.ino.cpp.o: \
  C:\Users\H\source\repos\huonyx-watch\.build\sketch\HuonyxWatch.ino.cpp \
  C:\Users\H\source\repos\huonyx-watch\.build\sketch\build_config.h \
- C:\Users\H\source\repos\huonyx-watch\.build\sketch\User_Setup.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/Arduino.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/newlib/platform_include/stdio.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/esp_arduino_version.h \
@@ -207,6 +206,7 @@ C:\Users\H\source\repos\huonyx-watch\.build\sketch\HuonyxWatch.ino.cpp.o: \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\SPI\src/SPI.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/esp32-hal-spi.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/User_Setup_Select.h \
+ C:\Users\H\source\repos\huonyx-watch\arduino\HuonyxWatch/User_Setup.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/TFT_Drivers/GC9A01_Defines.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Processors/TFT_eSPI_ESP32_C3.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/soc/esp32c3/register/soc/spi_reg.h \
