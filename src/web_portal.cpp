@@ -4,6 +4,7 @@
  */
 
 #include "web_portal.h"
+#include <ArduinoJson.h>
 
 WebPortal::WebPortal(ConfigManager* cfg)
     : _server(80)
@@ -108,7 +109,23 @@ text-transform:uppercase;letter-spacing:1px;margin-left:8px}
 <div class="logo">HUONYX</div>
 <div class="subtitle">AI Smartwatch Configuration Portal</div>
 )rawliteral";
+)rawliteral";
     return html;
+}
+
+static String escapeHTML(const char* input) {
+    String out;
+    out.reserve(strlen(input));
+    while (*input) {
+        if (*input == '&') out += "&amp;";
+        else if (*input == '<') out += "&lt;";
+        else if (*input == '>') out += "&gt;";
+        else if (*input == '"') out += "&quot;";
+        else if (*input == '\'') out += "&#39;";
+        else out += *input;
+        input++;
+    }
+    return out;
 }
 
 
@@ -135,18 +152,18 @@ void WebPortal::handleSetup() {
     /* WiFi Card */
     _server.sendContent(F("<div class='card'><h2>&#x1F4F6; WiFi Network <span class='badge required'>Required</span></h2>"));
     _server.sendContent(F("<div class='field'><label>SSID</label>"));
-    snprintf(buf, sizeof(buf), "<input type='text' name='ssid' placeholder='Network name' value='%s'></div>", c.wifiSSID);
+    snprintf(buf, sizeof(buf), "<input type='text' name='ssid' placeholder='Network name' value='%s'></div>", escapeHTML(c.wifiSSID).c_str());
     _server.sendContent(buf);
-    snprintf(buf, sizeof(buf), "<div class='field'><label>Password</label><input type='password' name='wifi_pass' placeholder='WiFi password' value='%s'></div></div>", c.wifiPass);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Password</label><input type='password' name='wifi_pass' placeholder='WiFi password' value='%s'></div></div>", escapeHTML(c.wifiPass).c_str());
     _server.sendContent(buf);
 
     /* Gateway Card */
     _server.sendContent(F("<div class='card'><h2>&#x1F916; HoC Gateway <span class='badge required'>Required</span></h2>"));
-    snprintf(buf, sizeof(buf), "<div class='field'><label>Host / IP</label><input type='text' name='gw_host' placeholder='192.168.1.100' value='%s'><div class='hint'>Your Huonyx/OpenClaw gateway host</div></div>", c.gwHost);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Host / IP</label><input type='text' name='gw_host' placeholder='192.168.1.100' value='%s'><div class='hint'>Your Huonyx/OpenClaw gateway host</div></div>", escapeHTML(c.gwHost).c_str());
     _server.sendContent(buf);
     snprintf(buf, sizeof(buf), "<div class='field'><label>Port</label><input type='number' name='gw_port' placeholder='18789' value='%u'></div>", c.gwPort);
     _server.sendContent(buf);
-    snprintf(buf, sizeof(buf), "<div class='field'><label>Gateway Token</label><input type='password' name='gw_token' placeholder='OPENCLAW_GATEWAY_TOKEN' value='%s'><div class='hint'>Token to authenticate with the gateway</div></div>", c.gwToken);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Gateway Token</label><input type='password' name='gw_token' placeholder='OPENCLAW_GATEWAY_TOKEN' value='%s'><div class='hint'>Token to authenticate with the gateway</div></div>", escapeHTML(c.gwToken).c_str());
     _server.sendContent(buf);
     snprintf(buf, sizeof(buf), "<div class='toggle'><input type='checkbox' name='gw_ssl' id='ssl'%s><label for='ssl' style='color:#E8E8F0;font-size:14px'>Use SSL (wss://)</label></div></div>", c.gwUseSSL ? " checked" : "");
     _server.sendContent(buf);
@@ -155,15 +172,15 @@ void WebPortal::handleSetup() {
 
     /* Supabase Card */
     _server.sendContent(F("<div class='card'><h2 class='purple'>&#x1F504; Supabase Realtime Bridge <span class='badge optional'>Optional</span></h2>"));
-    snprintf(buf, sizeof(buf), "<div class='field'><label>Project URL</label><input type='text' name='sb_url' placeholder='abcdefg.supabase.co' value='%s'><div class='hint'>Supabase project URL (without https://)</div></div>", c.sbUrl);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Project URL</label><input type='text' name='sb_url' placeholder='abcdefg.supabase.co' value='%s'><div class='hint'>Supabase project URL (without https://)</div></div>", escapeHTML(c.sbUrl).c_str());
     _server.sendContent(buf);
-    snprintf(buf, sizeof(buf), "<div class='field'><label>API Key (anon)</label><input type='password' name='sb_key' placeholder='eyJhbGciOi...' value='%s'><div class='hint'>Supabase anon key for Realtime channel access</div></div>", c.sbKey);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>API Key (anon)</label><input type='password' name='sb_key' placeholder='eyJhbGciOi...' value='%s'><div class='hint'>Supabase anon key for Realtime channel access</div></div>", escapeHTML(c.sbKey).c_str());
     _server.sendContent(buf);
     _server.sendContent(F("<div style='color:#6B6B8D;font-size:12px;padding:8px;background:#1A1A2E;border-radius:8px'>&#x1F4A1; Agent &#x2192; Supabase &#x2192; Watch &#x2192; Flipper</div></div>"));
 
     /* Flipper Card */
     _server.sendContent(F("<div class='card'><h2 class='orange'>&#x1F42C; Flipper Zero BLE <span class='badge optional'>Optional</span></h2>"));
-    snprintf(buf, sizeof(buf), "<div class='field'><label>Device Name</label><input type='text' name='flip_name' placeholder='Flipper (leave empty for any)' value='%s'><div class='hint'>Specific device name or empty for any</div></div>", c.flipperName);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>Device Name</label><input type='text' name='flip_name' placeholder='Flipper (leave empty for any)' value='%s'><div class='hint'>Specific device name or empty for any</div></div>", escapeHTML(c.flipperName).c_str());
     _server.sendContent(buf);
     snprintf(buf, sizeof(buf), "<div class='toggle'><input type='checkbox' name='flip_auto' id='flipauto'%s><label for='flipauto' style='color:#E8E8F0;font-size:14px'>Auto-connect on boot</label></div>", c.flipperAuto ? " checked" : "");
     _server.sendContent(buf);
@@ -247,32 +264,24 @@ void WebPortal::handleSave() {
 }
 
 void WebPortal::handleStatus() {
-    /* Use snprintf into stack buffer instead of 15+ String concatenations */
-    char json[512];
-    snprintf(json, sizeof(json),
-        "{\"firmware\":\"" FIRMWARE_VERSION "\","
-        "\"wifi_connected\":%s,"
-        "\"wifi_ssid\":\"%s\","
-        "\"wifi_rssi\":%d,"
-        "\"gateway_host\":\"%s\","
-        "\"gateway_port\":%u,"
-        "\"supabase_url\":\"%s\","
-        "\"supabase_configured\":%s,"
-        "\"flipper_name\":\"%s\","
-        "\"flipper_auto\":%s,"
-        "\"free_heap\":%lu}",
-        WiFi.isConnected() ? "true" : "false",
-        _cfg->config().wifiSSID,
-        WiFi.RSSI(),
-        _cfg->config().gwHost,
-        _cfg->config().gwPort,
-        _cfg->config().sbUrl,
-        _cfg->hasSupabaseConfig() ? "true" : "false",
-        _cfg->config().flipperName,
-        _cfg->config().flipperAuto ? "true" : "false",
-        (unsigned long)ESP.getFreeHeap()
-    );
-    _server.send(200, "application/json", json);
+    /* Use ArduinoJson onto a stack buffer instead of direct snprintf */
+    /* Mitigates JSON injection vulnerabilities from unescaped wifi_pass, wifi_ssid etc */
+    JsonDocument doc;
+    doc["firmware"] = FIRMWARE_VERSION;
+    doc["wifi_connected"] = WiFi.isConnected();
+    doc["wifi_ssid"] = _cfg->config().wifiSSID;
+    doc["wifi_rssi"] = WiFi.RSSI();
+    doc["gateway_host"] = _cfg->config().gwHost;
+    doc["gateway_port"] = _cfg->config().gwPort;
+    doc["supabase_url"] = _cfg->config().sbUrl;
+    doc["supabase_configured"] = _cfg->hasSupabaseConfig();
+    doc["flipper_name"] = _cfg->config().flipperName;
+    doc["flipper_auto"] = _cfg->config().flipperAuto;
+    doc["free_heap"] = ESP.getFreeHeap();
+
+    char jsonBuffer[512];
+    serializeJson(doc, jsonBuffer, sizeof(jsonBuffer));
+    _server.send(200, "application/json", jsonBuffer);
 }
 
 void WebPortal::handleNotFound() {

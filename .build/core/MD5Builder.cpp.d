@@ -1,0 +1,20 @@
+C:\Users\H\source\repos\huonyx-watch\.build\core\MD5Builder.cpp.o: \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32\MD5Builder.cpp \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32\HEXBuilder.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/WString.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/pgmspace.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/newlib/platform_include/ctype.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/Stream.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/Print.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/newlib/platform_include/stdio.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/WString.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/Printable.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32\MD5Builder.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/esp_system/include/esp_system.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/esp_common/include/esp_err.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/esp_common/include/esp_compiler.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/esp_common/include/esp_attr.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/esp_common/include/esp_bit_defs.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/esp_common/include/esp_idf_version.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/esp_rom/include/esp_rom_md5.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32\HashBuilder.h

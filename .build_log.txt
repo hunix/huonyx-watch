@@ -1,0 +1,223 @@
+﻿arduino-cli.exe : C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine
+/_default_types.h: Assembler messages:
+At line:1 char:1
++ & ".tools\arduino-cli.exe" compile --fqbn "esp32:esp32:esp32c3:CDCOnB ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:/Users/H/AppD...mbler messages::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+41: Error: unrecognized opcode `typedef signed char __int8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+43: Error: unrecognized opcode `typedef unsigned char __uint8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+55: Error: unrecognized opcode `typedef short int __int16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+57: Error: unrecognized opcode `typedef short unsigned int __uint16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+77: Error: unrecognized opcode `typedef long int __int32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+79: Error: unrecognized opcode `typedef long unsigned int __uint32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+103: Error: unrecognized opcode `typedef long long int __int64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+105: Error: unrecognized opcode `typedef long long unsigned int __uint64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+134: Error: unrecognized opcode `typedef signed char __int_least8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+136: Error: unrecognized opcode `typedef unsigned char __uint_least8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+160: Error: unrecognized opcode `typedef short int __int_least16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+162: Error: unrecognized opcode `typedef short unsigned int __uint_least16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+182: Error: unrecognized opcode `typedef long int __int_least32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+184: Error: unrecognized opcode `typedef long unsigned int __uint_least32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+200: Error: unrecognized opcode `typedef long long int __int_least64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+202: Error: unrecognized opcode `typedef long long unsigned int __uint_least64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+214: Error: unrecognized opcode `typedef long long int __intmax_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+222: Error: unrecognized opcode `typedef long long unsigned int __uintmax_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+230: Error: unrecognized opcode `typedef int __intptr_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+232: Error: unrecognized opcode `typedef unsigned int __uintptr_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:20: Error: 
+unrecognized opcode `typedef __int8_t int8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:24: Error: 
+unrecognized opcode `typedef __uint8_t uint8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:32: Error: 
+unrecognized opcode `typedef __int16_t int16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:36: Error: 
+unrecognized opcode `typedef __uint16_t uint16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:44: Error: 
+unrecognized opcode `typedef __int32_t int32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:48: Error: 
+unrecognized opcode `typedef __uint32_t uint32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:56: Error: 
+unrecognized opcode `typedef __int64_t int64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:60: Error: 
+unrecognized opcode `typedef __uint64_t uint64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:67: Error: 
+unrecognized opcode `typedef __intmax_t intmax_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:72: Error: 
+unrecognized opcode `typedef __uintmax_t uintmax_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:77: Error: 
+unrecognized opcode `typedef __intptr_t intptr_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:82: Error: 
+unrecognized opcode `typedef __uintptr_t uintptr_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:21: Error: 
+unrecognized opcode `typedef __int_least8_t int_least8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:22: Error: 
+unrecognized opcode `typedef __uint_least8_t uint_least8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:27: Error: 
+unrecognized opcode `typedef __int_least16_t int_least16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:28: Error: 
+unrecognized opcode `typedef __uint_least16_t uint_least16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:33: Error: 
+unrecognized opcode `typedef __int_least32_t int_least32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:34: Error: 
+unrecognized opcode `typedef __uint_least32_t uint_least32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:39: Error: 
+unrecognized opcode `typedef __int_least64_t int_least64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:40: Error: 
+unrecognized opcode `typedef __uint_least64_t uint_least64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:51: Error: 
+unrecognized opcode `typedef int int_fast8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:52: Error: 
+unrecognized opcode `typedef unsigned int uint_fast8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:61: Error: 
+unrecognized opcode `typedef int int_fast16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:62: Error: 
+unrecognized opcode `typedef unsigned int uint_fast16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:71: Error: 
+unrecognized opcode `typedef int int_fast32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:72: Error: 
+unrecognized opcode `typedef unsigned int uint_fast32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:81: Error: 
+unrecognized opcode `typedef long long int int_fast64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:82: Error: 
+unrecognized opcode `typedef long long unsigned int uint_fast64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+ Assembler messages:
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+41: Error: unrecognized opcode `typedef signed char __int8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+43: Error: unrecognized opcode `typedef unsigned char __uint8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+55: Error: unrecognized opcode `typedef short int __int16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+57: Error: unrecognized opcode `typedef short unsigned int __uint16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+77: Error: unrecognized opcode `typedef long int __int32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+79: Error: unrecognized opcode `typedef long unsigned int __uint32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+103: Error: unrecognized opcode `typedef long long int __int64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+105: Error: unrecognized opcode `typedef long long unsigned int __uint64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+134: Error: unrecognized opcode `typedef signed char __int_least8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+136: Error: unrecognized opcode `typedef unsigned char __uint_least8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+160: Error: unrecognized opcode `typedef short int __int_least16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+162: Error: unrecognized opcode `typedef short unsigned int __uint_least16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+182: Error: unrecognized opcode `typedef long int __int_least32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+184: Error: unrecognized opcode `typedef long unsigned int __uint_least32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+200: Error: unrecognized opcode `typedef long long int __int_least64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+202: Error: unrecognized opcode `typedef long long unsigned int __uint_least64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+214: Error: unrecognized opcode `typedef long long int __intmax_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+222: Error: unrecognized opcode `typedef long long unsigned int __uintmax_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+230: Error: unrecognized opcode `typedef int __intptr_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/machine/_default_types.h:
+232: Error: unrecognized opcode `typedef unsigned int __uintptr_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:20: Error: 
+unrecognized opcode `typedef __int8_t int8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:24: Error: 
+unrecognized opcode `typedef __uint8_t uint8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:32: Error: 
+unrecognized opcode `typedef __int16_t int16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:36: Error: 
+unrecognized opcode `typedef __uint16_t uint16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:44: Error: 
+unrecognized opcode `typedef __int32_t int32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:48: Error: 
+unrecognized opcode `typedef __uint32_t uint32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:56: Error: 
+unrecognized opcode `typedef __int64_t int64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:60: Error: 
+unrecognized opcode `typedef __uint64_t uint64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:67: Error: 
+unrecognized opcode `typedef __intmax_t intmax_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:72: Error: 
+unrecognized opcode `typedef __uintmax_t uintmax_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:77: Error: 
+unrecognized opcode `typedef __intptr_t intptr_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/sys/_stdint.h:82: Error: 
+unrecognized opcode `typedef __uintptr_t uintptr_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:21: Error: 
+unrecognized opcode `typedef __int_least8_t int_least8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:22: Error: 
+unrecognized opcode `typedef __uint_least8_t uint_least8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:27: Error: 
+unrecognized opcode `typedef __int_least16_t int_least16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:28: Error: 
+unrecognized opcode `typedef __uint_least16_t uint_least16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:33: Error: 
+unrecognized opcode `typedef __int_least32_t int_least32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:34: Error: 
+unrecognized opcode `typedef __uint_least32_t uint_least32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:39: Error: 
+unrecognized opcode `typedef __int_least64_t int_least64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:40: Error: 
+unrecognized opcode `typedef __uint_least64_t uint_least64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:51: Error: 
+unrecognized opcode `typedef int int_fast8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:52: Error: 
+unrecognized opcode `typedef unsigned int uint_fast8_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:61: Error: 
+unrecognized opcode `typedef int int_fast16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:62: Error: 
+unrecognized opcode `typedef unsigned int uint_fast16_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:71: Error: 
+unrecognized opcode `typedef int int_fast32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:72: Error: 
+unrecognized opcode `typedef unsigned int uint_fast32_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:81: Error: 
+unrecognized opcode `typedef long long int int_fast64_t'
+C:/Users/H/AppData/Local/Arduino15/packages/esp32/tools/esp-rv32/2601/riscv32-esp-elf/include/stdint.h:82: Error: 
+unrecognized opcode `typedef long long unsigned int uint_fast64_t'
+Error during build: exit status 1
+
+[92mUsed library[0m        [92mVersion[0m [90mPath[0m
+[93mWiFi[0m                3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\WiFi[0m
+[93mNetworking[0m          3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\Network[0m
+[93mTFT_eSPI[0m            2.5.43  [90mC:\Users\H\OneDrive - Zenithr Intelligent Solutions\Documents\Arduino\libraries\TFT_eSPI[0m
+[93mSPI[0m                 3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\SPI[0m
+[93mlvgl[0m                9.2.2   [90mC:\Users\H\OneDrive - Zenithr Intelligent Solutions\Documents\Arduino\libraries\lvgl[0m
+[93mWire[0m                3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\Wire[0m
+[93mPreferences[0m         3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\Preferences[0m
+[93mWebSockets[0m          2.6.1   [90mC:\Users\H\OneDrive - Zenithr Intelligent Solutions\Documents\Arduino\libraries\WebSockets[0m
+[93mNetworkClientSecure[0m 3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\NetworkClientSecure[0m
+[93mArduinoJson[0m         7.2.1   [90mC:\Users\H\OneDrive - Zenithr Intelligent Solutions\Documents\Arduino\libraries\ArduinoJson[0m
+[93mFS[0m                  3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\FS[0m
+[93mWebServer[0m           3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\WebServer[0m
+[93mNimBLE-Arduino[0m      2.1.1   [90mC:\Users\H\OneDrive - Zenithr Intelligent Solutions\Documents\Arduino\libraries\NimBLE-Arduino[0m
+[93mSPIFFS[0m              3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\SPIFFS[0m
+[93mHash[0m                3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\Hash[0m
+
+[92mUsed platform[0m [92mVersion[0m [90mPath[0m
+[93mesp32:esp32[0m   3.3.8   [90mC:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8[0m
