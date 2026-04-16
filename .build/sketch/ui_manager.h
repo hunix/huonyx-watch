@@ -41,6 +41,15 @@ public:
                FlipperBLE* flipper, SupabaseBridge* bridge);
     void update();
 
+    /* Display Sleep & Wake */
+    void resetSleepTimer();
+    bool isSleeping() const { return _isSleeping; }
+    void wakeDisplay();
+    void sleepDisplay();
+
+    /* Push Notifications */
+    void showNotification(const char* title, const char* msg);
+
     /* Screen navigation */
     void showScreen(ScreenId id, lv_screen_load_anim_t anim = LV_SCR_LOAD_ANIM_MOVE_LEFT);
     ScreenId currentScreen() const { return _currentScreen; }
@@ -72,6 +81,20 @@ private:
     FlipperBLE*      _flipper;
     SupabaseBridge*  _bridge;
     ScreenId         _currentScreen;
+
+    /* Sleep State */
+    uint32_t         _lastInteraction;
+    bool             _isSleeping;
+    uint8_t          _targetBacklight;
+    uint8_t          _currentBacklight;
+
+    /* Notification Overlay */
+    lv_obj_t*        _notifOverlay;
+    lv_obj_t*        _lblNotifTitle;
+    lv_obj_t*        _lblNotifBody;
+    lv_anim_t        _notifAnimIn;
+    lv_anim_t        _notifAnimOut;
+    uint32_t         _notifDismissTime;
 
     /* ── Screen objects ───────────────────────────────── */
 
@@ -166,6 +189,7 @@ private:
     static void onGestureEvent(lv_event_t* e);
     static void onFlipperScan(lv_event_t* e);
     static void onFlipperDisconnect(lv_event_t* e);
+    static void onScreenInteracted(lv_event_t* e);
 
     /* ── Styles ───────────────────────────────────────── */
     lv_style_t _styleBg;
