@@ -29,6 +29,7 @@ public:
     void setBacklight(uint8_t brightness);
     void setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
     void pushPixels(const uint16_t* data, uint32_t len);
+    void pushPixelsRaw(const uint8_t* data, uint32_t bytes);
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
     void fillScreen(uint16_t color);
     

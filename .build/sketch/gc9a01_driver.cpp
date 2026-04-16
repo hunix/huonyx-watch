@@ -160,15 +160,18 @@ void GC9A01::setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 void GC9A01::pushPixels(const uint16_t* data, uint32_t len) {
     dcData();
     csLow();
-    
-    /* Send each pixel as two bytes: high byte first (big-endian for GC9A01).
-     * Using explicit byte transfers avoids transfer16 endianness issues on RISC-V. */
     for (uint32_t i = 0; i < len; i++) {
         uint16_t px = data[i];
-        _spi->transfer(px >> 8);    // high byte first
-        _spi->transfer(px & 0xFF);  // low byte second
+        _spi->transfer(px >> 8);
+        _spi->transfer(px & 0xFF);
     }
-    
+    csHigh();
+}
+
+void GC9A01::pushPixelsRaw(const uint8_t* data, uint32_t bytes) {
+    dcData();
+    csLow();
+    _spi->writeBytes(data, bytes);
     csHigh();
 }
 
