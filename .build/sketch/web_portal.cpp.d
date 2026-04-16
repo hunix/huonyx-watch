@@ -211,4 +211,7 @@ C:\Users\H\source\repos\huonyx-watch\.build\sketch\web_portal.cpp.o: \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\WebServer\src/detail/RequestHandler.h \
  C:\Users\H\source\repos\huonyx-watch\.build\sketch\config_manager.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\Preferences\src/Preferences.h \
- C:\Users\H\source\repos\huonyx-watch\.build\sketch\hw_config.h
+ C:\Users\H\source\repos\huonyx-watch\.build\sketch\hw_config.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson.hpp \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson/Configuration.hpp

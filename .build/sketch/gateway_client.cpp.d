@@ -154,6 +154,9 @@ C:\Users\H\source\repos\huonyx-watch\.build\sketch\gateway_client.cpp.o: \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/freertos_stats.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/io_pin_remap.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/Arduino.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\WebSockets\src/WebSocketsClient.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\WebSockets\src/WebSockets.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\WebSockets\src/WebSocketsVersion.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\WiFi\src/WiFi.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/Print.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\WiFi\src/WiFiType.h \
@@ -202,9 +205,6 @@ C:\Users\H\source\repos\huonyx-watch\.build\sketch\gateway_client.cpp.o: \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\WiFi\src/WiFiServer.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\WiFi\src/WiFiUdp.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\Network\src/NetworkUdp.h \
- C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\WebSockets\src/WebSocketsClient.h \
- C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\WebSockets\src/WebSockets.h \
- C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\WebSockets\src/WebSocketsVersion.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\NetworkClientSecure\src/WiFiClientSecure.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\NetworkClientSecure\src/NetworkClientSecure.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\NetworkClientSecure\src/ssl_client.h \

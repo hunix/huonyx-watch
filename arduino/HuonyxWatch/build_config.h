@@ -10,6 +10,8 @@
  */
 
 #ifndef BUILD_CONFIG_H
+#define ARDUINO_USB_MODE 1
+#define ARDUINO_USB_CDC_ON_BOOT 1
 #define BUILD_CONFIG_H
 
 /* ── TFT_eSPI ─────────────────────────────────────────────
@@ -44,6 +46,6 @@
 /* ── Debug ────────────────────────────────────────────────
  * Disable ESP32 core debug output to save flash/RAM.
  */
-#define CORE_DEBUG_LEVEL 0
+#define CORE_DEBUG_LEVEL 4
 
 #endif /* BUILD_CONFIG_H */

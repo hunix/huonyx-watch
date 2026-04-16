@@ -76,6 +76,47 @@ static size_t accumulatedLen = 0;
  * Signature: void flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
  * In LVGL 9, the pixel map is a raw byte buffer (RGB565 in our case).
  */
+#line 78 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map);
+#line 94 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void lvglTouchReadCb(lv_indev_t* indev, lv_indev_data_t* data);
+#line 108 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static uint32_t lvglTickCb(void);
+#line 116 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void onChatDelta(const char* runId, const char* text, bool isFinal);
+#line 152 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void onGatewayStateChange(GatewayState newState);
+#line 160 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void onGatewayFlipperCommand(const char* command, const char* source);
+#line 184 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void onFlipperResponse(uint32_t cmdId, const char* response, bool complete);
+#line 202 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void onFlipperStateChange(FlipperState newState);
+#line 239 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void onBridgeCommand(const char* command, const char* source);
+#line 270 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void onBridgeStateChange(BridgeState newState);
+#line 279 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void onBridgeAgentMessage(const char* message);
+#line 289 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void connectWiFi();
+#line 328 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void startGateway();
+#line 347 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void startFlipper();
+#line 362 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void startBridge();
+#line 383 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static int readBatteryLevel();
+#line 402 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static bool isBatteryCharging();
+#line 418 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+static void updateTimeDisplay();
+#line 446 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+void setup();
+#line 543 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
+void loop();
+#line 78 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map) {
     uint32_t w = (area->x2 - area->x1 + 1);
     uint32_t h = (area->y2 - area->y1 + 1);

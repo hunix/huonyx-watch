@@ -1,7 +1,7 @@
 C:\Users\H\source\repos\huonyx-watch\.build\sketch\HuonyxWatch.ino.cpp.o: \
  C:\Users\H\source\repos\huonyx-watch\.build\sketch\HuonyxWatch.ino.cpp \
  C:\Users\H\source\repos\huonyx-watch\.build\sketch\build_config.h \
- C:\Users\H\source\repos\huonyx-watch\.build\sketch\hw_config.h \
+ C:\Users\H\source\repos\huonyx-watch\.build\sketch\User_Setup.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/Arduino.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/newlib/platform_include/stdio.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/esp_arduino_version.h \
@@ -207,6 +207,7 @@ C:\Users\H\source\repos\huonyx-watch\.build\sketch\HuonyxWatch.ino.cpp.o: \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\SPI\src/SPI.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/esp32-hal-spi.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/User_Setup_Select.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/TFT_Drivers/GC9A01_Defines.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Processors/TFT_eSPI_ESP32_C3.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/soc/esp32c3/register/soc/spi_reg.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/hal/esp32c3/include/hal/gpio_ll.h \
@@ -216,6 +217,70 @@ C:\Users\H\source\repos\huonyx-watch\.build\sketch\HuonyxWatch.ino.cpp.o: \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/soc/esp32c3/register/soc/usb_serial_jtag_reg.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/hal/platform_port/include/hal/assert.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/hal/platform_port/include/hal/misc.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\FS\src/FS.h \
+ C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\SPIFFS\src/SPIFFS.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/glcdfont.c \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/Font16.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/Font16.c \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/Font32rle.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/Font32rle.c \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/gfxfont.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/TomThumb.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMono9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMono12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMono18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMono24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoOblique9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoOblique12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoOblique18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoOblique24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoBold9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoBold12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoBold18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoBold24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoBoldOblique9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoBoldOblique12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoBoldOblique18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeMonoBoldOblique24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSans9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSans12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSans18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSans24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansOblique9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansOblique12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansOblique18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansOblique24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansBold9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansBold12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansBold18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansBold24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansBoldOblique9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansBoldOblique12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansBoldOblique18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSansBoldOblique24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerif9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerif12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerif18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerif24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifItalic9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifItalic12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifItalic18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifItalic24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifBold9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifBold12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifBold18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifBold24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifBoldItalic9pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifBoldItalic12pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifBoldItalic18pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/GFXFF/FreeSerifBoldItalic24pt7b.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/User_Setups/User_Custom_Fonts.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/Custom/Orbitron_Light_24.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/Custom/Orbitron_Light_32.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/Custom/Roboto_Thin_24.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/Custom/Satisfy_24.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Fonts/Custom/Yellowtail_32.h \
+ C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Extensions/Smooth_font.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Extensions/Button.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\TFT_eSPI/Extensions/Sprite.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\lvgl\src/lvgl.h \
@@ -591,6 +656,7 @@ C:\Users\H\source\repos\huonyx-watch\.build\sketch\HuonyxWatch.ino.cpp.o: \
  C:/Users/H/OneDrive\ -\ Zenithr\ Intelligent\ Solutions/Documents/Arduino/libraries/lvgl/src/lv_api_map_v9_0.h \
  C:/Users/H/OneDrive\ -\ Zenithr\ Intelligent\ Solutions/Documents/Arduino/libraries/lvgl/src/lv_api_map_v9_1.h \
  C:\Users\H\OneDrive\ -\ Zenithr\ Intelligent\ Solutions\Documents\Arduino\libraries\lvgl\src/lv_conf_internal.h \
+ C:\Users\H\source\repos\huonyx-watch\.build\sketch\hw_config.h \
  C:\Users\H\source\repos\huonyx-watch\.build\sketch\touch_driver.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\Wire\src/Wire.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\cores\esp32/esp32-hal.h \
@@ -701,7 +767,6 @@ C:\Users\H\source\repos\huonyx-watch\.build\sketch\HuonyxWatch.ino.cpp.o: \
  C:\Users\H\source\repos\huonyx-watch\.build\sketch\supabase_bridge.h \
  C:\Users\H\source\repos\huonyx-watch\.build\sketch\ui_manager.h \
  C:\Users\H\source\repos\huonyx-watch\.build\sketch\web_portal.h \
- C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\FS\src/FS.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\WebServer\src/WebServer.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.8\libraries\WebServer\src/HTTP_Method.h \
  C:\Users\H\AppData\Local\Arduino15\packages\esp32\tools\esp32c3-libs\3.3.8/include/http_parser/http_parser.h \
