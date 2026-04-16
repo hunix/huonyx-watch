@@ -65,22 +65,22 @@
 #define LV_DRAW_TRANSFORM_USE_MATRIX            0
 
 /*The target buffer size for simple layer chunks.*/
-#define LV_DRAW_LAYER_SIMPLE_BUF_SIZE    (8 * 1024)   /*[bytes] reduced from 24KB */
+#define LV_DRAW_LAYER_SIMPLE_BUF_SIZE    (24 * 1024)   /*[bytes]*/
 
 /* The stack size of the drawing thread. */
-#define LV_DRAW_THREAD_STACK_SIZE    (4 * 1024)   /*[bytes] reduced from 8KB */
+#define LV_DRAW_THREAD_STACK_SIZE    (8 * 1024)   /*[bytes]*/
 
 #define LV_USE_DRAW_SW 1
 #if LV_USE_DRAW_SW == 1
     #define LV_DRAW_SW_SUPPORT_RGB565       1
-    #define LV_DRAW_SW_SUPPORT_RGB565A8     0  /* unused - display is RGB565 */
-    #define LV_DRAW_SW_SUPPORT_RGB888       0  /* unused */
-    #define LV_DRAW_SW_SUPPORT_XRGB8888    0  /* unused */
-    #define LV_DRAW_SW_SUPPORT_ARGB8888    0  /* unused */
-    #define LV_DRAW_SW_SUPPORT_L8          0  /* unused */
-    #define LV_DRAW_SW_SUPPORT_AL88        0  /* unused */
-    #define LV_DRAW_SW_SUPPORT_A8          0  /* unused */
-    #define LV_DRAW_SW_SUPPORT_I1          0
+    #define LV_DRAW_SW_SUPPORT_RGB565A8     1  /* unused - display is RGB565 */
+    #define LV_DRAW_SW_SUPPORT_RGB888       1  /* unused */
+    #define LV_DRAW_SW_SUPPORT_XRGB8888    1  /* unused */
+    #define LV_DRAW_SW_SUPPORT_ARGB8888    1  /* unused */
+    #define LV_DRAW_SW_SUPPORT_L8          1  /* unused */
+    #define LV_DRAW_SW_SUPPORT_AL88        1  /* unused */
+    #define LV_DRAW_SW_SUPPORT_A8          1  /* unused */
+    #define LV_DRAW_SW_SUPPORT_I1          1
 
     #define LV_DRAW_SW_DRAW_UNIT_CNT    1
 

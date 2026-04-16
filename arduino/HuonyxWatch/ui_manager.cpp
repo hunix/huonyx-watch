@@ -1111,7 +1111,7 @@ void UIManager::updateAgentTyping(bool typing) {
 
 void UIManager::clearChat() {
     if (!_chatList) return;
-    lv_obj_clean(_chatList);  /* lv_obj_clean deletes all children in LVGL 9 */
+    lv_obj_clean(_chatList);
     _chatMsgCount = 0;
 }
 
@@ -1209,7 +1209,7 @@ void UIManager::onBrightnessChanged(lv_event_t* e) {
     lv_obj_t* slider = (lv_obj_t*)lv_event_get_target(e);
     int val = lv_slider_get_value(slider);
 
-    ledcWrite(PIN_TFT_BL, val);
+    analogWrite(PIN_TFT_BL, val);
 
     if (self->_cfg) {
         self->_cfg->setBrightness((uint8_t)val);

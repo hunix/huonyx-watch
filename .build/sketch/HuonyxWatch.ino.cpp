@@ -21,18 +21,14 @@
  * ╚══════════════════════════════════════════════════════════╝
  */
 
-/* build_config.h MUST be first - defines USER_SETUP_LOADED, LV_CONF_INCLUDE_SIMPLE, NimBLE config */
 #include "build_config.h"
-
-/* hw_config.h MUST come before TFT_eSPI.h so TFT_WIDTH/TFT_HEIGHT are defined */
-#include "hw_config.h"
-
 #include <Arduino.h>
 #include <WiFi.h>
-#include <WiFiClient.h>      /* Required before WebSockets on ESP32 core 3.x */
 #include <time.h>
 #include <TFT_eSPI.h>
 #include <lvgl.h>
+
+#include "hw_config.h"
 #include "touch_driver.h"
 #include "config_manager.h"
 #include "gateway_client.h"
@@ -60,16 +56,16 @@ static unsigned long lastTimeUpdate    = 0;
 static unsigned long lastWiFiCheck     = 0;
 static unsigned long lastBatteryCheck  = 0;
 static unsigned long lastStatusBcast   = 0;
-static unsigned long lastLvglTick      = 0;
 static bool          wifiConnected     = false;
 static bool          gatewayStarted    = false;
 static bool          flipperStarted    = false;
 static bool          bridgeStarted     = false;
 static bool          ntpSynced         = false;
 
-/* ── Accumulator for streaming chat deltas ────────────── */
-static String currentRunId    = "";
-static String accumulatedText = "";
+/* ── Accumulator for streaming chat deltas (stack-allocated to avoid heap fragmentation) ── */
+static char currentRunId[32]     = "";
+static char accumulatedText[CHAT_MAX_MSG_LEN] = "";
+static size_t accumulatedLen = 0;
 
 /* ══════════════════════════════════════════════════════════
  *  LVGL 9 CALLBACKS
@@ -80,47 +76,6 @@ static String accumulatedText = "";
  * Signature: void flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
  * In LVGL 9, the pixel map is a raw byte buffer (RGB565 in our case).
  */
-#line 82 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map);
-#line 98 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void lvglTouchReadCb(lv_indev_t* indev, lv_indev_data_t* data);
-#line 112 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static uint32_t lvglTickCb(void);
-#line 120 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void onChatDelta(const char* runId, const char* text, bool isFinal);
-#line 142 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void onGatewayStateChange(GatewayState newState);
-#line 150 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void onGatewayFlipperCommand(const char* command, const char* source);
-#line 174 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void onFlipperResponse(uint32_t cmdId, const char* response, bool complete);
-#line 192 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void onFlipperStateChange(FlipperState newState);
-#line 229 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void onBridgeCommand(const char* command, const char* source);
-#line 260 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void onBridgeStateChange(BridgeState newState);
-#line 269 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void onBridgeAgentMessage(const char* message);
-#line 279 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void connectWiFi();
-#line 318 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void startGateway();
-#line 337 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void startFlipper();
-#line 352 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void startBridge();
-#line 373 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static int readBatteryLevel();
-#line 392 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static bool isBatteryCharging();
-#line 408 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-static void updateTimeDisplay();
-#line 436 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-void setup();
-#line 535 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
-void loop();
-#line 82 "C:\\Users\\H\\source\\repos\\huonyx-watch\\arduino\\HuonyxWatch\\HuonyxWatch.ino"
 static void lvglFlushCb(lv_display_t* disp, const lv_area_t* area, uint8_t* px_map) {
     uint32_t w = (area->x2 - area->x1 + 1);
     uint32_t h = (area->y2 - area->y1 + 1);
@@ -160,24 +115,38 @@ static uint32_t lvglTickCb(void) {
  * ══════════════════════════════════════════════════════════ */
 
 static void onChatDelta(const char* runId, const char* text, bool isFinal) {
-    if (currentRunId != runId) {
-        currentRunId = runId;
-        accumulatedText = "";
+    if (strcmp(currentRunId, runId) != 0) {
+        strncpy(currentRunId, runId, sizeof(currentRunId) - 1);
+        currentRunId[sizeof(currentRunId) - 1] = '\0';
+        accumulatedLen = 0;
+        accumulatedText[0] = '\0';
     }
 
-    accumulatedText += text;
+    /* Append new text, respecting buffer limit */
+    size_t textLen = strlen(text);
+    size_t space = sizeof(accumulatedText) - accumulatedLen - 1;
+    if (textLen > space) textLen = space;
+    if (textLen > 0) {
+        memcpy(accumulatedText + accumulatedLen, text, textLen);
+        accumulatedLen += textLen;
+        accumulatedText[accumulatedLen] = '\0';
+    }
 
     if (isFinal) {
         ui.updateAgentTyping(false);
 
-        String displayText = accumulatedText;
-        if (displayText.length() > CHAT_MAX_MSG_LEN - 1) {
-            displayText = displayText.substring(0, CHAT_MAX_MSG_LEN - 4) + "...";
+        /* Truncate display if needed */
+        if (accumulatedLen > CHAT_MAX_MSG_LEN - 4) {
+            accumulatedText[CHAT_MAX_MSG_LEN - 4] = '.';
+            accumulatedText[CHAT_MAX_MSG_LEN - 3] = '.';
+            accumulatedText[CHAT_MAX_MSG_LEN - 2] = '.';
+            accumulatedText[CHAT_MAX_MSG_LEN - 1] = '\0';
         }
 
-        ui.addChatMessage(displayText.c_str(), false);
-        currentRunId = "";
-        accumulatedText = "";
+        ui.addChatMessage(accumulatedText, false);
+        currentRunId[0] = '\0';
+        accumulatedLen = 0;
+        accumulatedText[0] = '\0';
     }
 }
 
@@ -487,9 +456,7 @@ void setup() {
     tft.init();
     tft.setRotation(0);
     tft.fillScreen(TFT_BLACK);
-    /* Backlight PWM - ESP32 core 3.x uses ledcAttach/ledcWrite */
-    ledcAttach(PIN_TFT_BL, 5000, 8);  /* pin, freq 5kHz, 8-bit resolution */
-    ledcWrite(PIN_TFT_BL, 200);
+    analogWrite(PIN_TFT_BL, 200);
     Serial.println("[INIT] Display initialized");
 
     /* ── Initialize touch ─────────────────────────── */
@@ -529,7 +496,7 @@ void setup() {
                   configMgr.config().flipperAuto);
 
     /* Apply saved brightness */
-    ledcWrite(PIN_TFT_BL, configMgr.config().brightness);
+    analogWrite(PIN_TFT_BL, configMgr.config().brightness);
 
     /* ── Build UI ─────────────────────────────────── */
     ui.begin(&gateway, &configMgr, &flipper, &bridge);

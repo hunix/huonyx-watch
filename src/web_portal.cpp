@@ -109,7 +109,6 @@ text-transform:uppercase;letter-spacing:1px;margin-left:8px}
 <div class="logo">HUONYX</div>
 <div class="subtitle">AI Smartwatch Configuration Portal</div>
 )rawliteral";
-)rawliteral";
     return html;
 }
 

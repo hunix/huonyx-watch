@@ -8,8 +8,6 @@
 #define GATEWAY_CLIENT_H
 
 #include <Arduino.h>
-#include <WiFi.h>
-#include <WiFiClient.h>      /* Must precede WebSocketsClient on ESP32 core 3.x */
 #include <WebSocketsClient.h>
 #include <ArduinoJson.h>
 #include "hw_config.h"
@@ -89,7 +87,8 @@ private:
     void handleMessage(uint8_t* payload, size_t length);
     void handleResponse(JsonObjectConst doc);
     void handleEvent(JsonObjectConst doc);
-    String generateId();
+    const char* generateId();
+    char _idBuf[28];
 
     /* WebSocket event handler */
     static void wsEventCallback(WStype_t type, uint8_t* payload, size_t length);

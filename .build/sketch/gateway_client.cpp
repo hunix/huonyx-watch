@@ -76,12 +76,11 @@ void GatewayClient::setState(GatewayState s) {
     }
 }
 
-String GatewayClient::generateId() {
+const char* GatewayClient::generateId() {
     _msgIdCounter++;
-    char buf[24];
-    snprintf(buf, sizeof(buf), "esp32-%08lx-%04x",
+    snprintf(_idBuf, sizeof(_idBuf), "esp32-%08lx-%04x",
              (unsigned long)millis(), (uint16_t)(_msgIdCounter & 0xFFFF));
-    return String(buf);
+    return _idBuf;
 }
 
 /* ── WebSocket Event Handler ──────────────────────────── */
@@ -120,7 +119,7 @@ void GatewayClient::wsEventCallback(WStype_t type, uint8_t* payload, size_t leng
 void GatewayClient::sendConnectFrame() {
     JsonDocument doc;
     doc["type"] = "req";
-    String id = generateId();
+    const char* id = generateId();
     doc["id"] = id;
     doc["method"] = "connect";
 
@@ -284,7 +283,7 @@ bool GatewayClient::sendMessage(const char* sessionKey, const char* message) {
 
     JsonDocument doc;
     doc["type"] = "req";
-    String id = generateId();
+    const char* id = generateId();
     doc["id"] = id;
     doc["method"] = "chat.send";
 

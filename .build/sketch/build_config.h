@@ -19,6 +19,7 @@
  * searching the library folder.
  */
 #define USER_SETUP_LOADED 1
+#include "User_Setup.h"
 
 /* ── LVGL ─────────────────────────────────────────────────
  * LV_CONF_INCLUDE_SIMPLE tells LVGL to find lv_conf.h by

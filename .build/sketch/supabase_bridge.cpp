@@ -152,9 +152,9 @@ void SupabaseBridge::sendWatchStatus(int battery, bool charging, bool wifiConnec
  *  INTERNAL: PROTOCOL
  * ══════════════════════════════════════════════════════════ */
 
-String SupabaseBridge::nextRef() {
+void SupabaseBridge::nextRef(char* buf, size_t bufSize) {
     _refCounter++;
-    return String(_refCounter);
+    snprintf(buf, bufSize, "%lu", (unsigned long)_refCounter);
 }
 
 void SupabaseBridge::sendJoin() {
@@ -163,8 +163,9 @@ void SupabaseBridge::sendJoin() {
     doc["topic"] = SUPABASE_CHANNEL_TOPIC;
     doc["event"] = "phx_join";
 
-    String ref = nextRef();
-    strncpy(_joinRef, ref.c_str(), sizeof(_joinRef) - 1);
+    char ref[12];
+    nextRef(ref, sizeof(ref));
+    strncpy(_joinRef, ref, sizeof(_joinRef) - 1);
 
     doc["ref"] = ref;
     doc["join_ref"] = ref;
@@ -174,7 +175,7 @@ void SupabaseBridge::sendJoin() {
 
     JsonObject broadcast = config["broadcast"].to<JsonObject>();
     broadcast["ack"] = false;
-    broadcast["self"] = true;  /* Receive our own broadcasts for debugging */
+    broadcast["self"] = false;  /* Don't receive our own broadcasts (saves processing) */
 
     JsonObject presence = config["presence"].to<JsonObject>();
     presence["enabled"] = false;
@@ -196,7 +197,9 @@ void SupabaseBridge::sendHeartbeat() {
     doc["topic"] = "phoenix";
     doc["event"] = "heartbeat";
     doc["payload"] = JsonObject();
-    doc["ref"] = nextRef();
+    char ref[12];
+    nextRef(ref, sizeof(ref));
+    doc["ref"] = ref;
 
     String output;
     serializeJson(doc, output);
@@ -209,7 +212,9 @@ void SupabaseBridge::sendBroadcast(const char* event, JsonObject payload) {
     JsonDocument doc;
     doc["topic"] = SUPABASE_CHANNEL_TOPIC;
     doc["event"] = "broadcast";
-    doc["ref"] = nextRef();
+    char ref[12];
+    nextRef(ref, sizeof(ref));
+    doc["ref"] = ref;
     doc["join_ref"] = _joinRef;
 
     JsonObject outerPayload = doc["payload"].to<JsonObject>();
