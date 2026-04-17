@@ -57,7 +57,15 @@ UIManager::UIManager()
     , _currentScreen(SCREEN_WATCHFACE)
     , _chatMsgCount(0)
     , _flipperLogCount(0)
+    , _lblHeapFree(nullptr)
+    , _otaOverlay(nullptr)
+    , _arcOtaProgress(nullptr)
+    , _lblOtaStatus(nullptr)
+    , _battWarnBox(nullptr)
+    , _battWarnShown(false)
 {
+    memset(_btnFlipperShortcut, 0, sizeof(_btnFlipperShortcut));
+    memset(_btnHistory, 0, sizeof(_btnHistory));
 }
 
 /* ── Initialization ───────────────────────────────────── */
@@ -80,6 +88,7 @@ void UIManager::begin(GatewayClient* gw, ConfigManager* cfg,
     buildSupabaseSetup();
     buildFlipperSetup();
     buildSessionsScreen();
+    buildKeyboardScreen();   /* Fix 4: on-screen text input */
 
     /* Start with watch face */
     lv_screen_load(_scrWatchface);
@@ -336,8 +345,22 @@ void UIManager::buildChatScreen() {
     lv_label_set_text(_lblChatTitle, LV_SYMBOL_LEFT "  Huonyx Agent");
     lv_obj_set_style_text_font(_lblChatTitle, &lv_font_montserrat_12, 0);
     lv_obj_set_style_text_color(_lblChatTitle, COL_PRIMARY, 0);
-    lv_obj_center(_lblChatTitle);
+    lv_obj_align(_lblChatTitle, LV_ALIGN_LEFT_MID, 8, 0);
     lv_obj_add_event_cb(_chatHeader, onBackButton, LV_EVENT_CLICKED, this);
+
+    /* "⌨" type button — Fix 4: open the on-screen keyboard */
+    lv_obj_t* btnType = lv_button_create(_chatHeader);
+    lv_obj_set_size(btnType, 24, 24);
+    lv_obj_align(btnType, LV_ALIGN_RIGHT_MID, -4, 0);
+    lv_obj_set_style_bg_color(btnType, COL_SECONDARY, 0);
+    lv_obj_set_style_bg_color(btnType, COL_PRIMARY, LV_STATE_PRESSED);
+    lv_obj_set_style_radius(btnType, 6, 0);
+    lv_obj_set_style_border_width(btnType, 0, 0);
+    lv_obj_t* lblType = lv_label_create(btnType);
+    lv_label_set_text(lblType, LV_SYMBOL_KEYBOARD);
+    lv_obj_set_style_text_font(lblType, &lv_font_montserrat_12, 0);
+    lv_obj_center(lblType);
+    lv_obj_add_event_cb(btnType, onTypeButtonClicked, LV_EVENT_CLICKED, this);
 
     /* ── Chat message list ──────────────────────────── */
     _chatList = lv_obj_create(_scrChat);
@@ -471,6 +494,46 @@ void UIManager::buildFlipperScreen() {
     lv_obj_center(lblDisc);
     lv_obj_add_event_cb(_btnFlipperDisconnect, onFlipperDisconnect, LV_EVENT_CLICKED, this);
 
+    /* ── 4 Quick-command shortcut buttons (2×2 grid) ───── */
+    static const char* SHORTCUT_LABELS[4] = { "Sub-GHz", "RFID", "NFC", "iButton" };
+    static const char* SHORTCUT_CMDS[4]   = { "subghz scan", "rfid read",
+                                               "nfc detect", "ibutton emulate" };
+    /* Anchor: 4px below the disconnect button */
+    for (int i = 0; i < 4; i++) {
+        _btnFlipperShortcut[i] = lv_button_create(_scrFlipper);
+        lv_obj_set_size(_btnFlipperShortcut[i], 84, 22);
+        int col = i % 2;                /* 0=left 1=right */
+        int row = i / 2;                /* 0=top  1=bottom */
+        lv_obj_align(_btnFlipperShortcut[i], LV_ALIGN_BOTTOM_LEFT,
+                     12 + col * 90,     /* x: 12 or 102 */
+                     -58 + row * 26);   /* y: -58 or -32 */
+        lv_obj_set_style_bg_color(_btnFlipperShortcut[i], COL_CARD, 0);
+        lv_obj_set_style_bg_color(_btnFlipperShortcut[i], COL_SECONDARY, LV_STATE_PRESSED);
+        lv_obj_set_style_border_color(_btnFlipperShortcut[i], COL_FLIPPER, 0);
+        lv_obj_set_style_border_width(_btnFlipperShortcut[i], 1, 0);
+        lv_obj_set_style_radius(_btnFlipperShortcut[i], 6, 0);
+        lv_obj_t* lbl = lv_label_create(_btnFlipperShortcut[i]);
+        lv_label_set_text(lbl, SHORTCUT_LABELS[i]);
+        lv_obj_set_style_text_font(lbl, &lv_font_montserrat_10, 0);
+        lv_obj_set_style_text_color(lbl, COL_FLIPPER, 0);
+        lv_obj_center(lbl);
+        /* Store command string as user_data */
+        lv_obj_set_user_data(_btnFlipperShortcut[i], (void*)SHORTCUT_CMDS[i]);
+        lv_obj_add_event_cb(_btnFlipperShortcut[i], onFlipperShortcut, LV_EVENT_CLICKED, this);
+    }
+
+    /* ── Command history re-send strip (hidden until commands run) ── */
+    _panelHistory = lv_obj_create(_scrFlipper);
+    lv_obj_set_size(_panelHistory, 210, 20);
+    lv_obj_align(_panelHistory, LV_ALIGN_BOTTOM_MID, 0, -6);
+    lv_obj_set_style_bg_opa(_panelHistory, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(_panelHistory, 0, 0);
+    lv_obj_set_style_pad_all(_panelHistory, 0, 0);
+    lv_obj_set_flex_flow(_panelHistory, LV_FLEX_FLOW_ROW);
+    lv_obj_set_style_pad_gap(_panelHistory, 4, 0);
+    lv_obj_remove_flag(_panelHistory, LV_OBJ_FLAG_SCROLLABLE);
+    /* History buttons are created dynamically in refreshFlipperHistory() */
+
     lv_obj_add_event_cb(_scrFlipper, onGestureEvent, LV_EVENT_GESTURE, this);
 }
 
@@ -542,6 +605,14 @@ void UIManager::buildQuickSettings() {
     lv_obj_set_style_text_color(hint, COL_TEXT_DIM, 0);
     lv_obj_set_style_text_opa(hint, LV_OPA_40, 0);
     lv_obj_align(hint, LV_ALIGN_BOTTOM_MID, 0, -25);
+
+    /* Heap free display */
+    _lblHeapFree = lv_label_create(_scrQuickSettings);
+    lv_label_set_text(_lblHeapFree, "Heap: -- KB");
+    lv_obj_set_style_text_font(_lblHeapFree, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(_lblHeapFree, COL_TEXT_DIM, 0);
+    lv_obj_set_style_text_opa(_lblHeapFree, LV_OPA_60, 0);
+    lv_obj_align(_lblHeapFree, LV_ALIGN_BOTTOM_MID, 0, -8);
 
     lv_obj_add_event_cb(_scrQuickSettings, onGestureEvent, LV_EVENT_GESTURE, this);
 }
@@ -842,6 +913,7 @@ void UIManager::showScreen(ScreenId id, lv_screen_load_anim_t anim) {
         case SCREEN_SUPABASE_SETUP:  target = _scrSupabaseSetup; break;
         case SCREEN_FLIPPER_SETUP:   target = _scrFlipperSetup; break;
         case SCREEN_SESSIONS:        target = _scrSessions; break;
+        case SCREEN_KEYBOARD:        target = _scrKeyboard; break;
         default: return;
     }
 
@@ -1314,6 +1386,16 @@ void UIManager::onGestureEvent(lv_event_t* e) {
             }
             break;
 
+        case SCREEN_KEYBOARD:
+            if (dir == LV_DIR_RIGHT) {
+                /* Discard input and go back to chat */
+                if (self->_taInput) {
+                    lv_textarea_set_text(self->_taInput, "");
+                }
+                self->showScreen(SCREEN_CHAT, LV_SCR_LOAD_ANIM_MOVE_RIGHT);
+            }
+            break;
+
         case SCREEN_FLIPPER:
             if (dir == LV_DIR_LEFT) {
                 self->showScreen(SCREEN_WATCHFACE, LV_SCR_LOAD_ANIM_MOVE_LEFT);
@@ -1340,4 +1422,365 @@ void UIManager::onGestureEvent(lv_event_t* e) {
         default:
             break;
     }
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  FIX 4: KEYBOARD SCREEN
+ * ══════════════════════════════════════════════════════════ */
+
+/**
+ * Build a full-screen keyboard with a text area above it.
+ * On Enter/OK the typed text is sent as a chat message via the gateway.
+ * The keyboard is kept in LVGL's lower-case mode to fit the 240x240 display.
+ */
+void UIManager::buildKeyboardScreen() {
+    _scrKeyboard = createRoundScreen();
+
+    /* ── Textarea (typed message preview) ──────────── */
+    _taInput = lv_textarea_create(_scrKeyboard);
+    lv_obj_set_size(_taInput, 220, 42);
+    lv_obj_align(_taInput, LV_ALIGN_TOP_MID, 0, 8);
+    lv_textarea_set_one_line(_taInput, false);
+    lv_textarea_set_max_length(_taInput, 200);
+    lv_textarea_set_placeholder_text(_taInput, "Type a message...");
+    lv_obj_set_style_bg_color(_taInput, COL_SURFACE, 0);
+    lv_obj_set_style_border_color(_taInput, COL_PRIMARY, 0);
+    lv_obj_set_style_border_width(_taInput, 1, 0);
+    lv_obj_set_style_text_color(_taInput, COL_TEXT, 0);
+    lv_obj_set_style_text_font(_taInput, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_radius(_taInput, 10, 0);
+    lv_obj_set_style_pad_all(_taInput, 6, 0);
+
+    /* ── LVGL keyboard widget ───────────────────────── */
+    _keyboard = lv_keyboard_create(_scrKeyboard);
+    lv_obj_set_size(_keyboard, 240, 160);
+    lv_obj_align(_keyboard, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_keyboard_set_textarea(_keyboard, _taInput);
+    lv_keyboard_set_mode(_keyboard, LV_KEYBOARD_MODE_TEXT_LOWER);
+
+    /* Style the keyboard to match the dark theme */
+    lv_obj_set_style_bg_color(_keyboard, COL_SURFACE, 0);
+    lv_obj_set_style_bg_color(_keyboard, COL_CARD, LV_PART_ITEMS);
+    lv_obj_set_style_text_color(_keyboard, COL_TEXT, LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(_keyboard, COL_PRIMARY, LV_PART_ITEMS | LV_STATE_CHECKED);
+    lv_obj_set_style_text_font(_keyboard, &lv_font_montserrat_12, LV_PART_ITEMS);
+
+    /* Wire the "OK" / Enter key to send the message */
+    lv_obj_add_event_cb(_keyboard, onKeyboardReady, LV_EVENT_READY, this);
+    /* Also allow physical "Cancel" to go back */
+    lv_obj_add_event_cb(_keyboard, onKeyboardReady, LV_EVENT_CANCEL, this);
+
+    /* Gesture navigation */
+    lv_obj_add_event_cb(_scrKeyboard, onGestureEvent, LV_EVENT_GESTURE, this);
+}
+
+/**
+ * Called when the LVGL keyboard fires LV_EVENT_READY (OK/Enter key)
+ * or LV_EVENT_CANCEL (back key).
+ */
+void UIManager::onKeyboardReady(lv_event_t* e) {
+    UIManager* self = (UIManager*)lv_event_get_user_data(e);
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_READY) {
+        /* Get typed text */
+        const char* text = lv_textarea_get_text(self->_taInput);
+        if (text && strlen(text) > 0) {
+            /* Show in chat as user message */
+            self->addChatMessage(text, true);
+
+            /* Send via gateway if connected */
+            if (self->_gw && self->_gw->isConnected()) {
+                self->_gw->sendMessage(self->_gw->getSessionKey(), text);
+                self->updateAgentTyping(true);
+            }
+
+            /* Clear textarea */
+            lv_textarea_set_text(self->_taInput, "");
+        }
+    }
+
+    /* Navigate back to chat (both OK and Cancel) */
+    self->showScreen(SCREEN_CHAT, LV_SCR_LOAD_ANIM_MOVE_RIGHT);
+}
+
+/**
+ * Called when the "⌨" type button on the chat header is clicked.
+ * Opens the keyboard screen so the user can type a custom message.
+ */
+void UIManager::onTypeButtonClicked(lv_event_t* e) {
+    UIManager* self = (UIManager*)lv_event_get_user_data(e);
+    /* Clear the textarea before showing */
+    if (self->_taInput) {
+        lv_textarea_set_text(self->_taInput, "");
+    }
+    self->showScreen(SCREEN_KEYBOARD, LV_SCR_LOAD_ANIM_MOVE_LEFT);
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  OTA OVERLAY
+ * ══════════════════════════════════════════════════════════ */
+
+/**
+ * Create (once) and show the OTA progress overlay on top of whatever
+ * screen is active.  `pct` = 0..100.
+ */
+void UIManager::showOtaOverlay(int pct) {
+    if (!_otaOverlay) {
+        /* Full-screen semi-transparent dark panel */
+        _otaOverlay = lv_obj_create(lv_screen_active());
+        lv_obj_set_size(_otaOverlay, 240, 240);
+        lv_obj_center(_otaOverlay);
+        lv_obj_set_style_bg_color(_otaOverlay, lv_color_black(), 0);
+        lv_obj_set_style_bg_opa(_otaOverlay, LV_OPA_80, 0);
+        lv_obj_set_style_border_width(_otaOverlay, 0, 0);
+        lv_obj_set_style_radius(_otaOverlay, 0, 0);
+        lv_obj_remove_flag(_otaOverlay, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_add_flag(_otaOverlay, LV_OBJ_FLAG_FLOATING);
+
+        /* Title */
+        lv_obj_t* title = lv_label_create(_otaOverlay);
+        lv_label_set_text(title, LV_SYMBOL_DOWNLOAD "  OTA Update");
+        lv_obj_set_style_text_font(title, &lv_font_montserrat_14, 0);
+        lv_obj_set_style_text_color(title, COL_PRIMARY, 0);
+        lv_obj_align(title, LV_ALIGN_CENTER, 0, -45);
+
+        /* Progress arc */
+        _arcOtaProgress = lv_arc_create(_otaOverlay);
+        lv_obj_set_size(_arcOtaProgress, 80, 80);
+        lv_arc_set_range(_arcOtaProgress, 0, 100);
+        lv_arc_set_value(_arcOtaProgress, 0);
+        lv_arc_set_bg_angles(_arcOtaProgress, 0, 360);
+        lv_arc_set_angles(_arcOtaProgress, 0, 1);
+        lv_obj_set_style_arc_color(_arcOtaProgress, COL_PRIMARY, LV_PART_INDICATOR);
+        lv_obj_set_style_arc_color(_arcOtaProgress, COL_SURFACE, LV_PART_MAIN);
+        lv_obj_set_style_arc_width(_arcOtaProgress, 8, LV_PART_INDICATOR);
+        lv_obj_set_style_arc_width(_arcOtaProgress, 8, LV_PART_MAIN);
+        lv_obj_remove_flag(_arcOtaProgress, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_align(_arcOtaProgress, LV_ALIGN_CENTER, 0, 10);
+
+        /* Percentage label inside the arc */
+        _lblOtaStatus = lv_label_create(_otaOverlay);
+        lv_label_set_text(_lblOtaStatus, "0%");
+        lv_obj_set_style_text_font(_lblOtaStatus, &lv_font_montserrat_14, 0);
+        lv_obj_set_style_text_color(_lblOtaStatus, COL_TEXT, 0);
+        lv_obj_align(_lblOtaStatus, LV_ALIGN_CENTER, 0, 10);
+    }
+
+    updateOtaProgress(pct);
+}
+
+void UIManager::updateOtaProgress(int pct) {
+    if (!_otaOverlay || !_arcOtaProgress || !_lblOtaStatus) return;
+    pct = pct < 0 ? 0 : (pct > 100 ? 100 : pct);
+    lv_arc_set_value(_arcOtaProgress, pct);
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%d%%", pct);
+    lv_label_set_text(_lblOtaStatus, buf);
+    /* Re-align label (text length changes) */
+    lv_obj_align(_lblOtaStatus, LV_ALIGN_CENTER, 0, 10);
+    lv_refr_now(nullptr);   /* Force immediate redraw during OTA */
+}
+
+void UIManager::hideOtaOverlay() {
+    if (_otaOverlay) {
+        lv_obj_delete(_otaOverlay);
+        _otaOverlay    = nullptr;
+        _arcOtaProgress = nullptr;
+        _lblOtaStatus  = nullptr;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  LOW BATTERY WARNING
+ * ══════════════════════════════════════════════════════════ */
+
+void UIManager::showBatteryWarning(int pct) {
+    if (_battWarnShown || _battWarnBox) return;  /* Already shown */
+    _battWarnShown = true;
+
+    /* Message box overlay */
+    static const char* BTNS[] = { "OK", nullptr };
+    _battWarnBox = lv_msgbox_create(nullptr);
+    lv_msgbox_add_title(_battWarnBox, LV_SYMBOL_WARNING " Low Battery");
+    char body[40];
+    snprintf(body, sizeof(body), "Battery at %d%%.\nPlease charge soon.", pct);
+    lv_msgbox_add_text(_battWarnBox, body);
+    lv_obj_t* btn = lv_msgbox_add_footer_button(_battWarnBox, "OK");
+    lv_obj_add_event_cb(btn, onBatteryWarnDismiss, LV_EVENT_CLICKED, this);
+
+    /* Style */
+    lv_obj_set_width(_battWarnBox, 180);
+    lv_obj_set_style_bg_color(_battWarnBox, COL_CARD, 0);
+    lv_obj_set_style_border_color(_battWarnBox, COL_WARNING, 0);
+    lv_obj_set_style_border_width(_battWarnBox, 2, 0);
+    lv_obj_set_style_radius(_battWarnBox, 12, 0);
+    lv_obj_center(_battWarnBox);
+}
+
+void UIManager::onBatteryWarnDismiss(lv_event_t* e) {
+    UIManager* self = (UIManager*)lv_event_get_user_data(e);
+    if (self->_battWarnBox) {
+        lv_obj_delete(self->_battWarnBox);
+        self->_battWarnBox = nullptr;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  HEAP DISPLAY
+ * ══════════════════════════════════════════════════════════ */
+
+void UIManager::updateHeapDisplay(uint32_t freeBytes) {
+    if (!_lblHeapFree) return;
+    char buf[24];
+    if (freeBytes >= 1024) {
+        snprintf(buf, sizeof(buf), "Heap: %u KB", (unsigned)(freeBytes / 1024));
+    } else {
+        snprintf(buf, sizeof(buf), "Heap: %u B", (unsigned)freeBytes);
+    }
+    lv_label_set_text(_lblHeapFree, buf);
+    /* Colour red when dangerously low */
+    lv_color_t col = (freeBytes < HEAP_DANGER_BYTES) ? COL_ERROR : COL_TEXT_DIM;
+    lv_obj_set_style_text_color(_lblHeapFree, col, 0);
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  SESSION LIST
+ * ══════════════════════════════════════════════════════════ */
+
+/**
+ * Populate the sessions list from an array of session key strings.
+ * Called from main.cpp when the gateway fires the sessions.list response.
+ */
+void UIManager::updateSessionsList(const char** keys, int count) {
+    if (!_sessionsList) return;
+
+    lv_obj_clean(_sessionsList);
+
+    if (count == 0) {
+        lv_obj_t* lbl = lv_label_create(_sessionsList);
+        lv_label_set_text(lbl, "No sessions found");
+        lv_obj_set_style_text_color(lbl, COL_TEXT_DIM, 0);
+        lv_obj_set_style_text_font(lbl, &lv_font_montserrat_12, 0);
+        return;
+    }
+
+    for (int i = 0; i < count; i++) {
+        lv_obj_t* btn = lv_list_add_button(_sessionsList, LV_SYMBOL_RIGHT, keys[i]);
+        lv_obj_set_style_bg_color(btn, COL_CARD, 0);
+        lv_obj_set_style_text_color(lv_obj_get_child(btn, -1), COL_TEXT, 0);
+        lv_obj_set_style_text_font(lv_obj_get_child(btn, -1), &lv_font_montserrat_12, 0);
+        lv_obj_add_event_cb(btn, onSessionSelected, LV_EVENT_CLICKED, this);
+    }
+}
+
+/**
+ * Wire up session selection — sets the gateway session key and navigates to chat.
+ */
+void UIManager::onSessionSelected(lv_event_t* e) {
+    UIManager* self = (UIManager*)lv_event_get_user_data(e);
+    lv_obj_t* btn   = (lv_obj_t*)lv_event_get_target(e);
+
+    /* The list button label text is the session key */
+    lv_obj_t* lbl = lv_obj_get_child(btn, -1);  /* last child = text label */
+    if (!lbl) return;
+
+    const char* key = lv_label_get_text(lbl);
+    if (!key || key[0] == '\0') return;
+
+    Serial.printf("[UI] Session selected: %s\n", key);
+
+    if (self->_gw) {
+        self->_gw->setSessionKey(key);
+        /* Request history for the new session */
+        self->_gw->requestChatHistory();
+    }
+
+    self->showScreen(SCREEN_CHAT, LV_SCR_LOAD_ANIM_MOVE_RIGHT);
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  FLIPPER QUICK-COMMAND SHORTCUTS
+ * ══════════════════════════════════════════════════════════ */
+
+/**
+ * Fired when any of the 4 shortcut buttons is tapped.
+ * The command string is stored as user_data on the button.
+ */
+void UIManager::onFlipperShortcut(lv_event_t* e) {
+    UIManager* self = (UIManager*)lv_event_get_user_data(e);
+    lv_obj_t* btn   = (lv_obj_t*)lv_event_get_target(e);
+    const char* cmd = (const char*)lv_obj_get_user_data(btn);
+    if (!cmd || !self->_flipper) return;
+
+    if (self->_flipper->getState() != FLIP_READY &&
+        self->_flipper->getState() != FLIP_BUSY) {
+        self->addFlipperLog("Not connected", false);
+        return;
+    }
+
+    self->_flipper->sendCommand(cmd, 0);
+    self->addFlipperLog(cmd, true);
+    self->refreshFlipperHistory();
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  COMMAND HISTORY RE-SEND
+ * ══════════════════════════════════════════════════════════ */
+
+/**
+ * Rebuild the history strip from the Flipper's ring buffer.
+ * Called after each command dispatch.
+ */
+void UIManager::refreshFlipperHistory() {
+    if (!_panelHistory || !_flipper) return;
+
+    /* Clear old buttons */
+    lv_obj_clean(_panelHistory);
+    memset(_btnHistory, 0, sizeof(_btnHistory));
+
+    const char* hist[FLIPPER_CMD_HISTORY_SIZE];
+    int count = _flipper->getHistory(hist, FLIPPER_CMD_HISTORY_SIZE);
+
+    for (int i = 0; i < count; i++) {
+        lv_obj_t* btn = lv_button_create(_panelHistory);
+        lv_obj_set_height(btn, 18);
+        lv_obj_set_style_bg_color(btn, COL_SURFACE, 0);
+        lv_obj_set_style_bg_color(btn, COL_PRIMARY, LV_STATE_PRESSED);
+        lv_obj_set_style_border_color(btn, COL_PRIMARY, 0);
+        lv_obj_set_style_border_width(btn, 1, 0);
+        lv_obj_set_style_radius(btn, 4, 0);
+        lv_obj_set_style_pad_hor(btn, 4, 0);
+        lv_obj_set_style_pad_ver(btn, 1, 0);
+        /* Truncate long labels */
+        char label[18];
+        strncpy(label, hist[i], 17);
+        label[17] = '\0';
+        lv_obj_t* lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, label);
+        lv_obj_set_style_text_font(lbl, &lv_font_montserrat_8, 0);
+        lv_obj_set_style_text_color(lbl, COL_PRIMARY, 0);
+        lv_obj_center(lbl);
+        /* Store command pointer for re-send */
+        lv_obj_set_user_data(btn, (void*)hist[i]);
+        lv_obj_add_event_cb(btn, onHistoryResend, LV_EVENT_CLICKED, this);
+        _btnHistory[i] = btn;
+    }
+}
+
+void UIManager::onHistoryResend(lv_event_t* e) {
+    UIManager* self = (UIManager*)lv_event_get_user_data(e);
+    lv_obj_t* btn   = (lv_obj_t*)lv_event_get_target(e);
+    const char* cmd = (const char*)lv_obj_get_user_data(btn);
+    if (!cmd || !self->_flipper) return;
+
+    if (self->_flipper->getState() != FLIP_READY &&
+        self->_flipper->getState() != FLIP_BUSY) {
+        self->addFlipperLog("Not connected", false);
+        return;
+    }
+
+    self->_flipper->sendCommand(cmd, 0);
+    self->addFlipperLog(cmd, true);
+    self->refreshFlipperHistory();
 }

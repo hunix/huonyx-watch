@@ -1,6 +1,6 @@
-/**
+﻿/**
  * ╔══════════════════════════════════════════════════════════╗
- * ║           HUONYX AI SMARTWATCH FIRMWARE v3.0             ║
+ * ║           HUONYX AI SMARTWATCH FIRMWARE v3.1             ║
  * ║     ESP32-2424S012 (ESP32-C3 + GC9A01 + CST816D)       ║
  * ║                                                          ║
  * ║  A beautiful AI-era smartwatch interface for the         ║
@@ -22,6 +22,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <ArduinoOTA.h>
 #include <time.h>
 #include <TFT_eSPI.h>
 #include <lvgl.h>
@@ -47,7 +48,10 @@ static WebPortal        webPortal(&configMgr);
 
 /* ── LVGL 9 Display Buffer ────────────────────────────── */
 /* In LVGL 9, buffers are raw uint8_t arrays sized in bytes */
+/* ── LVGL 9 Display Buffers (double-buffered for tear-free rendering) ── */
+/* In LVGL 9, buffers are raw uint8_t arrays sized in bytes */
 static uint8_t lvgl_buf1[LVGL_BUF_SIZE * 2];  /* RGB565 = 2 bytes per pixel */
+static uint8_t lvgl_buf2[LVGL_BUF_SIZE * 2];  /* Second buffer for DMA double-buffering */
 
 /* ── Timing ───────────────────────────────────────────── */
 static unsigned long lastTimeUpdate    = 0;
@@ -59,6 +63,11 @@ static bool          gatewayStarted    = false;
 static bool          flipperStarted    = false;
 static bool          bridgeStarted     = false;
 static bool          ntpSynced         = false;
+
+/* ── Safety monitors ──────────────────────────────────── */
+static int           heapCriticalStrikes   = 0;   /* Consecutive low-heap readings */
+static bool          batteryWarnFired      = false;
+static bool          wifiReconnecting      = false; /* Debounce: reconnect in progress */
 
 /* ── Accumulator for streaming chat deltas (stack-allocated to avoid heap fragmentation) ── */
 static char currentRunId[32]     = "";
@@ -335,7 +344,8 @@ static void startGateway() {
         configMgr.config().gwHost,
         configMgr.config().gwPort,
         configMgr.config().gwToken,
-        configMgr.config().gwUseSSL
+        configMgr.config().gwUseSSL,
+        configMgr.config().gwFingerprint
     );
 
     gatewayStarted = true;
@@ -367,7 +377,8 @@ static void startBridge() {
 
     bridge.begin(
         configMgr.config().sbUrl,
-        configMgr.config().sbKey
+        configMgr.config().sbKey,
+        configMgr.config().sbFingerprint
     );
 
     bridgeStarted = true;
@@ -473,7 +484,7 @@ void setup() {
     /* Create display (LVGL 9 API - no more driver structs) */
     lv_display_t* disp = lv_display_create(TFT_WIDTH, TFT_HEIGHT);
     lv_display_set_flush_cb(disp, lvglFlushCb);
-    lv_display_set_buffers(disp, lvgl_buf1, NULL,
+    lv_display_set_buffers(disp, lvgl_buf1, lvgl_buf2,
                            sizeof(lvgl_buf1),
                            LV_DISPLAY_RENDER_MODE_PARTIAL);
 
@@ -531,8 +542,33 @@ void setup() {
         ui.updateBattery(100, false);
     }
 
-    Serial.printf("[INIT] Free heap: %d bytes\n", ESP.getFreeHeap());
-    Serial.println("[INIT] Setup complete!\n");
+    Serial.printf("[INIT] Free heap: %d bytes\r\n", ESP.getFreeHeap());
+    Serial.println("[INIT] Setup complete!\r\n");
+
+    /* ── ArduinoOTA (wireless firmware update) ───────── */
+    if (wifiConnected) {
+        ArduinoOTA.setHostname(OTA_HOSTNAME);
+        ArduinoOTA.onStart([&]() {
+            Serial.println("[OTA] Starting OTA update...");
+            ui.showOtaOverlay(0);
+        });
+        ArduinoOTA.onProgress([&](unsigned int progress, unsigned int total) {
+            int pct = (int)((progress * 100UL) / total);
+            ui.updateOtaProgress(pct);
+        });
+        ArduinoOTA.onEnd([&]() {
+            Serial.println("[OTA] Update complete, rebooting...");
+            ui.updateOtaProgress(100);
+            delay(500);
+        });
+        ArduinoOTA.onError([&](ota_error_t error) {
+            Serial.printf("[OTA] Error[%u]\r\n", error);
+            ui.hideOtaOverlay();
+        });
+        ArduinoOTA.begin();
+        Serial.printf("[OTA] Ready at huonyx-watch.local or %s\r\n",
+                      WiFi.localIP().toString().c_str());
+    }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -542,6 +578,8 @@ void setup() {
 void loop() {
     /* ── LVGL tick ────────────────────────────────── */
     lv_timer_handler();
+    /* -- ArduinoOTA -- must call every loop when WiFi active -- */
+    if (wifiConnected) ArduinoOTA.handle();
 
     /* ── Gateway loop ─────────────────────────────── */
     if (gatewayStarted) {
@@ -571,27 +609,34 @@ void loop() {
     if (millis() - lastWiFiCheck >= WIFI_RECONNECT_INTERVAL) {
         lastWiFiCheck = millis();
 
+        /* Heap watchdog */
+        uint32_t freeHeap = ESP.getFreeHeap();
+        ui.updateHeapDisplay(freeHeap);
+        if (freeHeap < HEAP_CRITICAL_BYTES) {
+            heapCriticalStrikes++;
+            Serial.printf("[HEAP] CRITICAL: %u bytes free (strike %d/%d)\r\n", freeHeap, heapCriticalStrikes, HEAP_CRITICAL_STRIKES);
+            if (heapCriticalStrikes >= HEAP_CRITICAL_STRIKES) { Serial.println("[HEAP] Rebooting."); delay(100); ESP.restart(); }
+        } else {
+            if (freeHeap < HEAP_DANGER_BYTES) Serial.printf("[HEAP] Warning: only %u bytes free\r\n", freeHeap);
+            heapCriticalStrikes = 0;
+        }
+
         if (WiFi.status() == WL_CONNECTED) {
+            wifiReconnecting = false;
             if (!wifiConnected) {
                 wifiConnected = true;
                 Serial.println("[WIFI] Reconnected");
-
-                /* Start services that need WiFi */
-                if (!gatewayStarted && configMgr.hasGatewayConfig()) {
-                    startGateway();
-                }
-                if (!bridgeStarted && configMgr.hasSupabaseConfig()) {
-                    startBridge();
-                }
+                if (!ArduinoOTA.isRunning()) ArduinoOTA.begin();
+                if (!gatewayStarted && configMgr.hasGatewayConfig()) startGateway();
+                if (!bridgeStarted  && configMgr.hasSupabaseConfig()) startBridge();
             }
             ui.updateWiFiStrength(WiFi.RSSI());
         } else {
-            if (wifiConnected) {
-                wifiConnected = false;
-                Serial.println("[WIFI] Disconnected");
-                ui.updateWiFiStrength(0);
-            }
-            if (configMgr.hasWiFiConfig()) {
+            if (wifiConnected) { wifiConnected = false; Serial.println("[WIFI] Disconnected"); ui.updateWiFiStrength(0); }
+            /* Debounced reconnect - skip if already connecting */
+            if (configMgr.hasWiFiConfig() && !wifiReconnecting && WiFi.status() != WL_IDLE_STATUS) {
+                wifiReconnecting = true;
+                Serial.println("[WIFI] Attempting reconnect...");
                 WiFi.reconnect();
             }
         }
@@ -602,7 +647,10 @@ void loop() {
         lastBatteryCheck = millis();
         int batt = readBatteryLevel();
         if (batt >= 0) {
-            ui.updateBattery(batt, isBatteryCharging());
+            bool charging = isBatteryCharging();
+            ui.updateBattery(batt, charging);
+            if (batt <= BATTERY_LOW_PCT && !charging && !batteryWarnFired) { batteryWarnFired = true; ui.showBatteryWarning(batt); }
+            else if (charging) { batteryWarnFired = false; }
         }
     }
 

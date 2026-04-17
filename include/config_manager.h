@@ -20,6 +20,7 @@ struct WatchConfig {
     uint16_t gwPort;
     char     gwToken[128];
     bool     gwUseSSL;
+    char     gwFingerprint[60];  /* SHA-1 TLS fingerprint ("AA:BB:CC:...") or empty */
 
     /* Display */
     uint8_t  brightness;    /* 0-255 */
@@ -28,6 +29,7 @@ struct WatchConfig {
     /* Supabase Realtime Bridge */
     char     sbUrl[128];    /* Project URL (e.g., "abcdef.supabase.co") */
     char     sbKey[128];    /* Anon or service key */
+    char     sbFingerprint[60];  /* SHA-1 TLS fingerprint for Supabase or empty */
 
     /* Flipper Zero */
     char     flipperName[32];  /* Target device name (empty = any Flipper) */
@@ -50,9 +52,11 @@ public:
     /* Convenience setters */
     void setWiFi(const char* ssid, const char* pass);
     void setGateway(const char* host, uint16_t port, const char* token, bool ssl);
+    void setGwFingerprint(const char* fingerprint);   /* Optional TLS fingerprint */
     void setBrightness(uint8_t val);
     void setTimezone(int8_t tz);
     void setSupabase(const char* url, const char* key);
+    void setSbFingerprint(const char* fingerprint);   /* Optional TLS fingerprint */
     void setFlipper(const char* name, bool autoConnect);
 
     /* Validation */

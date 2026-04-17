@@ -37,7 +37,8 @@ class GatewayClient {
 public:
     GatewayClient();
 
-    void begin(const char* host, uint16_t port, const char* token, bool useSSL = false);
+    void begin(const char* host, uint16_t port, const char* token,
+               bool useSSL = false, const char* fingerprint = "");
     void loop();
     void disconnect();
 
@@ -69,6 +70,8 @@ private:
     uint16_t         _port;
     char             _token[128];
     bool             _useSSL;
+    char             _fingerprint[60];  /* SHA-1 TLS fingerprint or empty = skip verify */
+    unsigned long    _reconnectIntervalMs;  /* Current backoff interval */
     char             _currentSessionKey[64];
     unsigned long    _lastTickMs;
     unsigned long    _reconnectTimer;

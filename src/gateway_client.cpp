@@ -22,15 +22,18 @@ GatewayClient::GatewayClient()
 {
     memset(_host, 0, sizeof(_host));
     memset(_token, 0, sizeof(_token));
+    memset(_fingerprint, 0, sizeof(_fingerprint));
     memset(_currentSessionKey, 0, sizeof(_currentSessionKey));
     _instance = this;
 }
 
-void GatewayClient::begin(const char* host, uint16_t port, const char* token, bool useSSL) {
+void GatewayClient::begin(const char* host, uint16_t port, const char* token,
+                          bool useSSL, const char* fingerprint) {
     strncpy(_host, host, sizeof(_host) - 1);
     _port = port;
     strncpy(_token, token, sizeof(_token) - 1);
     _useSSL = useSSL;
+    strncpy(_fingerprint, fingerprint ? fingerprint : "", sizeof(_fingerprint) - 1);
 
     /* Set default session key */
     if (_currentSessionKey[0] == '\0') {
@@ -40,7 +43,16 @@ void GatewayClient::begin(const char* host, uint16_t port, const char* token, bo
     setState(GW_CONNECTING);
 
     if (_useSSL) {
-        _ws.beginSSL(_host, _port, "/");
+        if (_fingerprint[0] != '\0') {
+            /* Verify server certificate against the configured SHA-1 fingerprint */
+            _ws.beginSSLWithFingerprint(_host, _port, "/", _fingerprint);
+            Serial.printf("[GW] SSL with fingerprint verification\n");
+        } else {
+            /* No fingerprint configured — connect without verification.
+             * WARNING: susceptible to MITM. Set a fingerprint via the web portal. */
+            _ws.beginSSL(_host, _port, "/");
+            Serial.printf("[GW] SSL without certificate verification (insecure)\n");
+        }
     } else {
         _ws.begin(_host, _port, "/");
     }
@@ -48,6 +60,7 @@ void GatewayClient::begin(const char* host, uint16_t port, const char* token, bo
     _ws.onEvent(wsEventCallback);
     _ws.setReconnectInterval(GATEWAY_RECONNECT_MS);
     _ws.enableHeartbeat(30000, 10000, 3);
+    _reconnectIntervalMs = GATEWAY_RECONNECT_MS;
 }
 
 void GatewayClient::loop() {
@@ -90,12 +103,20 @@ void GatewayClient::wsEventCallback(WStype_t type, uint8_t* payload, size_t leng
 
     switch (type) {
         case WStype_DISCONNECTED:
-            Serial.println("[GW] Disconnected");
+            /* Exponential backoff: double interval, cap at max */
+            _instance->_reconnectIntervalMs = min(
+                _instance->_reconnectIntervalMs * 2UL,
+                (unsigned long)GATEWAY_RECONNECT_MAX_MS);
+            Serial.printf("[GW] Disconnected. Next reconnect in %lums\n",
+                          _instance->_reconnectIntervalMs);
+            _instance->_ws.setReconnectInterval(_instance->_reconnectIntervalMs);
             _instance->setState(GW_CONNECTING);
             break;
 
         case WStype_CONNECTED:
             Serial.printf("[GW] Connected to %s\n", _instance->_host);
+            _instance->_reconnectIntervalMs = GATEWAY_RECONNECT_MS;  /* reset backoff */
+            _instance->_ws.setReconnectInterval(GATEWAY_RECONNECT_MS);
             _instance->setState(GW_CONNECTED);
             _instance->sendConnectFrame();
             break;

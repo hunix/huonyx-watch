@@ -26,6 +26,7 @@ enum ScreenId : uint8_t {
     SCREEN_SUPABASE_SETUP,
     SCREEN_FLIPPER_SETUP,
     SCREEN_SESSIONS,
+    SCREEN_KEYBOARD,   /* On-screen text input for chat */
     SCREEN_COUNT
 };
 
@@ -64,6 +65,23 @@ public:
 
     /* Settings */
     void updateSettingsValues();
+
+    /* Session list: called when gateway receives sessions.list response */
+    void updateSessionsList(const char** keys, int count);
+
+    /* OTA progress overlay */
+    void showOtaOverlay(int pct);     /* 0 opens, 100 auto-closes on next call */
+    void updateOtaProgress(int pct);
+    void hideOtaOverlay();
+
+    /* Low battery warning */
+    void showBatteryWarning(int pct);
+
+    /* Heap display (quick settings) */
+    void updateHeapDisplay(uint32_t freeBytes);
+
+    /* Flipper command history (called after each command dispatch) */
+    void refreshFlipperHistory();
 
 private:
     GatewayClient*   _gw;
@@ -104,12 +122,16 @@ private:
     lv_obj_t* _lblFlipperState;
     lv_obj_t* _btnFlipperScan;
     lv_obj_t* _btnFlipperDisconnect;
+    lv_obj_t* _btnFlipperShortcut[4];   /* Quick-command shortcut buttons */
+    lv_obj_t* _panelHistory;            /* Command history strip */
+    lv_obj_t* _btnHistory[FLIPPER_CMD_HISTORY_SIZE];  /* Re-send buttons */
     int       _flipperLogCount;
 
     /* Quick Settings (swipe down) */
     lv_obj_t* _scrQuickSettings;
     lv_obj_t* _sliderBrightness;
     lv_obj_t* _lblBrightnessVal;
+    lv_obj_t* _lblHeapFree;    /* Heap monitor */
     lv_obj_t* _btnWifi;
     lv_obj_t* _btnSettings;
 
@@ -136,6 +158,20 @@ private:
     lv_obj_t* _scrSessions;
     lv_obj_t* _sessionsList;
 
+    /* Keyboard / Text Input Screen */
+    lv_obj_t* _scrKeyboard;
+    lv_obj_t* _taInput;       /* Textarea showing typed text */
+    lv_obj_t* _keyboard;      /* LVGL keyboard widget */
+
+    /* OTA Progress Overlay (created on demand) */
+    lv_obj_t* _otaOverlay;    /* nullptr when not visible */
+    lv_obj_t* _arcOtaProgress;
+    lv_obj_t* _lblOtaStatus;
+
+    /* Battery warning (msgbox overlay, created on demand) */
+    lv_obj_t* _battWarnBox;   /* nullptr when not visible */
+    bool      _battWarnShown;
+
     /* ── Builders ─────────────────────────────────────── */
     void createStyles();
     void buildWatchface();
@@ -148,6 +184,7 @@ private:
     void buildSupabaseSetup();
     void buildFlipperSetup();
     void buildSessionsScreen();
+    void buildKeyboardScreen();     /* Fix 4: on-screen text input */
 
     /* ── Helpers ──────────────────────────────────────── */
     lv_obj_t* createRoundScreen();
@@ -165,6 +202,11 @@ private:
     static void onGestureEvent(lv_event_t* e);
     static void onFlipperScan(lv_event_t* e);
     static void onFlipperDisconnect(lv_event_t* e);
+    static void onKeyboardReady(lv_event_t* e);         /* on-screen keyboard: send on OK */
+    static void onTypeButtonClicked(lv_event_t* e);     /* open keyboard screen */
+    static void onFlipperShortcut(lv_event_t* e);       /* quick-send preset command */
+    static void onHistoryResend(lv_event_t* e);         /* re-send history command */
+    static void onBatteryWarnDismiss(lv_event_t* e);    /* dismiss low-battery overlay */
 
     /* ── Styles ───────────────────────────────────────── */
     lv_style_t _styleBg;

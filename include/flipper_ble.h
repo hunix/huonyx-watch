@@ -28,8 +28,9 @@ enum FlipperState : uint8_t {
 };
 
 /* Command in the queue */
+static constexpr size_t FLIPPER_CMD_MAX_LEN = 127;
 struct FlipperCommand {
-    char     cmd[128];
+    char     cmd[FLIPPER_CMD_MAX_LEN + 1];
     uint32_t id;
     bool     pending;
 };
@@ -96,6 +97,13 @@ public:
     void onResponse(OnFlipperResponse cb) { _onResponse = cb; }
     void onStateChange(OnFlipperStateChange cb) { _onStateChange = cb; }
 
+    /**
+     * Command history ring-buffer access.
+     * Returns the most-recent `count` commands (up to FLIPPER_CMD_HISTORY_SIZE),
+     * newest first, into `out`. Returns actual number written.
+     */
+    int getHistory(const char** out, int maxCount) const;
+
 private:
     FlipperState _state;
     char         _targetName[32];
@@ -115,9 +123,15 @@ private:
     uint32_t       _activeCmdId;
     unsigned long  _cmdStartMs;
 
-    /* Timing */
+    /* Timing + reconnect backoff */
     unsigned long  _lastReconnectMs;
+    unsigned long  _reconnectIntervalMs;  /* current backoff interval, doubles on each failure */
     unsigned long  _scanStartMs;
+
+    /* Command history ring-buffer (newest overwrites oldest) */
+    char    _cmdHistory[FLIPPER_CMD_HISTORY_SIZE][FLIPPER_CMD_MAX_LEN + 1];
+    uint8_t _histHead;   /* next write slot */
+    uint8_t _histCount;  /* valid entries (0..FLIPPER_CMD_HISTORY_SIZE) */
 
     /* Callbacks */
     OnFlipperResponse    _onResponse;
@@ -126,7 +140,7 @@ private:
     /* Internal */
     void setState(FlipperState s);
     void processCommandQueue();
-    void sendNextCommand();
+    void dispatchCommand(FlipperCommand* cmd);   /* Send an already-dequeued command */
     void handleResponseData(const uint8_t* data, size_t len);
     bool enqueueCommand(const char* cmd, uint32_t id);
     FlipperCommand* dequeueCommand();

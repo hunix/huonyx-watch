@@ -101,14 +101,18 @@ FlipperBLE::FlipperBLE()
     , _activeCmdId(0)
     , _cmdStartMs(0)
     , _lastReconnectMs(0)
+    , _reconnectIntervalMs(FLIPPER_RECONNECT_MS)
     , _scanStartMs(0)
+    , _histHead(0)
+    , _histCount(0)
     , _onResponse(nullptr)
     , _onStateChange(nullptr)
 {
     memset(_targetName, 0, sizeof(_targetName));
     memset(_deviceName, 0, sizeof(_deviceName));
-    memset(_cmdQueue, 0, sizeof(_cmdQueue));
+    memset(_cmdQueue,   0, sizeof(_cmdQueue));
     memset(_responseBuf, 0, sizeof(_responseBuf));
+    memset(_cmdHistory, 0, sizeof(_cmdHistory));
     _instance = this;
 }
 
@@ -196,6 +200,7 @@ void FlipperBLE::loop() {
                     }
                     setState(FLIP_READY);
                     Serial.println("[FLIP] Services discovered, READY");
+                    _reconnectIntervalMs = FLIPPER_RECONNECT_MS;  /* reset backoff */
 
                     /* Send a newline to get a fresh prompt */
                     s_pTxChar->writeValue("\r\n", 2, false);
@@ -242,24 +247,30 @@ void FlipperBLE::loop() {
     if (_state == FLIP_BUSY && _cmdStartMs > 0) {
         if (millis() - _cmdStartMs > FLIPPER_CMD_TIMEOUT_MS) {
             Serial.println("[FLIP] Command timeout");
-            /* Deliver partial response */
+            /* Deliver whatever we accumulated */
             if (_onResponse && _activeCmdId > 0) {
                 _responseBuf[_responseLen] = '\0';
-                _onResponse(_activeCmdId, _responseBuf, true);
+                _onResponse(_activeCmdId,
+                            _responseLen > 0 ? _responseBuf : "Timeout",
+                            true);
             }
             _responseLen = 0;
             _activeCmdId = 0;
-            _cmdStartMs = 0;
+            _cmdStartMs  = 0;
             setState(FLIP_READY);
         }
     }
 
-    /* ── Auto-reconnect ──────────────────────────────── */
+    /* ── Auto-reconnect with exponential backoff ─────────────── */
     if (_state == FLIP_ERROR || (_state == FLIP_IDLE && _targetName[0] != '\0')) {
-        if (millis() - _lastReconnectMs > FLIPPER_RECONNECT_MS) {
+        if (millis() - _lastReconnectMs > _reconnectIntervalMs) {
             _lastReconnectMs = millis();
-            /* Only auto-reconnect if we had a target */
             if (_targetName[0] != '\0') {
+                /* Double the interval for next failure, capped at max */
+                _reconnectIntervalMs = min(_reconnectIntervalMs * 2UL,
+                                          (unsigned long)FLIPPER_RECONNECT_MAX_MS);
+                Serial.printf("[FLIP] Reconnecting (next backoff: %lums)\n",
+                              _reconnectIntervalMs);
                 startScan(_targetName);
             }
         }
@@ -311,15 +322,15 @@ void FlipperBLE::disconnect() {
         s_pClient->disconnect();
     }
 
-    s_pRxChar = nullptr;
-    s_pTxChar = nullptr;
+    s_pRxChar  = nullptr;
+    s_pTxChar  = nullptr;
     s_pService = nullptr;
 
     setState(FLIP_IDLE);
 }
 
 /* ══════════════════════════════════════════════════════════
- *  COMMAND INTERFACE
+ *  COMMAND INTERFACE (public)
  * ══════════════════════════════════════════════════════════ */
 
 uint32_t FlipperBLE::sendCommand(const char* command) {
@@ -352,7 +363,7 @@ void FlipperBLE::cancelCommand() {
         }
         _responseLen = 0;
         _activeCmdId = 0;
-        _cmdStartMs = 0;
+        _cmdStartMs  = 0;
         setState(FLIP_READY);
     }
 }
@@ -385,7 +396,7 @@ bool FlipperBLE::enqueueCommand(const char* cmd, uint32_t id) {
 
     strncpy(_cmdQueue[_cmdHead].cmd, cmd, sizeof(_cmdQueue[0].cmd) - 1);
     _cmdQueue[_cmdHead].cmd[sizeof(_cmdQueue[0].cmd) - 1] = '\0';
-    _cmdQueue[_cmdHead].id = id;
+    _cmdQueue[_cmdHead].id      = id;
     _cmdQueue[_cmdHead].pending = true;
     _cmdHead = nextHead;
     return true;
@@ -399,42 +410,59 @@ FlipperCommand* FlipperBLE::dequeueCommand() {
     return cmd;
 }
 
+/**
+ * FIX 2: Pull the next command from the queue and dispatch it.
+ *
+ * Previously, processCommandQueue() called dequeueCommand() (advancing
+ * _cmdTail), then called sendNextCommand() which read back _cmdTail-1
+ * to recover the just-dequeued entry — fragile and easy to break.
+ *
+ * Now the pointer returned by dequeueCommand() is passed directly into
+ * dispatchCommand(), with no back-read required.
+ */
 void FlipperBLE::processCommandQueue() {
     if (_state != FLIP_READY) return;
 
     FlipperCommand* cmd = dequeueCommand();
     if (!cmd) return;
 
-    sendNextCommand();
+    dispatchCommand(cmd);
 }
 
-void FlipperBLE::sendNextCommand() {
-    FlipperCommand* cmd = &_cmdQueue[(_cmdTail == 0 ? FLIPPER_CMD_QUEUE_SIZE - 1 : _cmdTail - 1)];
-    if (!cmd->pending) return;
-
+/**
+ * Write an already-dequeued command to the Flipper Zero over BLE.
+ */
+void FlipperBLE::dispatchCommand(FlipperCommand* cmd) {
     if (!s_pTxChar) {
         Serial.println("[FLIP] TX characteristic not available");
+        if (_onResponse) {
+            _onResponse(cmd->id, "BLE not ready", true);
+        }
         setState(FLIP_ERROR);
         return;
     }
 
-    /* Prepare command string with CRLF using stack buffer */
+    /* Build command string with CRLF line terminator */
     size_t cmdLen = strlen(cmd->cmd);
-    char cmdBuf[132];  /* 128 cmd + 2 CRLF + 1 null + 1 margin */
+    char cmdBuf[132];  /* 128 cmd + CRLF + null */
     if (cmdLen > sizeof(cmdBuf) - 3) cmdLen = sizeof(cmdBuf) - 3;
     memcpy(cmdBuf, cmd->cmd, cmdLen);
-    cmdBuf[cmdLen] = '\r';
+    cmdBuf[cmdLen]     = '\r';
     cmdBuf[cmdLen + 1] = '\n';
     cmdBuf[cmdLen + 2] = '\0';
 
-    /* Write to Flipper */
     bool ok = s_pTxChar->writeValue((const uint8_t*)cmdBuf, cmdLen + 2, false);
-
     if (ok) {
         _activeCmdId = cmd->id;
         _responseLen = 0;
-        _cmdStartMs = millis();
-        cmd->pending = false;
+        _cmdStartMs  = millis();
+
+        /* Record in command history ring-buffer */
+        strncpy(_cmdHistory[_histHead], cmd->cmd, FLIPPER_CMD_MAX_LEN);
+        _cmdHistory[_histHead][FLIPPER_CMD_MAX_LEN] = '\0';
+        _histHead  = (_histHead + 1) % FLIPPER_CMD_HISTORY_SIZE;
+        if (_histCount < FLIPPER_CMD_HISTORY_SIZE) _histCount++;
+
         setState(FLIP_BUSY);
         Serial.printf("[FLIP] Sent command #%u: %s\n", cmd->id, cmd->cmd);
     } else {
@@ -442,7 +470,6 @@ void FlipperBLE::sendNextCommand() {
         if (_onResponse) {
             _onResponse(cmd->id, "BLE write failed", true);
         }
-        cmd->pending = false;
     }
 }
 
@@ -450,60 +477,104 @@ void FlipperBLE::sendNextCommand() {
  *  INTERNAL: RESPONSE HANDLING
  * ══════════════════════════════════════════════════════════ */
 
+/**
+ * FIX 1: Robust Flipper Zero CLI prompt detection.
+ *
+ * The Flipper Zero CLI prompt is ">: " (greater-than, colon, space)
+ * appearing at the start of a new line after command output.
+ *
+ * Old behaviour: triggered on any lone '>' character, causing false
+ * positives for command output that contained '>' (e.g., hex dumps,
+ * IR signal data). Also streamed noisy partial responses.
+ *
+ * New behaviour:
+ *   1. Primary:  look for "\r\n>: " or "\n>: " in the accumulated buffer.
+ *   2. Fallback: buffer ends with ">: " (very first prompt, before any \n).
+ *   3. Strips the prompt, the echoed command, and leading whitespace.
+ *   4. Delivers exactly ONE callback with the clean response.
+ *   5. No partial/streaming delivery — callers always get a complete result.
+ */
 void FlipperBLE::handleResponseData(const uint8_t* data, size_t len) {
-    /* Accumulate response data */
+    /* Accumulate response data into the buffer */
     for (size_t i = 0; i < len && _responseLen < FLIPPER_RESPONSE_BUF_SIZE - 1; i++) {
         _responseBuf[_responseLen++] = (char)data[i];
     }
     _responseBuf[_responseLen] = '\0';
 
-    /* Check for CLI prompt indicating command completion.
-     * Flipper CLI prompt ends with ">: " or just ">" after output. */
+    /* ── Detect CLI prompt ────────────────────────────────────────────────── */
     bool complete = false;
-    if (_responseLen >= 2) {
-        /* Look for the Flipper prompt pattern at the end */
-        const char* tail = _responseBuf + _responseLen - 1;
-        /* Flipper prompt: ">:" followed by space, or just ">" at line start */
-        if (*tail == '>' || (*tail == ' ' && _responseLen >= 3 && *(tail - 1) == ':' && *(tail - 2) == '>')) {
-            complete = true;
-        }
-        /* Also check for common end patterns */
-        if (strstr(_responseBuf, "\r\n>") != nullptr) {
-            complete = true;
-        }
+
+    if (strstr(_responseBuf, "\r\n>: ") != nullptr ||
+        strstr(_responseBuf, "\n>: ")   != nullptr) {
+        complete = true;
+    }
+    /* Buffer ends exactly with the prompt (first prompt before any newline) */
+    if (!complete && _responseLen >= 3 &&
+        memcmp(_responseBuf + _responseLen - 3, ">: ", 3) == 0) {
+        complete = true;
     }
 
     if (complete && _activeCmdId > 0) {
-        /* Clean up the response - remove the prompt */
-        char* promptPos = strstr(_responseBuf, "\r\n>");
+        /* ── Strip the prompt ────────────────────────────────── */
+        char* promptPos = strstr(_responseBuf, "\r\n>: ");
+        if (!promptPos) promptPos = strstr(_responseBuf, "\n>: ");
         if (promptPos) {
             *promptPos = '\0';
-            _responseLen = promptPos - _responseBuf;
+            _responseLen = (size_t)(promptPos - _responseBuf);
+        } else {
+            /* Whole buffer IS the prompt (empty command result) */
+            _responseLen = 0;
+            _responseBuf[0] = '\0';
         }
 
-        /* Strip leading echo of the command */
-        char* responseStart = _responseBuf;
-        char* firstNewline = strstr(_responseBuf, "\r\n");
+        /* ── Strip leading echo (first line is the echoed command) ── */
+        const char* responseStart = _responseBuf;
+        const char* firstNewline  = strstr(_responseBuf, "\r\n");
+        if (!firstNewline) firstNewline = strchr(_responseBuf, '\n');
         if (firstNewline) {
-            responseStart = firstNewline + 2;
+            responseStart = firstNewline + (firstNewline[0] == '\r' ? 2 : 1);
         }
 
+        /* ── Trim leading whitespace / blank lines ──────────── */
+        while (*responseStart == '\r' || *responseStart == '\n' ||
+               *responseStart == ' '  || *responseStart == '\t') {
+            responseStart++;
+        }
+
+        /* ── Deliver complete, clean response ────────────────── */
         if (_onResponse) {
-            _onResponse(_activeCmdId, responseStart, true);
+            _onResponse(_activeCmdId, responseStart[0] ? responseStart : "OK", true);
         }
 
         _activeCmdId = 0;
         _responseLen = 0;
-        _cmdStartMs = 0;
+        _cmdStartMs  = 0;
         setState(FLIP_READY);
 
-        /* Process next command if any */
+        /* Drain the queue — pick up the next waiting command */
         processCommandQueue();
-    } else if (_activeCmdId > 0 && _onResponse) {
-        /* Partial response - stream it */
-        /* Only send if we have meaningful data */
-        if (_responseLen > 10) {
-            _onResponse(_activeCmdId, _responseBuf, false);
-        }
     }
+    /* No partial/streaming delivery — we always wait for the CLI prompt. */
+}
+
+/* ══════════════════════════════════════════════════════════
+ *  COMMAND HISTORY
+ * ══════════════════════════════════════════════════════════ */
+
+/**
+ * Returns the last N commands, newest first, into `out`.
+ * `out` must point to at least `maxCount` const char* slots.
+ * Returns actual number of entries written (≤ FLIPPER_CMD_HISTORY_SIZE).
+ */
+int FlipperBLE::getHistory(const char** out, int maxCount) const {
+    if (!out || maxCount <= 0 || _histCount == 0) return 0;
+
+    int count = min((int)_histCount, maxCount);
+    /* Walk backwards from the last written slot */
+    int slot = ((int)_histHead - 1 + FLIPPER_CMD_HISTORY_SIZE) % FLIPPER_CMD_HISTORY_SIZE;
+    for (int i = 0; i < count; i++) {
+        out[i] = _cmdHistory[slot];
+        slot = (slot - 1 + FLIPPER_CMD_HISTORY_SIZE) % FLIPPER_CMD_HISTORY_SIZE;
+    }
+    return count;
 }

@@ -49,7 +49,8 @@ public:
      * @param projectUrl  Supabase project URL (e.g., "abcdef.supabase.co")
      * @param apiKey      Supabase anon/service key
      */
-    void begin(const char* projectUrl, const char* apiKey);
+    void begin(const char* projectUrl, const char* apiKey,
+               const char* fingerprint = "");
 
     /**
      * Main loop - handles WebSocket events and heartbeat.
@@ -91,6 +92,8 @@ private:
     BridgeState      _state;
     char             _projectUrl[128];
     char             _apiKey[128];
+    char             _fingerprint[60];  /* SHA-1 TLS fingerprint or empty = skip verify */
+    unsigned long    _reconnectIntervalMs;  /* Current exponential backoff interval */
     uint32_t         _refCounter;
     char             _joinRef[8];
     unsigned long    _lastHeartbeatMs;

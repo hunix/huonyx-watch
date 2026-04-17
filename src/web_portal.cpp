@@ -165,7 +165,9 @@ void WebPortal::handleSetup() {
     _server.sendContent(buf);
     snprintf(buf, sizeof(buf), "<div class='field'><label>Gateway Token</label><input type='password' name='gw_token' placeholder='OPENCLAW_GATEWAY_TOKEN' value='%s'><div class='hint'>Token to authenticate with the gateway</div></div>", escapeHTML(c.gwToken).c_str());
     _server.sendContent(buf);
-    snprintf(buf, sizeof(buf), "<div class='toggle'><input type='checkbox' name='gw_ssl' id='ssl'%s><label for='ssl' style='color:#E8E8F0;font-size:14px'>Use SSL (wss://)</label></div></div>", c.gwUseSSL ? " checked" : "");
+    snprintf(buf, sizeof(buf), "<div class='toggle'><input type='checkbox' name='gw_ssl' id='ssl'%s><label for='ssl' style='color:#E8E8F0;font-size:14px'>Use SSL (wss://)</label></div>", c.gwUseSSL ? " checked" : "");
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>TLS Fingerprint <span class='badge optional'>Optional</span></label><input type='text' name='gw_fp' placeholder='AA:BB:CC:DD:EE:FF:...' value='%s'><div class='hint'>SHA-1 fingerprint for SSL verification. Leave empty to skip (insecure).</div></div></div>", escapeHTML(c.gwFingerprint).c_str());
     _server.sendContent(buf);
 
     _server.sendContent(F("<hr class='section-divider'>"));
@@ -175,6 +177,8 @@ void WebPortal::handleSetup() {
     snprintf(buf, sizeof(buf), "<div class='field'><label>Project URL</label><input type='text' name='sb_url' placeholder='abcdefg.supabase.co' value='%s'><div class='hint'>Supabase project URL (without https://)</div></div>", escapeHTML(c.sbUrl).c_str());
     _server.sendContent(buf);
     snprintf(buf, sizeof(buf), "<div class='field'><label>API Key (anon)</label><input type='password' name='sb_key' placeholder='eyJhbGciOi...' value='%s'><div class='hint'>Supabase anon key for Realtime channel access</div></div>", escapeHTML(c.sbKey).c_str());
+    _server.sendContent(buf);
+    snprintf(buf, sizeof(buf), "<div class='field'><label>TLS Fingerprint <span class='badge optional'>Optional</span></label><input type='text' name='sb_fp' placeholder='AA:BB:CC:DD:EE:FF:...' value='%s'><div class='hint'>SHA-1 fingerprint for Supabase SSL. Leave empty to skip (insecure).</div></div>", escapeHTML(c.sbFingerprint).c_str());
     _server.sendContent(buf);
     _server.sendContent(F("<div style='color:#6B6B8D;font-size:12px;padding:8px;background:#1A1A2E;border-radius:8px'>&#x1F4A1; Agent &#x2192; Supabase &#x2192; Watch &#x2192; Flipper</div></div>"));
 
@@ -216,10 +220,16 @@ void WebPortal::handleSave() {
             _server.hasArg("gw_ssl")
         );
     }
+    if (_server.hasArg("gw_fp")) {
+        _cfg->setGwFingerprint(_server.arg("gw_fp").c_str());
+    }
 
     /* Supabase */
     if (_server.hasArg("sb_url") || _server.hasArg("sb_key")) {
         _cfg->setSupabase(_server.arg("sb_url").c_str(), _server.arg("sb_key").c_str());
+    }
+    if (_server.hasArg("sb_fp")) {
+        _cfg->setSbFingerprint(_server.arg("sb_fp").c_str());
     }
 
     /* Flipper */

@@ -1,6 +1,10 @@
 /**
  * Configuration Manager Implementation
  * Huonyx AI Smartwatch
+ *
+ * NVS write strategy: each setter writes ONLY its own key(s), not all 14.
+ * The full save() is used only during web portal commit (all fields at once)
+ * and factory reset. This prevents excessive NVS wear from frequent calls.
  */
 
 #include "config_manager.h"
@@ -40,6 +44,9 @@ void ConfigManager::load() {
     if (_prefs.isKey(NVS_KEY_GW_USE_SSL)) {
         _cfg.gwUseSSL = _prefs.getBool(NVS_KEY_GW_USE_SSL, false);
     }
+    if (_prefs.isKey(NVS_KEY_GW_FINGERPRINT)) {
+        _prefs.getString(NVS_KEY_GW_FINGERPRINT, _cfg.gwFingerprint, sizeof(_cfg.gwFingerprint));
+    }
 
     /* Display */
     if (_prefs.isKey(NVS_KEY_BRIGHTNESS)) {
@@ -56,6 +63,9 @@ void ConfigManager::load() {
     if (_prefs.isKey(NVS_KEY_SB_KEY)) {
         _prefs.getString(NVS_KEY_SB_KEY, _cfg.sbKey, sizeof(_cfg.sbKey));
     }
+    if (_prefs.isKey(NVS_KEY_SB_FINGERPRINT)) {
+        _prefs.getString(NVS_KEY_SB_FINGERPRINT, _cfg.sbFingerprint, sizeof(_cfg.sbFingerprint));
+    }
 
     /* Flipper */
     if (_prefs.isKey(NVS_KEY_FLIP_NAME)) {
@@ -66,6 +76,7 @@ void ConfigManager::load() {
     }
 }
 
+/* Full atomic save — used by web portal commit and factory reset only. */
 void ConfigManager::save() {
     _prefs.putString(NVS_KEY_WIFI_SSID, _cfg.wifiSSID);
     _prefs.putString(NVS_KEY_WIFI_PASS, _cfg.wifiPass);
@@ -73,10 +84,12 @@ void ConfigManager::save() {
     _prefs.putUShort(NVS_KEY_GW_PORT, _cfg.gwPort);
     _prefs.putString(NVS_KEY_GW_TOKEN, _cfg.gwToken);
     _prefs.putBool(NVS_KEY_GW_USE_SSL, _cfg.gwUseSSL);
+    _prefs.putString(NVS_KEY_GW_FINGERPRINT, _cfg.gwFingerprint);
     _prefs.putUChar(NVS_KEY_BRIGHTNESS, _cfg.brightness);
     _prefs.putChar(NVS_KEY_TIMEZONE, _cfg.timezone);
     _prefs.putString(NVS_KEY_SB_URL, _cfg.sbUrl);
     _prefs.putString(NVS_KEY_SB_KEY, _cfg.sbKey);
+    _prefs.putString(NVS_KEY_SB_FINGERPRINT, _cfg.sbFingerprint);
     _prefs.putString(NVS_KEY_FLIP_NAME, _cfg.flipperName);
     _prefs.putBool(NVS_KEY_FLIP_AUTO, _cfg.flipperAuto);
 }
@@ -88,21 +101,54 @@ void ConfigManager::reset() {
     _cfg.brightness = 200;
     _cfg.timezone = 3;
     _cfg.flipperAuto = false;
-    save();
+    /* save() not needed — clear() already wiped NVS, defaults will load correctly */
 }
+
+/* ── Setters: write ONLY their own NVS keys (not all 14) ──── */
 
 void ConfigManager::setWiFi(const char* ssid, const char* pass) {
-    strncpy(_cfg.wifiSSID, ssid, sizeof(_cfg.wifiSSID) - 1);
-    strncpy(_cfg.wifiPass, pass, sizeof(_cfg.wifiPass) - 1);
-    save();
+    strncpy(_cfg.wifiSSID, ssid ? ssid : "", sizeof(_cfg.wifiSSID) - 1);
+    strncpy(_cfg.wifiPass, pass ? pass : "", sizeof(_cfg.wifiPass) - 1);
+    _prefs.putString(NVS_KEY_WIFI_SSID, _cfg.wifiSSID);
+    _prefs.putString(NVS_KEY_WIFI_PASS, _cfg.wifiPass);
 }
 
-void ConfigManager::setGateway(const char* host, uint16_t port, const char* token, bool ssl) {
-    strncpy(_cfg.gwHost, host, sizeof(_cfg.gwHost) - 1);
-    _cfg.gwPort = port;
-    strncpy(_cfg.gwToken, token, sizeof(_cfg.gwToken) - 1);
+void ConfigManager::setGateway(const char* host, uint16_t port,
+                               const char* token, bool ssl) {
+    strncpy(_cfg.gwHost,  host  ? host  : "", sizeof(_cfg.gwHost)  - 1);
+    strncpy(_cfg.gwToken, token ? token : "", sizeof(_cfg.gwToken) - 1);
+    _cfg.gwPort   = port;
     _cfg.gwUseSSL = ssl;
-    save();
+    _prefs.putString(NVS_KEY_GW_HOST,    _cfg.gwHost);
+    _prefs.putUShort(NVS_KEY_GW_PORT,    _cfg.gwPort);
+    _prefs.putString(NVS_KEY_GW_TOKEN,   _cfg.gwToken);
+    _prefs.putBool(NVS_KEY_GW_USE_SSL,   _cfg.gwUseSSL);
+}
+
+void ConfigManager::setGwFingerprint(const char* fingerprint) {
+    strncpy(_cfg.gwFingerprint, fingerprint ? fingerprint : "",
+            sizeof(_cfg.gwFingerprint) - 1);
+    _prefs.putString(NVS_KEY_GW_FINGERPRINT, _cfg.gwFingerprint);
+}
+
+void ConfigManager::setSupabase(const char* url, const char* key) {
+    strncpy(_cfg.sbUrl, url ? url : "", sizeof(_cfg.sbUrl) - 1);
+    strncpy(_cfg.sbKey, key ? key : "", sizeof(_cfg.sbKey) - 1);
+    _prefs.putString(NVS_KEY_SB_URL, _cfg.sbUrl);
+    _prefs.putString(NVS_KEY_SB_KEY, _cfg.sbKey);
+}
+
+void ConfigManager::setSbFingerprint(const char* fingerprint) {
+    strncpy(_cfg.sbFingerprint, fingerprint ? fingerprint : "",
+            sizeof(_cfg.sbFingerprint) - 1);
+    _prefs.putString(NVS_KEY_SB_FINGERPRINT, _cfg.sbFingerprint);
+}
+
+void ConfigManager::setFlipper(const char* name, bool autoConnect) {
+    strncpy(_cfg.flipperName, name ? name : "", sizeof(_cfg.flipperName) - 1);
+    _cfg.flipperAuto = autoConnect;
+    _prefs.putString(NVS_KEY_FLIP_NAME, _cfg.flipperName);
+    _prefs.putBool(NVS_KEY_FLIP_AUTO,   _cfg.flipperAuto);
 }
 
 void ConfigManager::setBrightness(uint8_t val) {
@@ -115,17 +161,7 @@ void ConfigManager::setTimezone(int8_t tz) {
     _prefs.putChar(NVS_KEY_TIMEZONE, tz);
 }
 
-void ConfigManager::setSupabase(const char* url, const char* key) {
-    strncpy(_cfg.sbUrl, url, sizeof(_cfg.sbUrl) - 1);
-    strncpy(_cfg.sbKey, key, sizeof(_cfg.sbKey) - 1);
-    save();
-}
-
-void ConfigManager::setFlipper(const char* name, bool autoConnect) {
-    strncpy(_cfg.flipperName, name, sizeof(_cfg.flipperName) - 1);
-    _cfg.flipperAuto = autoConnect;
-    save();
-}
+/* ── Validators ────────────────────────────────────────────── */
 
 bool ConfigManager::hasWiFiConfig() const {
     return _cfg.wifiSSID[0] != '\0';
@@ -140,5 +176,5 @@ bool ConfigManager::hasSupabaseConfig() const {
 }
 
 bool ConfigManager::hasFlipperConfig() const {
-    return true;  /* Flipper can work without a specific name (scans for any) */
+    return true;  /* Works without a specific name - scans for any Flipper */
 }

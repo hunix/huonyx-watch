@@ -26,7 +26,9 @@ SupabaseBridge::SupabaseBridge()
 {
     memset(_projectUrl, 0, sizeof(_projectUrl));
     memset(_apiKey, 0, sizeof(_apiKey));
+    memset(_fingerprint, 0, sizeof(_fingerprint));
     memset(_joinRef, 0, sizeof(_joinRef));
+    _reconnectIntervalMs = SUPABASE_RECONNECT_MS;
     _instance = this;
 }
 
@@ -34,7 +36,8 @@ SupabaseBridge::SupabaseBridge()
  *  INITIALIZATION
  * ══════════════════════════════════════════════════════════ */
 
-void SupabaseBridge::begin(const char* projectUrl, const char* apiKey) {
+void SupabaseBridge::begin(const char* projectUrl, const char* apiKey,
+                           const char* fingerprint) {
     if (!projectUrl || !apiKey || strlen(projectUrl) == 0 || strlen(apiKey) == 0) {
         Serial.println("[SUPA] Missing URL or API key");
         return;
@@ -42,6 +45,7 @@ void SupabaseBridge::begin(const char* projectUrl, const char* apiKey) {
 
     strncpy(_projectUrl, projectUrl, sizeof(_projectUrl) - 1);
     strncpy(_apiKey, apiKey, sizeof(_apiKey) - 1);
+    strncpy(_fingerprint, fingerprint ? fingerprint : "", sizeof(_fingerprint) - 1);
 
     /* Extract host from URL (remove https:// prefix if present) */
     const char* host = _projectUrl;
@@ -69,7 +73,16 @@ void SupabaseBridge::begin(const char* projectUrl, const char* apiKey) {
     setState(BRIDGE_CONNECTING);
 
     /* Connect via SSL (Supabase always uses HTTPS) */
-    _ws.beginSSL(cleanHost, SUPABASE_DEFAULT_PORT, wsPath);
+    if (_fingerprint[0] != '\0') {
+        /* Verify server certificate against the configured SHA-1 fingerprint */
+        _ws.beginSSLWithFingerprint(cleanHost, SUPABASE_DEFAULT_PORT, wsPath, _fingerprint);
+        Serial.printf("[SUPA] SSL with fingerprint verification\n");
+    } else {
+        /* No fingerprint configured — connect without verification.
+         * WARNING: susceptible to MITM. Set a fingerprint via the web portal. */
+        _ws.beginSSL(cleanHost, SUPABASE_DEFAULT_PORT, wsPath);
+        Serial.printf("[SUPA] SSL without certificate verification (insecure)\n");
+    }
     _ws.onEvent(wsEventCallback);
     _ws.setReconnectInterval(SUPABASE_RECONNECT_MS);
     _ws.enableHeartbeat(0, 0, 0);  /* We handle heartbeat ourselves */
@@ -243,12 +256,20 @@ void SupabaseBridge::wsEventCallback(WStype_t type, uint8_t* payload, size_t len
 
     switch (type) {
         case WStype_DISCONNECTED:
-            Serial.println("[SUPA] WebSocket disconnected");
+            /* Exponential backoff */
+            _instance->_reconnectIntervalMs = min(
+                _instance->_reconnectIntervalMs * 2UL,
+                (unsigned long)SUPABASE_RECONNECT_MAX_MS);
+            Serial.printf("[SUPA] Disconnected. Next reconnect in %lums\n",
+                          _instance->_reconnectIntervalMs);
+            _instance->_ws.setReconnectInterval(_instance->_reconnectIntervalMs);
             _instance->setState(BRIDGE_CONNECTING);
             break;
 
         case WStype_CONNECTED:
             Serial.println("[SUPA] WebSocket connected");
+            _instance->_reconnectIntervalMs = SUPABASE_RECONNECT_MS;  /* reset backoff */
+            _instance->_ws.setReconnectInterval(SUPABASE_RECONNECT_MS);
             _instance->setState(BRIDGE_CONNECTED);
             _instance->_lastHeartbeatMs = millis();
             /* Join the channel */
