@@ -1,0 +1,2 @@
+[92mUsed platform[0m [92mVersion[0m [90mPath[0m
+[93mesp32:esp32[0m   3.0.7   [90mC:\Users\HK\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.0.7[0m

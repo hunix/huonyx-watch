@@ -518,10 +518,11 @@ foreach ($inc in $nimbleIncludes) {
     $extraFlags += "-I$fullPath "
 }
 
-$compileArgs += "--build-property"
-$compileArgs += "compiler.cpp.extra_flags=$extraFlags -DCONFIG_BT_NIMBLE_ROLE_CENTRAL=1 -DCONFIG_BT_NIMBLE_ROLE_OBSERVER=1 -DCONFIG_BT_NIMBLE_ROLE_PERIPHERAL=0 -DCONFIG_BT_NIMBLE_ROLE_BROADCASTER=0"
-$compileArgs += "--build-property"
-$compileArgs += "compiler.c.extra_flags=$extraFlags"
+# ESP32 Core natively reads extra compiler flags from build_opt.h in the build directory.
+# This is much safer than --build-property as it does not overwrite platform defaults or suffer from quoting bugs.
+$buildOptPath = Join-Path $buildDir "build_opt.h"
+$allExtraFlags = "$extraFlags -DCONFIG_BT_NIMBLE_ROLE_CENTRAL=1 -DCONFIG_BT_NIMBLE_ROLE_OBSERVER=1 -DCONFIG_BT_NIMBLE_ROLE_PERIPHERAL=0 -DCONFIG_BT_NIMBLE_ROLE_BROADCASTER=0"
+Set-Content -Path $buildOptPath -Value $allExtraFlags -Force
 
 if ($Verbose) { $compileArgs += "--verbose" }
 $compileArgs += $SketchDir
@@ -531,8 +532,8 @@ Write-SubStep "Sketch : $SketchDir"
 Write-SubStep "Build  : $buildDir"
 Write-Host ""
 
-# Capture all output - use a temp file to bypass PowerShell NativeCommandError
-$compileLogFile = Join-Path $buildDir "compile_output.txt"
+# Capture all output - use a temp file in the script dir (NOT build dir, to prevent locking during clean)
+$compileLogFile = Join-Path $ScriptDir "compile_output.txt"
 # Construct a safe argument string for Start-Process to avoid quote stripping
 $compileArgString = ""
 foreach ($arg in $compileArgs) {
@@ -615,7 +616,7 @@ if (-not $CompileOnly) {
     if ($Verbose) { $uploadArgs += "--verbose" }
     $uploadArgs += $SketchDir
 
-    $uploadLogFile = Join-Path $buildDir "upload_output.txt"
+    $uploadLogFile = Join-Path $ScriptDir "upload_output.txt"
     $uploadProcess = Start-Process -FilePath $ArduinoCliPath `
         -ArgumentList $uploadArgs `
         -RedirectStandardOutput $uploadLogFile `
