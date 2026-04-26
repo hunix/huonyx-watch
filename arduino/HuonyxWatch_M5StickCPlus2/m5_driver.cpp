@@ -104,8 +104,12 @@ void m5_driver_init() {
     digitalWrite(PIN_BUZZER, LOW);
 
     /* ── LED ──────────────────────────────────────────── */
+    /* G19 is shared between the Red LED and the IR emitter RMT peripheral.
+     * The IrController::begin() call (in setup()) will configure G19 as an
+     * RMT output. We set it HIGH here (LED off) before RMT takes over.
+     * After ir_controller.begin(), use led_set() only when no IR TX is active. */
     pinMode(PIN_LED, OUTPUT);
-    digitalWrite(PIN_LED, HIGH);  /* Active LOW — start off */
+    digitalWrite(PIN_LED, HIGH);  /* Active LOW — LED off until RMT takes over */
 
     Serial.println("[M5] Hardware driver initialized");
 }
@@ -275,6 +279,10 @@ void led_set(bool on) {
 }
 
 void led_blink(uint8_t times, uint16_t intervalMs) {
+    /* G19 is shared with IR RMT. IrController::handleCommand() is synchronous,
+     * so this is safe to call after it returns. The RMT peripheral idles LOW
+     * between transmissions, so a brief digitalWrite here will not corrupt
+     * any in-flight IR frame. */
     for (uint8_t i = 0; i < times; i++) {
         led_set(true);
         delay(intervalMs / 2);

@@ -60,8 +60,10 @@
 /* Alias used by ir_controller.cpp */
 #define IR_TX_PIN            PIN_IR_TX
 
-/* ── Red LED ──────────────────────────────────────────── */
-#define PIN_LED             10  /* Active LOW */
+/* ── Red LED (shares G19 with IR emitter — Active LOW) ── */
+/* Note: driving G19 LOW turns the Red LED on; IR RMT pulses also use G19 */
+/* Do NOT use LED and IR simultaneously — they share the same physical pin */
+#define PIN_LED             19  /* Active LOW; shared with IR emitter */
 
 /* ── Passive Buzzer ───────────────────────────────────── */
 #define PIN_BUZZER           2
