@@ -14,7 +14,7 @@
 
 /* ── Board Identification ─────────────────────────────── */
 #define BOARD_NAME          "M5StickC-Plus2"
-#define FIRMWARE_VERSION    "1.0.0"
+#define FIRMWARE_VERSION    "2.0.0"
 #define FIRMWARE_NAME       "Huonyx Watch"
 #define FIRMWARE_VARIANT    "M5StickC-Plus2"
 
@@ -50,14 +50,24 @@
 #define PIN_MIC_CLK          0
 #define PIN_MIC_DATA        34
 
+/* Aliases used by audio_streamer.cpp */
+#define MIC_CLK_PIN          PIN_MIC_CLK
+#define MIC_DATA_PIN         PIN_MIC_DATA
+
 /* ── IR Emitter ───────────────────────────────────────── */
 #define PIN_IR_TX           19
+
+/* Alias used by ir_controller.cpp */
+#define IR_TX_PIN            PIN_IR_TX
 
 /* ── Red LED ──────────────────────────────────────────── */
 #define PIN_LED             10  /* Active LOW */
 
 /* ── Passive Buzzer ───────────────────────────────────── */
 #define PIN_BUZZER           2
+
+/* Alias used by main .ino */
+#define BUZZER_PIN           PIN_BUZZER
 #define BUZZER_NOTIFY_FREQ  2000 /* Hz for notification beep */
 #define BUZZER_NOTIFY_MS     80  /* Duration of notification beep */
 
@@ -112,6 +122,13 @@
 #define NVS_KEY_SB_KEY          "sb_key"
 #define NVS_KEY_FLIP_NAME       "flip_name"
 #define NVS_KEY_FLIP_AUTO       "flip_auto"
+
+/* ── Audio Streaming ─────────────────────────────────── */
+#define AUDIO_STREAM_SAMPLE_RATE  16000   /* Hz — matches Whisper optimal */
+#define AUDIO_STREAM_CHUNK_MS     32      /* ms per WebSocket frame */
+
+/* ── Sleep ────────────────────────────────────────────── */
+#define SLEEP_TIMEOUT_MS     30000  /* 30s inactivity before display sleep */
 
 /* ── UI Navigation Screens ────────────────────────────── */
 enum ScreenId : uint8_t {
