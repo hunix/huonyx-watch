@@ -43,7 +43,7 @@
  *
  * Hardware: M5StickC Plus2 (SKU: K016-P2)
  * Framework: Arduino ESP32 3.x
- * Display: ST7789V2 via M5GFX
+ * Display: ST7789V2 via M5Unified (M5.Display)
  * UI: LVGL 9.x
  */
 
@@ -53,7 +53,7 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <lvgl.h>
-#include <M5GFX.h>
+#include <M5Unified.h>   /* MUST come before M5GFX — initializes AXP2101 PMIC */
 #include <ArduinoJson.h>
 
 #include "hw_config.h"
@@ -189,10 +189,9 @@ static void battery_tick() {
     static uint32_t batTimer = 0;
     if (millis() - batTimer < 30000) return;
     batTimer = millis();
-    uint32_t raw = analogRead(38);
-    float voltage = raw * 3.3f / 4095.0f * 2.0f;
-    int percent = constrain((int)((voltage - 3.3f) / (4.2f - 3.3f) * 100.0f), 0, 100);
-    bool charging = (voltage > 4.15f);
+    /* Use M5Unified AXP2101 PMIC for accurate battery readings */
+    uint8_t percent = m5_battery_percent();
+    bool charging = m5_is_charging();
     ui.updateBattery(percent, charging);
 }
 
@@ -509,7 +508,8 @@ void setup() {
         flipper.begin(cfg.flipperDeviceName);
     }
 
-    ui.updateBattery(100, false);
+    /* Real battery reading from AXP2101 via M5Unified */
+    ui.updateBattery(m5_battery_percent(), m5_is_charging());
     _lastInteraction = millis();
 
     Serial.println("[Huonyx] Setup complete — v2.0 Sensor Edition");
