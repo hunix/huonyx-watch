@@ -2,16 +2,20 @@
  * audio_streamer.h
  * Huonyx Watch M5StickC Plus2 — Voice-to-Huonyx Audio Pipeline
  *
- * Uses ESP32 Arduino 3.x I2S.h (stable API) — NO driver/i2s.h legacy headers.
- * SPM1423 PDM microphone on GPIO0 (CLK) and GPIO34 (DATA).
+ * Uses ESP32 Arduino 3.x esp_codec_dev / i2s_pdm approach via M5Unified's
+ * built-in microphone support (M5.Mic). This avoids ALL legacy driver/ headers
+ * and the I2S.h class (which is not available in the ESP32 board package).
  *
- * Dual-core FreeRTOS architecture:
- *   Core 0: SPM1423 I2S sampling → circular queue
+ * M5Unified already initialises the SPM1423 PDM microphone internally when
+ * M5.begin() is called. We simply call M5.Mic.record() to capture audio.
+ *
+ * FreeRTOS dual-core architecture:
+ *   Core 0: M5.Mic sampling → circular queue
  *   Core 1: queue → WebSocket binary frames → Huonyx Whisper STT
  */
 #pragma once
 #include <Arduino.h>
-#include <I2S.h>
+#include <M5Unified.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/queue.h>
@@ -21,10 +25,8 @@
 /* ── Audio parameters ─────────────────────────────────── */
 #define AUDIO_SAMPLE_RATE     16000
 #define AUDIO_BITS_PER_SAMPLE 16
-#define AUDIO_CHANNELS        1
-#define AUDIO_DMA_BUF_COUNT   8
-#define AUDIO_DMA_BUF_LEN     512
-#define AUDIO_CHUNK_BYTES     1024   /* WebSocket frame size */
+#define AUDIO_DMA_BUF_LEN     256    /* samples per DMA read */
+#define AUDIO_CHUNK_BYTES     1024   /* WebSocket frame size (bytes) */
 #define AUDIO_QUEUE_SIZE      (AUDIO_CHUNK_BYTES * 8)
 #define AUDIO_MAX_DURATION_MS 30000  /* 30s standard mode */
 
@@ -64,7 +66,7 @@ public:
 private:
     StreamerState  _state;
     RecordingMode  _mode;
-    bool           _i2sInitialized;
+    bool           _micInitialized;
     uint32_t       _recordStartMs;
     TaskHandle_t   _samplingTaskHandle;
     QueueHandle_t  _queue;
@@ -73,9 +75,6 @@ private:
     OnStreamerStateChange _onStateChange;
     OnAudioChunk         _onChunk;
 
-    void _initI2S();
-    void _deinitI2S();
     void _setState(StreamerState s);
-
     static void _samplingTask(void* param);
 };
