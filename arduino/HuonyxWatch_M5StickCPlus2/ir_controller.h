@@ -2,67 +2,77 @@
  * ir_controller.h
  * Huonyx Watch M5StickC Plus2 — Agentic IR Remote Controller
  *
- * Exposes the M5StickC Plus2's integrated IR emitter as a tool
- * that the Huonyx agent can call via WebSocket JSON commands.
+ * Exposes the M5StickC Plus2's built-in IR emitter (GPIO19) as a
+ * Huonyx agent tool. Zero external libraries — pure Arduino GPIO
+ * bit-banging with delayMicroseconds() for carrier generation.
  *
- * The agent sends a JSON command to the GatewayClient:
- *   {
- *     "type": "ir_command",
- *     "protocol": "NEC",
- *     "address": 0x0,
- *     "command": 0x10,
- *     "repeat": 1
- *   }
+ * The agent sends a JSON command via WebSocket:
+ *   { "type":"ir_command", "protocol":"NEC",
+ *     "address":0x0, "command":0x10, "repeat":1 }
  *
- * Supported protocols: NEC, SONY, RC5, SAMSUNG, LG, PANASONIC, RAW
+ * Supported protocols: NEC, SONY_SIRC12, SAMSUNG, LG, RAW
  *
- * IR emitter is on GPIO19 (shared with Red LED on M5StickC Plus2).
- * The IRremoteESP8266 library is used for encoding.
- *
- * Practical use cases:
- *   - "Turn off the TV" → agent sends NEC TV power command
- *   - "Set AC to 22 degrees" → agent sends Panasonic AC command
- *   - "Mute the projector" → agent sends Sony mute command
+ * GPIO19 is shared with the Red LED. The LED is disabled during
+ * IR transmission (RMT owns the pin). Do not call led_blink()
+ * while IR is transmitting.
  */
-
 #pragma once
 #include <Arduino.h>
-#include <IRremoteESP8266.h>
-#include <IRsend.h>
 #include <ArduinoJson.h>
 #include "hw_config.h"
 
-/* ── IR command result ────────────────────────────────── */
-enum IrResult {
-    IR_OK,
-    IR_UNKNOWN_PROTOCOL,
-    IR_INVALID_COMMAND,
+/* ── IR carrier frequency ─────────────────────────────── */
+#define IR_CARRIER_HZ   38000   /* 38 kHz standard */
+#define IR_HALF_PERIOD  (1000000 / IR_CARRIER_HZ / 2)  /* ~13 µs */
+
+/* ── Supported protocols ──────────────────────────────── */
+enum IRProtocol {
+    IR_PROTO_NEC = 0,
+    IR_PROTO_SONY_SIRC12,
+    IR_PROTO_SAMSUNG,
+    IR_PROTO_LG,
+    IR_PROTO_RAW
 };
 
-typedef void (*IrResultCallback)(IrResult result, const char* protocol);
+/* ── IR command struct ────────────────────────────────── */
+struct IRCommand {
+    IRProtocol  protocol;
+    uint16_t    address;
+    uint16_t    command;
+    uint8_t     repeat;        /* number of times to send */
+    uint16_t*   rawData;       /* only for IR_PROTO_RAW */
+    uint16_t    rawLen;        /* length of rawData array */
+};
 
-class IrController {
+/* ── Result ───────────────────────────────────────────── */
+struct IRResult {
+    bool    success;
+    char    message[64];
+};
+
+class IRController {
 public:
-    IrController();
-    bool begin();
+    IRController();
 
-    /* ── Command dispatch ───────────────────────────────── */
-    /* Called when the GatewayClient receives an ir_command JSON */
-    IrResult handleCommand(const JsonObject& cmd);
+    void begin();
 
-    /* ── Direct API ─────────────────────────────────────── */
-    IrResult sendNEC(uint16_t address, uint16_t command, uint8_t repeat = 1);
-    IrResult sendSony(uint16_t address, uint16_t command, uint8_t bits = 12);
-    IrResult sendSamsung(uint16_t address, uint16_t command);
-    IrResult sendLG(uint8_t address, uint16_t command);
-    IrResult sendPanasonic(uint16_t address, uint32_t command);
-    IrResult sendRC5(uint8_t address, uint8_t command);
-    IrResult sendRaw(const uint16_t* data, uint16_t len, uint16_t freq = 38);
+    /* Send a structured IR command */
+    IRResult send(const IRCommand& cmd);
 
-    /* ── Callback ───────────────────────────────────────── */
-    void onResult(IrResultCallback cb) { _onResult = cb; }
+    /* Parse and send from a JSON string received from the agent */
+    IRResult sendFromJson(const char* json);
 
 private:
-    IRsend          _ir;
-    IrResultCallback _onResult;
+    uint8_t _pin;
+
+    /* Low-level carrier burst helpers */
+    void _markUs(uint16_t us);
+    void _spaceUs(uint16_t us);
+
+    /* Protocol encoders */
+    void _sendNEC(uint16_t addr, uint16_t cmd, uint8_t repeat);
+    void _sendSonySIRC12(uint16_t addr, uint16_t cmd, uint8_t repeat);
+    void _sendSamsung(uint16_t addr, uint16_t cmd, uint8_t repeat);
+    void _sendLG(uint16_t addr, uint16_t cmd, uint8_t repeat);
+    void _sendRaw(const uint16_t* data, uint16_t len);
 };
