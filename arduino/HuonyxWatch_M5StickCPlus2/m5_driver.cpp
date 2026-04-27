@@ -87,8 +87,17 @@ BtnEvent m5_driver_tick() {
     uint32_t now = millis();
     BtnEvent evt = BTN_NONE;
 
+    /* ── A+B combo detection (must check before individual buttons) ── */
+    bool aDown = (digitalRead(PIN_BTN_A) == LOW);
+    bool bDown = (digitalRead(PIN_BTN_B) == LOW);
+    if (aDown && bDown) {
+        _btnAHandled = true;
+        _btnBHandled = true;
+        return BTN_A_B_COMBO;
+    }
+
     /* ── Button A ─────────────────────────────────────── */
-    bool aPressed = (digitalRead(PIN_BTN_A) == LOW);
+    bool aPressed = aDown;
     if (aPressed && !_btnAState) {
         _btnAState   = true;
         _btnAPressMs = now;

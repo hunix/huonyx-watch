@@ -34,6 +34,7 @@ enum BtnEvent : uint8_t {
     BTN_A_LONG      = 2,
     BTN_B_SHORT     = 3,
     BTN_B_LONG      = 4,
+    BTN_A_B_COMBO   = 5,   /* Simultaneous A+B press */
 };
 
 /* ── IMU data structure ───────────────────────────────── */

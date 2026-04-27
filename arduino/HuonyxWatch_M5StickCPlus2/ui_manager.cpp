@@ -300,7 +300,7 @@ void UIManager::buildChatScreen() {
     lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
 
     _lblChatTitle = lv_label_create(header);
-    lv_label_set_text(_lblChatTitle, LV_SYMBOL_CHAT "  Huonyx");
+    lv_label_set_text(_lblChatTitle, LV_SYMBOL_BELL "  Huonyx");
     lv_obj_set_style_text_color(_lblChatTitle, CLR_ACCENT, 0);
     lv_obj_set_style_text_font(_lblChatTitle, FONT_SMALL, 0);
     lv_obj_align(_lblChatTitle, LV_ALIGN_LEFT_MID, 2, 0);
@@ -422,7 +422,7 @@ void UIManager::buildSettingsScreen() {
     const char* items[] = {
         LV_SYMBOL_WIFI "  WiFi Setup",
         LV_SYMBOL_UPLOAD "  Gateway",
-        LV_SYMBOL_CLOUD "  Supabase",
+        LV_SYMBOL_UPLOAD "  Supabase",
         LV_SYMBOL_BLUETOOTH "  Flipper",
         LV_SYMBOL_POWER "  Power Off"
     };
@@ -498,7 +498,7 @@ void UIManager::buildSupabaseSetup() {
     lv_obj_add_style(_scrSupabaseSetup, &_styleBg, 0);
 
     lv_obj_t* lbl = lv_label_create(_scrSupabaseSetup);
-    lv_label_set_text(lbl, LV_SYMBOL_CLOUD "\nSupabase Setup\n\nUse web portal\nat 192.168.4.1\nto configure");
+    lv_label_set_text(lbl, LV_SYMBOL_UPLOAD "\nSupabase Setup\n\nUse web portal\nat 192.168.4.1\nto configure");
     lv_obj_set_style_text_color(lbl, CLR_TEXT, 0);
     lv_obj_set_style_text_font(lbl, FONT_SMALL, 0);
     lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, 0);
@@ -754,7 +754,7 @@ void UIManager::hideQuickReplies() {
 void UIManager::sendSelectedQuickReply() {
     if (!_gw || !_gw->isConnected()) return;
     const char* reply = QUICK_REPLIES[_quickReplyIdx];
-    _gw->sendMessage(_cfg->config().sessionKey, reply);
+    _gw->sendMessage(_gw->getSessionKey(), reply);
     addChatBubble(reply, true);
 }
 
@@ -850,15 +850,15 @@ void UIManager::updateGatewayStatus(GatewayState state) {
 }
 
 void UIManager::updateFlipperStatus(FlipperState state) {
-    lv_color_t color = (state == FLIPPER_CONNECTED) ? CLR_SUCCESS :
-                       (state == FLIPPER_SCANNING)  ? CLR_WARNING : CLR_ERROR;
+    lv_color_t color = (state == FLIP_CONNECTED) ? CLR_SUCCESS :
+                       (state == FLIP_SCANNING)  ? CLR_WARNING : CLR_ERROR;
     lv_obj_set_style_text_color(_lblFlipDot, color, 0);
 
     /* Update Flipper screen info */
-    if (state == FLIPPER_CONNECTED && _flipper) {
+    if (state == FLIP_CONNECTED && _flipper) {
         lv_label_set_text(_lblFlipperState, "Connected");
         lv_obj_set_style_text_color(_lblFlipperState, CLR_SUCCESS, 0);
-    } else if (state == FLIPPER_SCANNING) {
+    } else if (state == FLIP_SCANNING) {
         lv_label_set_text(_lblFlipperState, "Scanning...");
         lv_obj_set_style_text_color(_lblFlipperState, CLR_WARNING, 0);
     } else {

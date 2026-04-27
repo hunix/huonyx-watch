@@ -109,11 +109,11 @@ static uint32_t _wifiRetryMs   = 0;
 static bool     _ntpSynced     = false;
 
 static void wifi_connect() {
-    const AppConfig& cfg = configMgr.config();
-    if (strlen(cfg.wifiSsid) == 0) return;
-    Serial.printf("[WiFi] Connecting to %s...\n", cfg.wifiSsid);
+    const WatchConfig& cfg = configMgr.config();
+    if (strlen(cfg.wifiSSID) == 0) return;
+    Serial.printf("[WiFi] Connecting to %s...\n", cfg.wifiSSID);
     WiFi.mode(WIFI_STA);
-    WiFi.begin(cfg.wifiSsid, cfg.wifiPassword);
+    WiFi.begin(cfg.wifiSSID, cfg.wifiPass);
 }
 
 static void wifi_tick() {
@@ -125,20 +125,20 @@ static void wifi_tick() {
             ui.updateWiFiStrength(WiFi.RSSI());
 
             if (!_ntpSynced) {
-                const AppConfig& cfg = configMgr.config();
-                if (rtc_sync_from_ntp("pool.ntp.org", cfg.gmtOffset)) {
+                const WatchConfig& cfg = configMgr.config();
+                if (rtc_sync_from_ntp("pool.ntp.org", cfg.timezone)) {
                     _ntpSynced = true;
                     Serial.println("[RTC] NTP sync successful");
                 }
             }
 
-            const AppConfig& cfg = configMgr.config();
-            if (strlen(cfg.gatewayHost) > 0) {
-                gateway.begin(cfg.gatewayHost, cfg.gatewayPort,
-                              cfg.gatewayToken, cfg.gatewayUseSsl);
+            const WatchConfig& cfg = configMgr.config();
+            if (strlen(cfg.gwHost) > 0) {
+                gateway.begin(cfg.gwHost, cfg.gwPort,
+                              cfg.gwToken, cfg.gwUseSSL);
             }
-            if (strlen(cfg.supabaseUrl) > 0) {
-                supabase.begin(cfg.supabaseUrl, cfg.supabaseKey);
+            if (strlen(cfg.sbUrl) > 0) {
+                supabase.begin(cfg.sbUrl, cfg.sbKey);
             }
         } else {
             static uint32_t rssiTimer = 0;
@@ -251,7 +251,7 @@ static void onGesture(GestureEvent gesture) {
         case GESTURE_SHAKE:
             /* Send stop command to Huonyx agent */
             if (gateway.isConnected()) {
-                gateway.sendTextMessage("{\"type\":\"stop_task\"}");
+                gateway.sendMessage(gateway.getSessionKey(), "{\"type\":\"stop_task\"}");
                 ui.showNotification("Huonyx", "Task stopped");
                 buzzer_tone(440, 100);
             }
@@ -330,11 +330,14 @@ static void onChatDelta(const char* runId, const char* text, bool isFinal) {
 }
 
 /* Handle special message types from gateway (IR commands, vision responses) */
-static void onGatewayJson(const char* jsonStr) {
-    StaticJsonDocument<512> doc;
-    if (deserializeJson(doc, jsonStr) != DeserializationError::Ok) return;
+static void onGatewayJson(const char* runId, const char* text, bool isFinal) {
+    /* text may be plain chat delta OR a JSON command from the agent */
+    if (!text || text[0] == '\0') return;
 
-    const char* type = doc["type"] | "";
+    /* Try to parse as JSON command first */
+    StaticJsonDocument<512> doc;
+    if (text[0] == '{' && deserializeJson(doc, text) == DeserializationError::Ok) {
+        const char* type = doc["type"] | "";
 
     if (strcmp(type, "ir_command") == 0) {
         /* Agent wants to fire an IR command */
@@ -353,15 +356,26 @@ static void onGatewayJson(const char* jsonStr) {
             char contextMsg[512];
             snprintf(contextMsg, sizeof(contextMsg), "%s\n%s",
                      transcript, imuClassifier.contextString());
-            gateway.sendTextMessage(contextMsg);
+            gateway.sendMessage(gateway.getSessionKey(), contextMsg);
         }
+    }
+    /* end of JSON command handlers */
+    return;
+    }
+    /* Plain text chat delta — display in chat UI */
+    ui.addChatMessage(text, false);
+    if (isFinal) {
+        ui.updateAgentTyping(false);
+        if (!_silentMode) buzzer_tone(1047, 80);
+    } else {
+        ui.updateAgentTyping(true);
     }
 }
 
 /* ── Flipper callbacks ────────────────────────────────────── */
 static void onFlipperStateChange(FlipperState state) {
     ui.updateFlipperStatus(state);
-    if (state == FLIPPER_CONNECTED) {
+    if (state == FLIP_CONNECTED) {
         ui.showNotification("Flipper", "Connected");
         ui.addFlipperLog("Flipper Zero connected", false);
     }
@@ -420,7 +434,7 @@ static void handle_button_extended(BtnEvent evt) {
         if (!visionTrigger.isWaiting()) {
             /* Build and send vision command via gateway */
             String cmd = visionTrigger.buildCommand(VISION_DESCRIBE);
-            gateway.sendTextMessage(cmd.c_str());
+            gateway.sendMessage(gateway.getSessionKey(), cmd.c_str());
             visionTrigger.capture(VISION_DESCRIBE);
         }
         return;
@@ -481,22 +495,22 @@ void setup() {
     /* ── Gateway callbacks ────────────────────────────────── */
     gateway.onStateChange(onGatewayStateChange);
     gateway.onChatDelta(onChatDelta);
-    gateway.onJsonMessage(onGatewayJson);   /* New: handles IR/vision/transcript */
+    gateway.onChatDelta(onGatewayJson);     /* handles all incoming messages */
 
     /* ── Flipper callbacks ────────────────────────────────── */
     flipper.onStateChange(onFlipperStateChange);
-    flipper.onData(onFlipperData);
+    flipper.onResponse([](uint32_t id, const char* data, bool done){ onFlipperData(data); });
 
     /* ── Supabase callbacks ───────────────────────────────── */
     supabase.onStateChange(onBridgeStateChange);
     supabase.onCommand(onBridgeCommand);
 
     /* ── Web portal ───────────────────────────────────────── */
-    webPortal.begin(&configMgr);
+    webPortal.begin();
 
     /* ── WiFi ─────────────────────────────────────────────── */
-    const AppConfig& cfg = configMgr.config();
-    if (strlen(cfg.wifiSsid) > 0) {
+    const WatchConfig& cfg = configMgr.config();
+    if (strlen(cfg.wifiSSID) > 0) {
         wifi_connect();
     } else {
         webPortal.startAP();
@@ -504,8 +518,8 @@ void setup() {
     }
 
     /* ── Auto-connect Flipper ─────────────────────────────── */
-    if (cfg.flipperAutoConnect && strlen(cfg.flipperDeviceName) > 0) {
-        flipper.begin(cfg.flipperDeviceName);
+    if (cfg.flipperAuto && strlen(cfg.flipperName) > 0) {
+        flipper.begin(cfg.flipperName);
     }
 
     /* Real battery reading from AXP2101 via M5Unified */
