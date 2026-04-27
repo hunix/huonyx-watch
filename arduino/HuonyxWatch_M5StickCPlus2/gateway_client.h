@@ -43,6 +43,11 @@ public:
 
     /* Chat operations */
     bool sendMessage(const char* sessionKey, const char* message);
+    /* Send raw PCM audio chunk as binary WebSocket frame for Whisper STT */
+    bool sendAudioChunk(const uint8_t* data, size_t len) {
+        if (!isConnected()) return false;
+        return _ws.sendBIN(data, len);
+    }
     bool requestHistory(const char* sessionKey, int limit = 20);
     bool requestSessionList(int limit = 10);
     bool abortChat(const char* sessionKey);

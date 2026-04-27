@@ -76,7 +76,7 @@ static ConfigManager  configMgr;
 static GatewayClient  gateway;
 static FlipperBLE     flipper;
 static SupabaseBridge supabase;
-static WebPortal      webPortal;
+static WebPortal      webPortal(&configMgr);
 static UIManager      ui;
 
 /* ── v2.0 Sensor instances ────────────────────────────────── */
@@ -198,43 +198,43 @@ static void battery_tick() {
 /* ── Buzzer helpers ───────────────────────────────────────── */
 static void buzzer_tone(uint16_t freq, uint16_t durationMs) {
     if (_silentMode) return;
-    ledcSetup(0, freq, 8);
-    ledcAttachPin(BUZZER_PIN, 0);
-    ledcWrite(0, 128);
+    ledcAttach(BUZZER_PIN, freq, 8);   /* ESP32 Arduino 3.x API */
+    ledcWrite(BUZZER_PIN, 128);
     delay(durationMs);
-    ledcWrite(0, 0);
-    ledcDetachPin(BUZZER_PIN);
+    ledcWrite(BUZZER_PIN, 0);
+    ledcDetach(BUZZER_PIN);
 }
 
 static void buzzer_recording_start() { buzzer_tone(880, 80); }
 static void buzzer_recording_stop()  { buzzer_tone(660, 80); }
 static void buzzer_response()        { buzzer_tone(1047, 60); delay(30); buzzer_tone(1319, 60); }
-static void buzzer_error()           { buzzer_tone(300, 200); }
+/* buzzer_error() implemented in m5_driver.cpp */
 
 /* ══════════════════════════════════════════════════════════
  *  AUDIO STREAMING CALLBACKS
  * ══════════════════════════════════════════════════════════ */
 static void onAudioChunk(const uint8_t* data, size_t len) {
     /* Forward raw PCM bytes to gateway as binary WebSocket frame */
-    gateway.sendBinary(data, len);
+    /* Audio PCM chunk — forward via gateway binary frame */
+    gateway.sendAudioChunk(data, len);
 }
 
 static void onAudioStateChange(StreamerState state) {
     switch (state) {
         case STREAMER_RECORDING:
             buzzer_recording_start();
-            ui.setRecordingOverlay(true, false);
+            ui.showNotification("Huonyx", LV_SYMBOL_AUDIO " Recording...");
             break;
         case STREAMER_SENDING:
-            ui.setRecordingOverlay(false, true);
+            ui.showNotification("Huonyx", LV_SYMBOL_UPLOAD " Sending...");
             break;
         case STREAMER_IDLE:
             buzzer_recording_stop();
-            ui.setRecordingOverlay(false, false);
+            /* recording overlay dismissed */
             break;
         case STREAMER_ERROR:
             buzzer_error();
-            ui.setRecordingOverlay(false, false);
+            /* recording overlay dismissed */
             break;
     }
 }
@@ -258,11 +258,11 @@ static void onGesture(GestureEvent gesture) {
             break;
 
         case GESTURE_TILT_LEFT:
-            ui.scrollUp();
+            ui.handleButton(BTN_A_SHORT);  /* tilt left = scroll up */
             break;
 
         case GESTURE_TILT_RIGHT:
-            ui.scrollDown();
+            ui.handleButton(BTN_B_SHORT);  /* tilt right = scroll down */
             break;
 
         case GESTURE_DOUBLE_TAP:
@@ -519,7 +519,8 @@ void setup() {
 
     /* ── Auto-connect Flipper ─────────────────────────────── */
     if (cfg.flipperAuto && strlen(cfg.flipperName) > 0) {
-        flipper.begin(cfg.flipperName);
+        flipper.begin();
+        flipper.startScan(cfg.flipperName);
     }
 
     /* Real battery reading from AXP2101 via M5Unified */
