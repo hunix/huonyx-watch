@@ -156,7 +156,7 @@ IRResult IRController::send(const IRCommand& cmd) {
     res.success = true;
 
     /* Disable interrupts during transmission for timing accuracy */
-    portDISABLE_INTERRUPTS();
+    noInterrupts();
 
     switch (cmd.protocol) {
         case IR_PROTO_NEC:
@@ -195,7 +195,7 @@ IRResult IRController::send(const IRCommand& cmd) {
             break;
     }
 
-    portENABLE_INTERRUPTS();
+    interrupts();
 
     Serial.printf("[IR] %s\n", res.message);
     return res;

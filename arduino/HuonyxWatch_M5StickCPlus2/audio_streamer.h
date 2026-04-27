@@ -16,9 +16,6 @@
 #pragma once
 #include <Arduino.h>
 #include <M5Unified.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <freertos/queue.h>
 #include "hw_config.h"
 #include "gateway_client.h"
 
