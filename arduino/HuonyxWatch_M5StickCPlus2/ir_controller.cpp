@@ -10,7 +10,7 @@
 /* ══════════════════════════════════════════════════════════
  *  CONSTRUCTOR / BEGIN
  * ══════════════════════════════════════════════════════════ */
-IRController::IRController() : _pin(PIN_IR) {}
+IRController::IRController() : _pin(PIN_IR_TX) {}
 
 void IRController::begin() {
     pinMode(_pin, OUTPUT);

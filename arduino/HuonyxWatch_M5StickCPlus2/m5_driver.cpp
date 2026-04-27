@@ -69,7 +69,7 @@ void m5_driver_init() {
 
     /* ── LED ──────────────────────────────────────────── */
     /* G19 is shared between the Red LED and the IR emitter RMT peripheral.
-     * IrController::begin() (called after this) will configure G19 as RMT.
+     * IRController::begin() (called after this) will configure G19 as RMT.
      * We set it HIGH here (LED off) before RMT takes over. */
     pinMode(PIN_LED, OUTPUT);
     digitalWrite(PIN_LED, HIGH);  /* Active LOW — LED off */

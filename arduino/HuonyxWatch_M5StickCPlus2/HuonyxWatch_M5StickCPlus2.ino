@@ -82,7 +82,7 @@ static UIManager      ui;
 /* ── v2.0 Sensor instances ────────────────────────────────── */
 static AudioStreamer  audioStreamer;
 static ImuClassifier imuClassifier;
-static IrController  irController;
+static IRController  irController;
 static VisionTrigger visionTrigger;
 
 /* ── Voice recording state ────────────────────────────────── */
@@ -282,13 +282,12 @@ static void onActivity(ActivityState state) {
 /* ══════════════════════════════════════════════════════════
  *  IR CONTROLLER CALLBACKS
  * ══════════════════════════════════════════════════════════ */
-static void onIrResult(IrResult result, const char* protocol) {
-    if (result == IR_OK) {
-        char buf[48];
-        snprintf(buf, sizeof(buf), "IR %s sent", protocol);
-        ui.showNotification("IR Remote", buf);
+static void handleIrCommand(const char* json) {
+    IRResult result = irController.sendFromJson(json);
+    if (result.success) {
+        ui.showNotification("IR Remote", result.message);
     } else {
-        ui.showNotification("IR Remote", "Command failed");
+        ui.showNotification("IR Remote", result.message);
         buzzer_error();
     }
 }
@@ -341,7 +340,7 @@ static void onGatewayJson(const char* runId, const char* text, bool isFinal) {
 
     if (strcmp(type, "ir_command") == 0) {
         /* Agent wants to fire an IR command */
-        irController.handleCommand(doc.as<JsonObject>());
+        handleIrCommand(text);
 
     } else if (strcmp(type, "vision_response") == 0) {
         /* Server returning vision analysis result */
@@ -420,7 +419,7 @@ static void handle_button_extended(BtnEvent evt) {
     if (evt == BTN_A_LONG) {
         if (!audioStreamer.isRecording()) {
             /* Determine mode: short long-press = standard, very long = longform */
-            RecordMode mode = (millis() - _btnAHeldMs > 3000) ? REC_LONGFORM : REC_STANDARD;
+            RecordingMode mode = (millis() - _btnAHeldMs > 3000) ? REC_LONGFORM : REC_STANDARD;
             audioStreamer.startRecording(mode);
             ui.showScreen(SCREEN_CHAT);
         } else {
@@ -476,7 +475,7 @@ void setup() {
     /* ── v2.0: Audio Streamer ─────────────────────────────── */
     audioStreamer.onChunk(onAudioChunk);
     audioStreamer.onStateChange(onAudioStateChange);
-    audioStreamer.begin();
+    audioStreamer.begin(&gateway);
 
     /* ── v2.0: IMU Classifier ─────────────────────────────── */
     imuClassifier.onGesture(onGesture);
@@ -484,7 +483,6 @@ void setup() {
     imuClassifier.begin();
 
     /* ── v2.0: IR Controller ──────────────────────────────── */
-    irController.onResult(onIrResult);
     irController.begin();
 
     /* ── v2.0: Vision Trigger ─────────────────────────────── */
