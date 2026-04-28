@@ -198,11 +198,9 @@ static void battery_tick() {
 /* ── Buzzer helpers ───────────────────────────────────────── */
 static void buzzer_tone(uint16_t freq, uint16_t durationMs) {
     if (_silentMode) return;
-    ledcAttach(BUZZER_PIN, freq, 8);   /* ESP32 Arduino 3.x API */
-    ledcWrite(BUZZER_PIN, 128);
+    tone(BUZZER_PIN, freq, durationMs);
     delay(durationMs);
-    ledcWrite(BUZZER_PIN, 0);
-    ledcDetach(BUZZER_PIN);
+    noTone(BUZZER_PIN);
 }
 
 static void buzzer_recording_start() { buzzer_tone(880, 80); }
@@ -452,6 +450,8 @@ void setup() {
 
     /* ── Hardware init ────────────────────────────────────── */
     m5_driver_init();
+    Serial.println("[BOOT] m5_driver_init OK");
+    Serial.flush();
 
     /* ── LVGL init ────────────────────────────────────────── */
     lv_init();
@@ -465,25 +465,37 @@ void setup() {
     lv_display_set_buffers(lvDisplay, buf1, buf2,
                            sizeof(buf1), LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_display_set_flush_cb(lvDisplay, lvgl_flush_cb);
+    Serial.println("[BOOT] LVGL init OK");
+    Serial.flush();
 
     /* ── Config ───────────────────────────────────────────── */
     configMgr.begin();
+    Serial.println("[BOOT] ConfigManager OK");
+    Serial.flush();
 
     /* ── UI ───────────────────────────────────────────────── */
     ui.begin(&gateway, &configMgr, &flipper, &supabase);
+    Serial.println("[BOOT] UI OK");
+    Serial.flush();
 
     /* ── v2.0: Audio Streamer ─────────────────────────────── */
     audioStreamer.onChunk(onAudioChunk);
     audioStreamer.onStateChange(onAudioStateChange);
     audioStreamer.begin(&gateway);
+    Serial.println("[BOOT] AudioStreamer OK");
+    Serial.flush();
 
     /* ── v2.0: IMU Classifier ─────────────────────────────── */
     imuClassifier.onGesture(onGesture);
     imuClassifier.onActivity(onActivity);
     imuClassifier.begin();
+    Serial.println("[BOOT] IMU OK");
+    Serial.flush();
 
     /* ── v2.0: IR Controller ──────────────────────────────── */
     irController.begin();
+    Serial.println("[BOOT] IR OK");
+    Serial.flush();
 
     /* ── v2.0: Vision Trigger ─────────────────────────────── */
     visionTrigger.onResult(onVisionResult);
@@ -492,8 +504,8 @@ void setup() {
 
     /* ── Gateway callbacks ────────────────────────────────── */
     gateway.onStateChange(onGatewayStateChange);
-    gateway.onChatDelta(onChatDelta);
-    gateway.onChatDelta(onGatewayJson);     /* handles all incoming messages */
+    /* onGatewayJson handles both JSON commands AND plain text chat deltas */
+    gateway.onChatDelta(onGatewayJson);
 
     /* ── Flipper callbacks ────────────────────────────────── */
     flipper.onStateChange(onFlipperStateChange);
@@ -505,6 +517,8 @@ void setup() {
 
     /* ── Web portal ───────────────────────────────────────── */
     webPortal.begin();
+    Serial.println("[BOOT] WebPortal OK");
+    Serial.flush();
 
     /* ── WiFi ─────────────────────────────────────────────── */
     const WatchConfig& cfg = configMgr.config();

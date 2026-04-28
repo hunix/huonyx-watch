@@ -32,7 +32,7 @@ void m5_driver_init() {
     auto cfg = M5.config();
     cfg.internal_imu = true;   /* Enable MPU6886 */
     cfg.internal_rtc = true;   /* Enable BM8563 */
-    cfg.internal_mic = false;  /* We drive the SPM1423 mic via I2S directly */
+    cfg.internal_mic = true;   /* Let M5Unified initialize SPM1423 PDM mic */
     cfg.internal_spk = false;  /* No speaker on M5StickC Plus2 */
     M5.begin(cfg);
 

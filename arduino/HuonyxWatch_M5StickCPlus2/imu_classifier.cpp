@@ -37,7 +37,7 @@ ImuClassifier::ImuClassifier()
 bool ImuClassifier::begin() {
     /* MPU6886 is initialized by M5Unified in m5_driver_init() */
     /* Just verify it's accessible */
-    M5.Imu.begin();
+    /* M5.Imu already initialized by M5.begin() in m5_driver_init() */
     Serial.println("[IMU] Classifier initialized");
     return true;
 }

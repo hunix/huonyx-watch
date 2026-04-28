@@ -1,24 +1,29 @@
 /**
  * audio_streamer.cpp
- * Huonyx Watch M5StickC Plus2 — Voice-to-Huonyx Audio Pipeline
+ * Huonyx Watch M5StickC Plus2 - Voice-to-Huonyx Audio Pipeline
  *
- * Uses M5Unified M5.Mic API — zero legacy driver/ headers.
- * M5.begin() already initialises the SPM1423 PDM mic internally.
+ * Uses M5Unified M5.Mic API - zero legacy driver/ headers.
+ * M5.begin() with internal_mic=true initialises the SPM1423 PDM mic.
+ *
+ * v2.2 FIX: Lazy initialization - FreeRTOS task and queue are only
+ * created on first recording request, not during setup(). This avoids
+ * boot crashes from premature mic access and saves ~12KB of RAM when
+ * voice features are not being used.
  */
 #include "audio_streamer.h"
 
-/* ── Sample buffer (stack-allocated in task) ──────────── */
+/* -- Sample buffer (stack-allocated in task) ------------ */
 #define MIC_BUF_SAMPLES  AUDIO_DMA_BUF_LEN
 
-/* ── Chunk buffer ──────────────────────────────────────── */
+/* -- Chunk buffer --------------------------------------- */
 static uint8_t  _chunkBuf[AUDIO_CHUNK_BYTES];
 static size_t   _chunkPos = 0;
 
-/* ══════════════════════════════════════════════════════════
+/* ========================================================
  *  FreeRTOS Sampling Task (Core 0)
  *  Uses M5.Mic.record() to fill a buffer, then pushes raw
  *  16-bit PCM bytes into the inter-core queue.
- * ══════════════════════════════════════════════════════════ */
+ * ======================================================== */
 void AudioStreamer::_samplingTask(void* param) {
     AudioStreamer* self = static_cast<AudioStreamer*>(param);
     int16_t micBuf[MIC_BUF_SAMPLES];
@@ -30,7 +35,12 @@ void AudioStreamer::_samplingTask(void* param) {
         }
 
         /* Record MIC_BUF_SAMPLES samples into micBuf */
-        M5.Mic.record(micBuf, MIC_BUF_SAMPLES, AUDIO_SAMPLE_RATE);
+        if (M5.Mic.isEnabled()) {
+            M5.Mic.record(micBuf, MIC_BUF_SAMPLES, AUDIO_SAMPLE_RATE);
+        } else {
+            vTaskDelay(pdMS_TO_TICKS(10));
+            continue;
+        }
 
         /* Push raw bytes into queue */
         uint8_t* b = (uint8_t*)micBuf;
@@ -45,9 +55,9 @@ void AudioStreamer::_samplingTask(void* param) {
     }
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ========================================================
  *  CONSTRUCTOR
- * ══════════════════════════════════════════════════════════ */
+ * ======================================================== */
 AudioStreamer::AudioStreamer()
     : _state(STREAMER_IDLE)
     , _mode(REC_STANDARD)
@@ -60,11 +70,23 @@ AudioStreamer::AudioStreamer()
     , _onChunk(nullptr)
 {}
 
-/* ══════════════════════════════════════════════════════════
- *  BEGIN
- * ══════════════════════════════════════════════════════════ */
+/* ========================================================
+ *  BEGIN - lightweight, just stores the gateway pointer.
+ *  Heavy init (mic, queue, task) is deferred to first recording.
+ * ======================================================== */
 bool AudioStreamer::begin(GatewayClient* gw) {
     _gw = gw;
+    Serial.println("[Audio] Streamer registered (lazy init)");
+    return true;
+}
+
+/* ========================================================
+ *  LAZY INIT - called once on first recording request
+ * ======================================================== */
+bool AudioStreamer::_ensureInitialized() {
+    if (_micInitialized) return true;
+
+    Serial.println("[Audio] Lazy init: configuring mic + task...");
 
     /* Configure M5.Mic for the SPM1423 PDM microphone */
     auto micCfg = M5.Mic.config();
@@ -76,7 +98,6 @@ bool AudioStreamer::begin(GatewayClient* gw) {
         Serial.println("[Audio] M5.Mic.begin() failed");
         return false;
     }
-    _micInitialized = true;
 
     /* Create inter-core queue */
     _queue = xQueueCreate(AUDIO_QUEUE_SIZE, sizeof(uint8_t));
@@ -92,23 +113,32 @@ bool AudioStreamer::begin(GatewayClient* gw) {
         &_samplingTaskHandle, 0
     );
 
-    Serial.println("[Audio] Streamer initialized (M5.Mic)");
+    _micInitialized = true;
+    Serial.println("[Audio] Mic + task initialized successfully");
     return true;
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ========================================================
  *  STATE
- * ══════════════════════════════════════════════════════════ */
+ * ======================================================== */
 void AudioStreamer::_setState(StreamerState s) {
     _state = s;
     if (_onStateChange) _onStateChange(s);
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ========================================================
  *  START / STOP RECORDING
- * ══════════════════════════════════════════════════════════ */
+ * ======================================================== */
 void AudioStreamer::startRecording(RecordingMode mode) {
     if (_state == STREAMER_RECORDING) return;
+
+    /* Lazy init on first use */
+    if (!_ensureInitialized()) {
+        Serial.println("[Audio] Cannot start - mic init failed");
+        _setState(STREAMER_ERROR);
+        return;
+    }
+
     _mode     = mode;
     _chunkPos = 0;
     xQueueReset(_queue);
@@ -126,14 +156,13 @@ void AudioStreamer::stopRecording() {
         _gw->sendAudioChunk(_chunkBuf, _chunkPos);
         _chunkPos = 0;
     }
-
     _setState(STREAMER_IDLE);
     Serial.println("[Audio] Recording stopped");
 }
 
-/* ══════════════════════════════════════════════════════════
- *  MAIN LOOP (Core 1) — drain queue → WebSocket chunks
- * ══════════════════════════════════════════════════════════ */
+/* ========================================================
+ *  MAIN LOOP (Core 1) - drain queue -> WebSocket chunks
+ * ======================================================== */
 void AudioStreamer::loop() {
     if (_state != STREAMER_RECORDING) return;
 

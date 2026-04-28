@@ -72,6 +72,7 @@ private:
     OnStreamerStateChange _onStateChange;
     OnAudioChunk         _onChunk;
 
+    bool _ensureInitialized();
     void _setState(StreamerState s);
     static void _samplingTask(void* param);
 };
