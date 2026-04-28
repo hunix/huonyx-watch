@@ -74,7 +74,7 @@
 #define LV_DRAW_TRANSFORM_USE_MATRIX            0
 
 /*The target buffer size for simple layer chunks.*/
-#define LV_DRAW_LAYER_SIMPLE_BUF_SIZE    (24 * 1024)   /*[bytes]*/
+#define LV_DRAW_LAYER_SIMPLE_BUF_SIZE    (8 * 1024)   /*[bytes] reduced for IRAM savings */
 
 /* The stack size of the drawing thread. */
 #define LV_DRAW_THREAD_STACK_SIZE    (8 * 1024)   /*[bytes]*/
@@ -82,14 +82,14 @@
 #define LV_USE_DRAW_SW 1
 #if LV_USE_DRAW_SW == 1
     #define LV_DRAW_SW_SUPPORT_RGB565       1
-    #define LV_DRAW_SW_SUPPORT_RGB565A8     1
-    #define LV_DRAW_SW_SUPPORT_RGB888       1
-    #define LV_DRAW_SW_SUPPORT_XRGB8888    1
-    #define LV_DRAW_SW_SUPPORT_ARGB8888    1
-    #define LV_DRAW_SW_SUPPORT_L8          1
-    #define LV_DRAW_SW_SUPPORT_AL88        1
-    #define LV_DRAW_SW_SUPPORT_A8          1
-    #define LV_DRAW_SW_SUPPORT_I1          1
+    #define LV_DRAW_SW_SUPPORT_RGB565A8     0  /* unused — saves IRAM */
+    #define LV_DRAW_SW_SUPPORT_RGB888       0  /* unused — saves IRAM */
+    #define LV_DRAW_SW_SUPPORT_XRGB8888    0  /* unused — saves IRAM */
+    #define LV_DRAW_SW_SUPPORT_ARGB8888    0  /* unused — saves IRAM */
+    #define LV_DRAW_SW_SUPPORT_L8          0  /* unused — saves IRAM */
+    #define LV_DRAW_SW_SUPPORT_AL88        0  /* unused — saves IRAM */
+    #define LV_DRAW_SW_SUPPORT_A8          1  /* needed for font alpha */
+    #define LV_DRAW_SW_SUPPORT_I1          0  /* unused — saves IRAM */
 
     #define LV_DRAW_SW_DRAW_UNIT_CNT    1
 
@@ -167,7 +167,7 @@
 #define LV_FONT_MONTSERRAT_14 1  /* date, WiFi, titles, default font */
 #define LV_FONT_MONTSERRAT_16 0  /* unused - saves ~7KB ROM */
 #define LV_FONT_MONTSERRAT_18 0  /* unused - saves ~8KB ROM */
-#define LV_FONT_MONTSERRAT_20 1  /* used for date/day labels on M5StickC Plus2 */
+#define LV_FONT_MONTSERRAT_20 0  /* disabled — use 14 instead to save ~9KB ROM */
 #define LV_FONT_MONTSERRAT_22 0  /* unused - saves ~9KB ROM */
 #define LV_FONT_MONTSERRAT_24 0  /* unused - saves ~10KB ROM */
 #define LV_FONT_MONTSERRAT_26 0
@@ -221,8 +221,8 @@
 
 /* Only enable widgets actually used in the UI */
 #define LV_USE_ANIMIMG    0
-#define LV_USE_ARC        1  /* battery arc, outer ring, spinner bg */
-#define LV_USE_BAR        1  /* required by LV_USE_SLIDER */
+#define LV_USE_ARC        0  /* NOT used in code — saves ~3KB */
+#define LV_USE_BAR        0  /* NOT used in code (slider also disabled) — saves ~2KB */
 #define LV_USE_BUTTON     1  /* quick replies, settings, scan/disconnect */
 #define LV_USE_BUTTONMATRIX  0  /* unused - saves ~5KB ROM */
 #define LV_USE_CALENDAR   0
@@ -230,7 +230,7 @@
 #define LV_USE_CHART      0
 #define LV_USE_CHECKBOX   0  /* unused on watch - saves ~2KB ROM */
 #define LV_USE_DROPDOWN   0  /* unused on watch - saves ~4KB ROM */
-#define LV_USE_IMAGE      1  /* needed for LVGL symbol rendering */
+#define LV_USE_IMAGE      0  /* NOT used in code — saves ~3KB */
 #define LV_USE_IMAGEBUTTON 0
 #define LV_USE_KEYBOARD   0  /* no on-watch keyboard - saves ~6KB ROM */
 #define LV_USE_LABEL      1  /* heavily used everywhere */
@@ -239,7 +239,7 @@
     #define LV_LABEL_LONG_TXT_HINT 0  /* saves RAM per long label */
     #define LV_LABEL_WAIT_CHAR_COUNT 3
 #endif
-#define LV_USE_LED        1  /* status LEDs on watch face */
+#define LV_USE_LED        0  /* NOT used in code — saves ~2KB */
 #define LV_USE_LINE       0  /* unused - saves ~2KB ROM */
 #define LV_USE_LIST       1  /* settings menu, sessions */
 #define LV_USE_LOTTIE     0
@@ -247,10 +247,10 @@
 #define LV_USE_MSGBOX     0  /* unused - saves ~3KB ROM */
 #define LV_USE_ROLLER     0  /* unused - saves ~3KB ROM */
 #define LV_USE_SCALE      0  /* unused - saves ~2KB ROM */
-#define LV_USE_SLIDER     1  /* brightness slider */
+#define LV_USE_SLIDER     0  /* NOT used in code — saves ~3KB */
 #define LV_USE_SPAN       0  /* unused - saves ~2KB ROM */
 #define LV_USE_SPINBOX    0
-#define LV_USE_SPINNER    1  /* typing indicator */
+#define LV_USE_SPINNER    0  /* NOT used in code — saves ~2KB */
 #define LV_USE_SWITCH     0  /* unused on watch - saves ~2KB ROM */
 #define LV_USE_TEXTAREA   0  /* unused on watch (web portal instead) - saves ~5KB ROM */
 #define LV_USE_TABLE      0

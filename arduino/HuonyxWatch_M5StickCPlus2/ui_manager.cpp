@@ -28,7 +28,7 @@
 #define FONT_TINY       &lv_font_montserrat_10
 #define FONT_SMALL      &lv_font_montserrat_12
 #define FONT_NORMAL     &lv_font_montserrat_14
-#define FONT_LARGE      &lv_font_montserrat_20
+#define FONT_LARGE      &lv_font_montserrat_14  /* was 20, reduced to save ~9KB ROM */
 #define FONT_TIME       &lv_font_montserrat_36
 
 /* ── Sleep timeout ────────────────────────────────────── */
