@@ -5,7 +5,14 @@
  * Uses NimBLE-Arduino for memory-efficient BLE Central operation.
  * The Flipper Zero exposes a Serial-over-BLE service that accepts
  * CLI commands as text strings and returns output the same way.
+ *
+ * This entire file is compiled only when ENABLE_FLIPPER_BLE is 1.
+ * When disabled, the stub class in flipper_ble.h provides the API.
  */
+
+#include "build_config.h"
+
+#if ENABLE_FLIPPER_BLE
 
 #include "flipper_ble.h"
 #include <NimBLEDevice.h>
@@ -506,3 +513,5 @@ void FlipperBLE::handleResponseData(const uint8_t* data, size_t len) {
         }
     }
 }
+
+#endif /* ENABLE_FLIPPER_BLE */

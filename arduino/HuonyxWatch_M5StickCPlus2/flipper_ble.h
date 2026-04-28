@@ -4,19 +4,20 @@
  *
  * Connects to a Flipper Zero's BLE Serial service and provides
  * a bidirectional command/response interface for CLI control.
- * Uses NimBLE for memory efficiency on ESP32-C3.
+ *
+ * When ENABLE_FLIPPER_BLE is 0, this header provides a stub class
+ * with the same API so the rest of the codebase compiles unchanged.
+ * Flipper control remains available through the Supabase bridge.
  */
 
 #ifndef FLIPPER_BLE_H
 #define FLIPPER_BLE_H
 
 #include <Arduino.h>
+#include "build_config.h"
 #include "hw_config.h"
 
-/* Forward declaration for NimBLE */
-class NimBLERemoteCharacteristic;
-
-/* Flipper connection states */
+/* Flipper connection states — always defined for UI code */
 enum FlipperState : uint8_t {
     FLIP_IDLE = 0,        /* Not scanning or connecting */
     FLIP_SCANNING,        /* Actively scanning for Flipper */
@@ -27,60 +28,35 @@ enum FlipperState : uint8_t {
     FLIP_ERROR            /* Error state */
 };
 
-/* Command in the queue */
+/* Command in the queue — always defined for struct compatibility */
 struct FlipperCommand {
     char     cmd[128];
     uint32_t id;
     bool     pending;
 };
 
-/* Callback types */
+/* Callback types — always defined */
 typedef void (*OnFlipperResponse)(uint32_t cmdId, const char* response, bool complete);
 typedef void (*OnFlipperStateChange)(FlipperState newState);
+
+/* ══════════════════════════════════════════════════════════
+ *  FULL BLE IMPLEMENTATION
+ * ══════════════════════════════════════════════════════════ */
+#if ENABLE_FLIPPER_BLE
+
+/* Forward declaration for NimBLE */
+class NimBLERemoteCharacteristic;
 
 class FlipperBLE {
 public:
     FlipperBLE();
 
-    /**
-     * Initialize BLE stack and prepare for scanning.
-     * Must be called after WiFi is initialized.
-     */
     void begin();
-
-    /**
-     * Main loop - handles scanning, connection, and command processing.
-     * Call frequently from the main loop.
-     */
     void loop();
-
-    /**
-     * Start scanning for a Flipper Zero device.
-     * @param targetName Optional specific device name to connect to.
-     *                   If empty, connects to first Flipper found.
-     */
     void startScan(const char* targetName = "");
-
-    /**
-     * Stop scanning.
-     */
     void stopScan();
-
-    /**
-     * Disconnect from the Flipper Zero.
-     */
     void disconnect();
-
-    /**
-     * Send a CLI command to the Flipper Zero.
-     * @param command The CLI command string (e.g., "ir tx NEC 0x04 0x08")
-     * @return Command ID for tracking, or 0 if queue is full.
-     */
     uint32_t sendCommand(const char* command);
-
-    /**
-     * Cancel the currently executing command.
-     */
     void cancelCommand();
 
     /* State queries */
@@ -103,27 +79,22 @@ private:
     int          _rssi;
     bool         _bleInitialized;
 
-    /* Command queue (ring buffer) */
     FlipperCommand _cmdQueue[FLIPPER_CMD_QUEUE_SIZE];
     uint8_t        _cmdHead;
     uint8_t        _cmdTail;
     uint32_t       _cmdIdCounter;
 
-    /* Response accumulator */
     char           _responseBuf[FLIPPER_RESPONSE_BUF_SIZE];
     size_t         _responseLen;
     uint32_t       _activeCmdId;
     unsigned long  _cmdStartMs;
 
-    /* Timing */
     unsigned long  _lastReconnectMs;
     unsigned long  _scanStartMs;
 
-    /* Callbacks */
     OnFlipperResponse    _onResponse;
     OnFlipperStateChange _onStateChange;
 
-    /* Internal */
     void setState(FlipperState s);
     void processCommandQueue();
     void sendNextCommand();
@@ -131,12 +102,47 @@ private:
     bool enqueueCommand(const char* cmd, uint32_t id);
     FlipperCommand* dequeueCommand();
 
-    /* NimBLE callbacks are handled via static friend functions */
     friend class FlipperBLECallbacks;
     friend class FlipperBLEAdvCallbacks;
     friend void notifyCallback(NimBLERemoteCharacteristic*, uint8_t*, size_t, bool);
 
     static FlipperBLE* _instance;
 };
+
+/* ══════════════════════════════════════════════════════════
+ *  STUB IMPLEMENTATION (BLE disabled — saves ~47KB IRAM)
+ * ══════════════════════════════════════════════════════════ */
+#else /* !ENABLE_FLIPPER_BLE */
+
+class FlipperBLE {
+public:
+    FlipperBLE() {}
+
+    void begin() {
+        Serial.println("[FLIP] BLE disabled at compile time (ENABLE_FLIPPER_BLE=0)");
+        Serial.println("[FLIP] Use Supabase bridge for Flipper control");
+    }
+    void loop() {}
+    void startScan(const char* targetName = "") { (void)targetName; }
+    void stopScan() {}
+    void disconnect() {}
+    uint32_t sendCommand(const char* command) { (void)command; return 0; }
+    void cancelCommand() {}
+
+    /* State queries — always report idle/disconnected */
+    FlipperState getState() const { return FLIP_IDLE; }
+    bool isReady() const { return false; }
+    bool isBusy() const { return false; }
+    bool isConnected() const { return false; }
+    const char* getDeviceName() const { return ""; }
+    int getRssi() const { return 0; }
+    int getQueueDepth() const { return 0; }
+
+    /* Callbacks — store but never fire */
+    void onResponse(OnFlipperResponse cb) { (void)cb; }
+    void onStateChange(OnFlipperStateChange cb) { (void)cb; }
+};
+
+#endif /* ENABLE_FLIPPER_BLE */
 
 #endif /* FLIPPER_BLE_H */
