@@ -1,9 +1,15 @@
 /**
  * LVGL Configuration for Huonyx Smartwatch
- * ESP32-2424S012 - 240x240 Round Display
+ * M5StickC Plus2 - 135x240 Portrait Display
  *
  * Compatible with LVGL 9.x (9.2+)
  * Based on lv_conf_template.h for v9.2
+ *
+ * IMPORTANT: Do NOT add #include <stdint.h> here!
+ * This file is included by LVGL's .S assembly files (e.g. lv_blend_neon.S)
+ * which go through the Xtensa assembler. The assembler cannot process
+ * C 'typedef' keywords from stdint.h. LVGL handles stdint.h internally
+ * via the LV_STDINT_INCLUDE define below — only from C/C++ code paths.
  */
 
 /* clang-format off */
@@ -12,7 +18,10 @@
 #ifndef LV_CONF_H
 #define LV_CONF_H
 
+/* If you need to include anything here, do it inside the __ASSEMBLY__ guard */
+#if 0 && !defined(__ASSEMBLY__)
 #include <stdint.h>
+#endif
 
 /*====================
    COLOR SETTINGS
@@ -73,17 +82,18 @@
 #define LV_USE_DRAW_SW 1
 #if LV_USE_DRAW_SW == 1
     #define LV_DRAW_SW_SUPPORT_RGB565       1
-    #define LV_DRAW_SW_SUPPORT_RGB565A8     1  /* unused - display is RGB565 */
-    #define LV_DRAW_SW_SUPPORT_RGB888       1  /* unused */
-    #define LV_DRAW_SW_SUPPORT_XRGB8888    1  /* unused */
-    #define LV_DRAW_SW_SUPPORT_ARGB8888    1  /* unused */
-    #define LV_DRAW_SW_SUPPORT_L8          1  /* unused */
-    #define LV_DRAW_SW_SUPPORT_AL88        1  /* unused */
-    #define LV_DRAW_SW_SUPPORT_A8          1  /* unused */
+    #define LV_DRAW_SW_SUPPORT_RGB565A8     1
+    #define LV_DRAW_SW_SUPPORT_RGB888       1
+    #define LV_DRAW_SW_SUPPORT_XRGB8888    1
+    #define LV_DRAW_SW_SUPPORT_ARGB8888    1
+    #define LV_DRAW_SW_SUPPORT_L8          1
+    #define LV_DRAW_SW_SUPPORT_AL88        1
+    #define LV_DRAW_SW_SUPPORT_A8          1
     #define LV_DRAW_SW_SUPPORT_I1          1
 
     #define LV_DRAW_SW_DRAW_UNIT_CNT    1
 
+    /* MUST be 0 on Xtensa/ESP32 — these are ARM-only */
     #define LV_USE_DRAW_ARM2D_SYNC      0
     #define LV_USE_NATIVE_HELIUM_ASM    0
 
@@ -95,6 +105,9 @@
         #define LV_DRAW_SW_CIRCLE_CACHE_SIZE 4
     #endif
 
+    /* CRITICAL: Must be LV_DRAW_SW_ASM_NONE on ESP32 (Xtensa).
+     * ARM NEON/Helium assembly will NOT compile on Xtensa and causes
+     * the "unknown opcode typedef" assembler error. */
     #define LV_USE_DRAW_SW_ASM     LV_DRAW_SW_ASM_NONE
 
     #define LV_USE_DRAW_SW_COMPLEX_GRADIENTS    0

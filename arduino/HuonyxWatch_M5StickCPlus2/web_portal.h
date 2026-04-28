@@ -9,8 +9,6 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include <FS.h>
-using fs::FS;
 #include <WebServer.h>
 #include "config_manager.h"
 
