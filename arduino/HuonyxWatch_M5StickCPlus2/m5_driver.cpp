@@ -144,13 +144,6 @@ void m5_set_backlight(uint8_t brightness) {
     M5.Display.setBrightness(brightness);
 }
 
-void m5_display_flush(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
-                      const lv_color_t* colormap) {
-    M5.Display.startWrite();
-    M5.Display.setAddrWindow(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
-    M5.Display.pushPixels((uint16_t*)colormap, (x2 - x1 + 1) * (y2 - y1 + 1));
-    M5.Display.endWrite();
-}
 
 /* ══════════════════════════════════════════════════════════
  *  BATTERY (via AXP2101 through M5Unified)

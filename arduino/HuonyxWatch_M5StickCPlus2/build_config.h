@@ -8,11 +8,15 @@
 #ifndef BUILD_CONFIG_H
 #define BUILD_CONFIG_H
 
-/* ── LVGL ─────────────────────────────────────────────────
- * LV_CONF_INCLUDE_SIMPLE tells LVGL to find lv_conf.h by
- * a simple #include "lv_conf.h" rather than a relative path.
+/* ── UI Rendering ─────────────────────────────────────────
+ * This build uses M5.Display (LovyanGFX) directly for all
+ * UI rendering. LVGL is NOT used — this eliminates the
+ * LVGL vs M5GFX header conflict and saves ~47KB IRAM.
+ *
+ * The lv_conf.h file is kept but NOT included by any code.
+ * If you want to re-enable LVGL in the future, you'll need
+ * to rewrite ui_manager to use LVGL widgets again.
  */
-#define LV_CONF_INCLUDE_SIMPLE 1
 
 /* ── Flipper Zero BLE ────────────────────────────────────
  * Set to 1 to enable direct BLE connection to Flipper Zero.
@@ -20,18 +24,11 @@
  *
  * When disabled, Flipper control is still available through
  * the Supabase bridge (WebSocket over WiFi).
- *
- * NOTE: The ESP32 Arduino 3.x BLE stack (NimBLE) uses ~47KB
- * of IRAM which exceeds the 176KB hardware limit when combined
- * with WiFi + LVGL. Disable BLE if you get IRAM overflow.
  */
 #define ENABLE_FLIPPER_BLE  0
 
 #if ENABLE_FLIPPER_BLE
-/* ── NimBLE-Arduino ───────────────────────────────────────
- * Configure NimBLE for Central-only (BLE scanner/client)
- * operation to save memory.
- */
+/* NimBLE-Arduino: Central-only (BLE scanner/client) */
 #define CONFIG_BT_NIMBLE_ROLE_CENTRAL       1
 #define CONFIG_BT_NIMBLE_ROLE_PERIPHERAL    0
 #define CONFIG_BT_NIMBLE_ROLE_BROADCASTER   0

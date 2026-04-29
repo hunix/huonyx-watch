@@ -1,22 +1,16 @@
-/**
- * ui_manager.h
- * UI Manager for M5StickC Plus2
- * Huonyx AI Smartwatch — M5StickC Plus2 Port
- *
- * Manages all LVGL screens adapted for the 135x240 portrait display.
- * Navigation is entirely button-driven (no touch screen).
- *
- * Navigation:
- *   Button A short  → Cycle to next main screen
- *   Button A long   → Back / Cancel
- *   Button B short  → Scroll down / Highlight next item
- *   Button B long   → Select / Confirm / Primary action
- */
 #ifndef UI_MANAGER_H
 #define UI_MANAGER_H
-
-#include <Arduino.h>
-#include <lvgl.h>
+/*  ═══════════════════════════════════════════════════════
+ *  UIManager – M5.Display (LovyanGFX) direct rendering
+ *  No LVGL dependency — draws directly to the 135x240 LCD
+ *
+ *  Navigation (button-driven, no touch):
+ *    Button A short  -> Cycle to next main screen
+ *    Button A long   -> Back / Cancel
+ *    Button B short  -> Scroll / Highlight next item
+ *    Button B long   -> Select / Confirm / Primary action
+ *  ═══════════════════════════════════════════════════════ */
+#include <M5Unified.h>
 #include "hw_config.h"
 #include "gateway_client.h"
 #include "config_manager.h"
@@ -24,7 +18,20 @@
 #include "supabase_bridge.h"
 #include "m5_driver.h"
 
-/* ── Quick reply labels ───────────────────────────────── */
+/* ── Color palette (RGB565) ──────────────────────────── */
+#define CLR_BG        0x0000
+#define CLR_CARD      0x18E3
+#define CLR_HEADER    0x1082
+#define CLR_TEXT      0xFFFF
+#define CLR_SUBTEXT   0x7BEF
+#define CLR_ACCENT    0x04FF
+#define CLR_SUCCESS   0x07E0
+#define CLR_WARNING   0xFD20
+#define CLR_ERROR     0xF800
+#define CLR_USER_BUB  0x1A3A
+#define CLR_AGENT_BUB 0x2104
+
+/* ── Quick reply labels ──────────────────────────────── */
 static const char* QUICK_REPLIES[QUICK_REPLY_COUNT] = {
     "Status?",
     "Stop",
@@ -32,31 +39,38 @@ static const char* QUICK_REPLIES[QUICK_REPLY_COUNT] = {
     "Summary"
 };
 
+/* ── Chat message storage ────────────────────────────── */
+struct ChatMsg {
+    char text[CHAT_MAX_MSG_LEN];
+    bool isUser;
+};
+
+/* ── Flipper log entry ───────────────────────────────── */
+struct FlipperLogEntry {
+    char text[128];
+    bool isCommand;
+};
+
+#define MAX_FLIPPER_LOG 12
+
 class UIManager {
 public:
     UIManager() = default;
 
-    /* Lifecycle */
     void begin(GatewayClient* gw, ConfigManager* cfg,
                FlipperBLE* flipper, SupabaseBridge* bridge);
-
-    /* Must be called from loop() with the latest button event */
     void handleButton(BtnEvent evt);
+    void tick();
 
-    /* Sleep & Wake */
     void resetSleepTimer();
     bool isSleeping() const { return _isSleeping; }
     void wakeDisplay();
     void sleepDisplay();
 
-    /* Push Notifications */
     void showNotification(const char* title, const char* msg);
-
-    /* Screen navigation */
-    void showScreen(ScreenId id, lv_screen_load_anim_t anim = LV_SCR_LOAD_ANIM_MOVE_LEFT);
+    void showScreen(ScreenId id);
     ScreenId currentScreen() const { return _currentScreen; }
 
-    /* Watch face updates */
     void updateTime(int hour, int min, int sec);
     void updateDate(const char* dateStr);
     void updateBattery(int percent, bool charging);
@@ -65,127 +79,80 @@ public:
     void updateFlipperStatus(FlipperState state);
     void updateBridgeStatus(BridgeState state);
 
-    /* Chat updates */
     void addChatMessage(const char* text, bool isUser);
     void updateAgentTyping(bool typing);
     void clearChat();
 
-    /* Flipper screen updates */
     void addFlipperLog(const char* text, bool isCommand);
     void updateFlipperInfo(const char* deviceName, int rssi);
-
-    /* Settings */
     void updateSettingsValues();
 
 private:
-    GatewayClient*   _gw;
-    ConfigManager*   _cfg;
-    FlipperBLE*      _flipper;
-    SupabaseBridge*  _bridge;
-    ScreenId         _currentScreen;
+    GatewayClient*   _gw      = nullptr;
+    ConfigManager*   _cfg     = nullptr;
+    FlipperBLE*      _flipper = nullptr;
+    SupabaseBridge*  _bridge  = nullptr;
 
-    /* Sleep State */
-    uint32_t         _lastInteraction;
-    bool             _isSleeping;
-    uint8_t          _targetBacklight;
+    ScreenId _currentScreen = SCREEN_WATCHFACE;
+    bool     _dirty         = true;
 
-    /* Notification Overlay */
-    lv_obj_t*        _notifOverlay;
-    lv_obj_t*        _lblNotifTitle;
-    lv_obj_t*        _lblNotifBody;
-    uint32_t         _notifDismissTime;
+    uint32_t _lastInteraction = 0;
+    bool     _isSleeping      = false;
+    uint8_t  _targetBacklight = 80;
 
-    /* ── Screen objects ───────────────────────────────── */
-    /* Watch Face */
-    lv_obj_t* _scrWatchface;
-    lv_obj_t* _lblTime;
-    lv_obj_t* _lblDate;
-    lv_obj_t* _lblDay;
-    lv_obj_t* _lblBatteryPct;
-    lv_obj_t* _lblBatteryIcon;
-    lv_obj_t* _lblWifiIcon;
-    lv_obj_t* _lblGwDot;
-    lv_obj_t* _lblFlipDot;
-    lv_obj_t* _lblBridgeDot;
-    lv_obj_t* _lblScreenHint;
+    char     _notifTitle[32]   = {};
+    char     _notifBody[64]    = {};
+    uint32_t _notifDismissTime = 0;
 
-    /* Chat Screen */
-    lv_obj_t* _scrChat;
-    lv_obj_t* _chatList;
-    lv_obj_t* _lblChatTitle;
-    lv_obj_t* _lblTyping;
-    int        _chatMsgCount;
-    int        _quickReplyIdx;  /* Currently highlighted quick reply */
+    /* Watch face state */
+    int  _hour = -1, _min = -1, _sec = -1;
+    char _dateStr[24]  = "---";
+    int  _battPct      = -1;
+    bool _charging     = false;
+    int  _wifiRssi     = 0;
+    GatewayState  _gwState   = GW_DISCONNECTED;
+    FlipperState  _flipState = FLIP_IDLE;
+    BridgeState   _brState   = BRIDGE_IDLE;
 
-    /* Quick Reply Overlay (shown on Button B long press in chat) */
-    lv_obj_t* _quickReplyOverlay;
-    lv_obj_t* _btnQuickReply[QUICK_REPLY_COUNT];
-    bool       _quickReplyVisible;
+    /* Chat state */
+    ChatMsg  _chatMsgs[CHAT_MAX_MESSAGES];
+    int      _chatCount         = 0;
+    bool     _agentTyping       = false;
+    int      _chatScrollPos     = 0;
+    int      _quickReplyIdx     = 0;
+    bool     _quickReplyVisible = false;
 
-    /* Flipper Control Screen */
-    lv_obj_t* _scrFlipper;
-    lv_obj_t* _flipperLogList;
-    lv_obj_t* _lblFlipperDevice;
-    lv_obj_t* _lblFlipperState;
-    int        _flipperLogCount;
+    /* Flipper state */
+    FlipperLogEntry _flipLog[MAX_FLIPPER_LOG];
+    int      _flipLogCount   = 0;
+    char     _flipDevName[32] = "---";
+    int      _flipRssi       = 0;
 
-    /* Settings Screen */
-    lv_obj_t* _scrSettings;
-    lv_obj_t* _settingsList;
-    int        _settingsIdx;    /* Currently highlighted settings item */
+    /* Settings state */
+    int      _settingsIdx    = 0;
 
-    /* WiFi Setup */
-    lv_obj_t* _scrWifiSetup;
+    /* Drawing methods */
+    void drawWatchface();
+    void drawChatScreen();
+    void drawFlipperScreen();
+    void drawSettingsScreen();
+    void drawWifiSetup();
+    void drawGatewaySetup();
+    void drawSupabaseSetup();
+    void drawFlipperSetup();
+    void drawNotification();
 
-    /* Gateway Setup */
-    lv_obj_t* _scrGatewaySetup;
-    lv_obj_t* _lblGwStatus;
-
-    /* Supabase Setup */
-    lv_obj_t* _scrSupabaseSetup;
-    lv_obj_t* _lblSbStatus;
-
-    /* Flipper Setup */
-    lv_obj_t* _scrFlipperSetup;
-    lv_obj_t* _lblFlipSetupStatus;
-
-    /* ── Screen builders ──────────────────────────────── */
-    void createStyles();
-    void buildWatchface();
-    void buildChatScreen();
-    void buildFlipperScreen();
-    void buildSettingsScreen();
-    void buildWifiSetup();
-    void buildGatewaySetup();
-    void buildSupabaseSetup();
-    void buildFlipperSetup();
-    void buildNotificationOverlay();
-    void buildQuickReplyOverlay();
-
-    /* ── Navigation helpers ───────────────────────────── */
+    /* Navigation helpers */
     void cycleNextScreen();
     void handleChatButton(BtnEvent evt);
     void handleFlipperButton(BtnEvent evt);
     void handleSettingsButton(BtnEvent evt);
-    void showQuickReplies();
-    void hideQuickReplies();
     void sendSelectedQuickReply();
 
-    /* ── Helpers ──────────────────────────────────────── */
-    void addChatBubble(const char* text, bool isUser);
-    void addFlipperLogEntry(const char* text, bool isCommand);
-
-    /* ── Styles ───────────────────────────────────────── */
-    lv_style_t _styleBg;
-    lv_style_t _styleCard;
-    lv_style_t _styleBubbleUser;
-    lv_style_t _styleBubbleAgent;
-    lv_style_t _styleBtn;
-    lv_style_t _styleBtnSelected;
-    lv_style_t _styleHeader;
-    lv_style_t _styleSmallText;
-    lv_style_t _styleCmdLog;
-    lv_style_t _styleResultLog;
+    /* Drawing helpers */
+    void drawHeader(const char* title, uint16_t color = CLR_ACCENT);
+    void drawHintBar(const char* text);
+    void drawStatusDot(int x, int y, uint16_t color);
 };
 
 #endif /* UI_MANAGER_H */

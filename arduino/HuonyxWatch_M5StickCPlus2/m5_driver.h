@@ -24,7 +24,6 @@
 
 #include <Arduino.h>
 #include <M5Unified.h>   /* MUST be included — handles AXP2101 + display + IMU + RTC */
-#include <lvgl.h>
 #include "hw_config.h"
 
 /* ── Button event types ───────────────────────────────── */
@@ -71,8 +70,7 @@ BtnEvent m5_driver_tick();
 
 /* Display */
 void m5_set_backlight(uint8_t brightness);  /* 0-255 */
-void m5_display_flush(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
-                      const lv_color_t* colormap);
+/* Display flush removed - no longer using LVGL. */
 
 /* Battery */
 float m5_battery_voltage();     /* Returns battery voltage in V */
