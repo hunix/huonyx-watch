@@ -34,7 +34,7 @@ bool display_init() {
         return false;
     }
 
-    gfx->fillScreen(BLACK);
+    gfx->fillScreen(0x0000);  /* BLACK in RGB565 */
     display_set_brightness(LCD_BRIGHTNESS_DEF);
     return true;
 }

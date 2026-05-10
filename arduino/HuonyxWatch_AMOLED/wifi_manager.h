@@ -17,6 +17,8 @@ enum WiFiMgrState : uint8_t {
     WIFI_MGR_FAILED
 };
 
+typedef void (*WiFiStateCallback)(WiFiMgrState newState);
+
 class WiFiManager {
 public:
     WiFiManager();
@@ -30,6 +32,7 @@ public:
 
     /* Save credentials to NVS */
     void saveCredentials(const char* ssid, const char* password);
+    void clearCredentials();
     bool hasCredentials() const;
 
     /* State */
@@ -39,14 +42,20 @@ public:
     int getRSSI() const { return WiFi.RSSI(); }
     String getIP() const { return WiFi.localIP().toString(); }
 
+    /* Fired on every state transition (called from loop()). */
+    void onStateChange(WiFiStateCallback cb) { _onStateChange = cb; }
+
 private:
-    Preferences  _prefs;
-    WiFiMgrState _state;
-    char         _ssid[WIFI_MAX_SSID_LEN];
-    char         _password[WIFI_MAX_PASS_LEN];
-    uint32_t     _connectStartMs;
-    uint8_t      _retryCount;
+    Preferences       _prefs;
+    WiFiMgrState      _state;
+    char              _ssid[WIFI_MAX_SSID_LEN];
+    char              _password[WIFI_MAX_PASS_LEN];
+    uint32_t          _connectStartMs;
+    uint8_t           _retryCount;
+    WiFiStateCallback _onStateChange;
     static constexpr uint8_t MAX_RETRIES = 3;
+
+    void setState(WiFiMgrState s);
 };
 
 #endif /* WIFI_MANAGER_H */
